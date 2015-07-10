@@ -1282,6 +1282,18 @@ function wpsc_plugins_tab() {
 
 function wpsc_admin_tabs( $current = 0 ) {
 	global $wp_db_version;
+
+	$tabs = array(
+		'easy'     => __( 'Easy', 'wp-super-cache' ),
+		'settings' => __( 'Advanced', 'wp-super-cache' ),
+		'cdn'      => __( 'CDN', 'wp-super-cache' ),
+		'contents' => __( 'Contents', 'wp-super-cache' ),
+		'preload'  => __( 'Preload', 'wp-super-cache' ),
+		'plugins'  => __( 'Plugins', 'wp-super-cache' ),
+		'debug'    => __( 'Debug', 'wp-super-cache' ),
+		'export'    => __( 'Import/Export', 'wp-super-cache' ) );
+
+
 	if ( $current == 0 ) {
 		if ( isset( $_GET[ 'tab' ] ) ) {
 			$current = $_GET[ 'tab' ];
