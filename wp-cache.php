@@ -64,6 +64,8 @@ if( !defined( 'WP_CACHE' ) || ( defined( 'WP_CACHE' ) && constant( 'WP_CACHE' ) 
 
 include(WPCACHEHOME . 'wp-cache-base.php');
 
+include(WPCACHEHOME . 'wp-cache-export.php');
+
 function wp_super_cache_text_domain() {
 	load_plugin_textdomain( 'wp-super-cache', WPCACHEHOME . 'languages', basename( dirname( __FILE__ ) ) . '/languages' );
 }
@@ -648,6 +650,7 @@ function wp_cache_manager_updates() {
 			}
 		}
 	}
+
 }
 if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'wpsupercache' )
 	add_action( 'admin_init', 'wp_cache_manager_updates' );
@@ -1074,6 +1077,9 @@ jQuery(document).ready(function(){
 
 		wp_cache_restore();
 
+		break;
+		case 'export':
+			WP_Super_Cache_Export::form();
 		break;
 		case "easy":
 		default:
