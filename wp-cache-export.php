@@ -22,12 +22,16 @@ class WP_Super_Cache_Export {
 
   const EXPORT_NONCE = 'wp-super-cache-export';
 
+  static $MESSAGES = array();
+
   /**
    * Instantiate the class to enable the importing and exporting features for the WP Super Cache plugin.
    *
    * Caches the location of the WP Super Cache plugin configuration file and the sample configuration file.
    * Adds two actions to the WP Super Cache admin page load that determine if an import or export
    * should be preformed.
+   *
+   * Defines the static $MESSAGES array that displays the success or error messages in the upload form.
    *
    * @uses  $wp_cache_config_file The location of the configuration file.
    * @uses  $wp_cache_config_file_sample The location of the sample configuration file.
@@ -39,6 +43,11 @@ class WP_Super_Cache_Export {
     global $wp_cache_config_file, $wp_cache_config_file_sample;
     $this->cache_config_file = $wp_cache_config_file;
     $this->cache_config_file_sample = $wp_cache_config_file;
+    self::$MESSAGES = array(
+      0 =>  array( 'success', __( 'Settings imported', 'wp-super-cache' ) ),
+      1 =>  array( 'warning', __( 'Please upload an exported WP Super Cache settings file.', 'wp-super-cache' ) ),
+      2 =>  array( 'error', __( 'Unable to import the uploaded JSON file. Please export the settings and import them again.', 'wp-super-cache' ) ),
+    );
     add_action( 'load-settings_page_wpsupercache', array( $this, 'export' ) );
     add_action( 'load-settings_page_wpsupercache', array( $this, 'import' ) );
   }
@@ -56,22 +65,11 @@ class WP_Super_Cache_Export {
    */
   public function form() {
     ?>
-    <?php if ( isset( $_GET['success'] ) ) : ?>
-        <div class="updated notice notice-success is-dismissible below-h2">
-            <p><?php _e( 'Settings imported', 'wp-super-cache' ) ?> </p>
-            <button type="button" class="notice-dismiss">
-              <span class="screen-reader-text">Dismiss this notice.</span>
-            </button>
-          </div>
-    <?php endif; ?>
 
-    <?php if ( isset( $_GET['error'] ) ) : ?>
-        <div class="error notice is-dismissible below-h2">
-            <p><?php _e( 'Please upload a file with the correct JSON format.', 'wp-super-cache' ) ?> </p>
-            <button type="button" class="notice-dismiss">
-              <span class="screen-reader-text">Dismiss this notice.</span>
-            </button>
-          </div>
+    <?php if (  isset( $_GET['message'] ) ):  ?>
+      <div id="message" class="notice notice-<?php echo self::$MESSAGES[ $_GET['message'] ][0] ; ?> is-dismissible">
+        <p><?php echo self::$MESSAGES[ $_GET['message'] ][1]  ?></p>
+      </div>
     <?php endif; ?>
 
       <fieldset class="options">
@@ -108,8 +106,9 @@ class WP_Super_Cache_Export {
    * and replaced by a copy of the default, sample configuration file. This file is then updated using the `wp_cache_replace_line`
    * function with the parameters supplied by the uploaded JSON file.
    *
-   * Currently checks if the JSON file exists. If not, render the Import/Export tab with an error message.
-   * Currently checks if the JSON file has settings in it. If not, render the Import/Export tab with an error message.
+   * Currently checks if the JSON file exists. If not, render the Import/Export tab with an error message defined by the $MESSAGES array.
+   * Currently checks if the JSON file is malformed. If so, render the Import/Export tab with an error message defined by the $MESSAGES array.
+   * If the JSON file is imported correctly, render the Import/Export tab with a success message defined by the $MESSAGES array.
    *
    * A backup of the original configuration file is stored in the wp-content directory with a .backup file extension.
    *
@@ -128,13 +127,14 @@ class WP_Super_Cache_Export {
     }
     check_admin_referer( self::IMPORT_NONCE );
     $file = $_FILES[ 'wp_super_cache_import_file' ][ 'tmp_name' ];
+    $location = add_query_arg( 'tab', 'export', admin_url( 'options-general.php?page=wpsupercache' ) );
     if( empty( $file ) ) {
-      wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&error' ) );
+      wp_safe_redirect( add_query_arg( 'message', 1, $location ) );
       exit;
     }
     $settings = (array) json_decode( file_get_contents( $file ), true );
     if ( 0 === count( $settings ) ) {
-      wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&error' ) );
+      wp_safe_redirect( add_query_arg( 'message', 2, $location ) );
       exit;
     }
     // Backup the current config file to the same directory with a .backup file extension.
@@ -160,7 +160,7 @@ class WP_Super_Cache_Export {
         wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", $this->cache_config_file );
       }
     }
-    wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&success' ) );
+    wp_safe_redirect( add_query_arg( 'message', 0, $location ) );
     exit;
   }
 
