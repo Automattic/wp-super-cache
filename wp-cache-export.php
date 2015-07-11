@@ -12,8 +12,7 @@
 * @since 1.4.4
 */
 
-class WP_Super_Cache_Export
-{
+class WP_Super_Cache_Export {
 
   const TITLE = 'WP_Super_Cache_Export.json';
 
@@ -36,13 +35,11 @@ class WP_Super_Cache_Export
    * @since  1.4.4
    */
 
-  function __construct()
-  {
+  function __construct() {
     global $wp_cache_config_file, $wp_cache_config_file_sample;
 
     $this->cache_config_file = $wp_cache_config_file;
     $this->cache_config_file_sample = $wp_cache_config_file;
-
     add_action( 'load-settings_page_wpsupercache', array( $this, 'export' ) );
     add_action( 'load-settings_page_wpsupercache', array( $this, 'import' ) );
   }
@@ -58,8 +55,7 @@ class WP_Super_Cache_Export
    *
    *  @since  1.4.4
    */
-  public function form()
-  {
+  public function form() {
     ?>
     <?php if ( isset( $_GET['success'] ) ) : ?>
         <div class="updated notice notice-success is-dismissible below-h2">
@@ -127,10 +123,8 @@ class WP_Super_Cache_Export
    *
    */
 
-  public function import()
-  {
-    if ( $this->canImport() )
-    {
+  public function import() {
+    if ( $this->canImport() ) {
       check_admin_referer( self::IMPORT_NONCE );
 
       $file = $_FILES[ 'wp_super_cache_import_file' ][ 'tmp_name' ];
@@ -155,15 +149,10 @@ class WP_Super_Cache_Export
       // Create a new config file from the original sample
       wp_cache_verify_config_file();
 
-      foreach ( $settings as $setting => $value)
-      {
-
-        if ( is_array( $value )  )
-        {
-
+      foreach ( $settings as $setting => $value) {
+        if ( is_array( $value )  ) {
           // todo: this specific setting outlier could be avoided if the initial config file was adjusted slightly
-          if ( $setting === 'wp_cache_pages' )
-          {
+          if ( $setting === 'wp_cache_pages' ) {
             foreach ($value as $key => $key_value ) {
               $key_value = is_numeric($key_value) ? $key_value : "\"$key_value\"";
               wp_cache_replace_line( '^ *\$' . $setting . '\[ "' . $key . '" \]' ,"\$" . $setting . "[ \"" . $key . "\" ] = $key_value;", $this->cache_config_file );
@@ -172,18 +161,14 @@ class WP_Super_Cache_Export
               $text = wp_cache_sanitize_value( join( $value, ' ' ), $value );
               wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $text;", $this->cache_config_file );
           }
-
         } else {
           $value = is_numeric($value) ? $value : "\"$value\"";
           wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", $this->cache_config_file );
         }
-
       }
-
       wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&success' ) );
       exit;
     }
-
   }
 
   /**
@@ -201,26 +186,19 @@ class WP_Super_Cache_Export
    *
    * @return JSON file of the WP Super Cache settings
    */
-  public function export()
-  {
-    if ( $this->canExport() )
-    {
+  public function export() {
+    if ( $this->canExport() ) {
       check_admin_referer(  self::EXPORT_NONCE );
-
-      if ( 0 === count( get_defined_vars() ) )
-      {
+      if ( 0 === count( get_defined_vars() ) ) {
           include $this->cache_config_file;
           $wp_cache_config_vars = get_defined_vars();
-
           nocache_headers();
           header( "Content-disposition: attachment; filename=" . self::TITLE );
           header( 'Content-Type: application/octet-stream; charset=' . get_option( 'blog_charset' ) );
           echo json_encode( $wp_cache_config_vars );
           die();
       }
-
     }
-
   }
 
   /**
@@ -235,8 +213,7 @@ class WP_Super_Cache_Export
    *
    * @return boolean Whether the user can export the settings.
    */
-  private function canExport()
-  {
+  private function canExport() {
     return isset( $_POST[ self::NAME ] ) &&
                 $_POST[ self::NAME ] === 'export' &&
                 current_user_can( 'manage_options' );
@@ -255,8 +232,7 @@ class WP_Super_Cache_Export
    *
    * @return boolean Whether the user can import the settings.
    */
-  private function canImport()
-  {
+  private function canImport() {
     return isset( $_POST[ self::NAME ] ) &&
                 $_POST[ self::NAME ] === 'import' &&
                 current_user_can( 'manage_options' );
