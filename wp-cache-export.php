@@ -5,7 +5,7 @@
 *
 * This class handles the exporting and importing of WP Super Cache settings. Exports are downloaded
 * as a JSON file with properties that mirror the WP Super Cache configuration file. Imports are handled
-* by uploaded an exported JSON file and overwriting the WP Super Cache configuration file to the
+* by uploading an exported JSON file and overwriting the WP Super Cache configuration file with the
 * imported parameters. A backup of the original configuration file is kept.
 *
 * @package  WP Super Cache
@@ -24,7 +24,7 @@ class WP_Super_Cache_Export
   const EXPORT_NONCE = 'wp-super-cache-export';
 
   /**
-   * Instanciate the class to enable the importing and exporting features for the WP Super Cache plugin.
+   * Instantiate the class to enable the importing and exporting features for the WP Super Cache plugin.
    *
    * Caches the location of the WP Super Cache plugin configuration file and the sample configuration file.
    * Adds two actions to the WP Super Cache admin page load that determine if an import or export
@@ -53,7 +53,7 @@ class WP_Super_Cache_Export
    * Provides a basic form for exporting the plugin's settings.
    * Provides a basic upload field for importing settings.
    *
-   * A success is displayed if new settings have been imported correctly.
+   * A success message is displayed if new settings have been imported correctly.
    * An error message is displayed if the settings cannot be imported.
    *
    *  @since  1.4.4
