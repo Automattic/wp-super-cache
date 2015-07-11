@@ -37,7 +37,6 @@ class WP_Super_Cache_Export {
 
   function __construct() {
     global $wp_cache_config_file, $wp_cache_config_file_sample;
-
     $this->cache_config_file = $wp_cache_config_file;
     $this->cache_config_file_sample = $wp_cache_config_file;
     add_action( 'load-settings_page_wpsupercache', array( $this, 'export' ) );
@@ -124,51 +123,45 @@ class WP_Super_Cache_Export {
    */
 
   public function import() {
-    if ( $this->canImport() ) {
-      check_admin_referer( self::IMPORT_NONCE );
-
-      $file = $_FILES[ 'wp_super_cache_import_file' ][ 'tmp_name' ];
-
-      if( empty( $file ) ) {
-        wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&error' ) );
-        exit;
-      }
-
-      $settings = (array) json_decode( file_get_contents( $file ), true );
-
-      if ( 0 === count( $settings ) ) {
-        wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&error' ) );
-        exit;
-      }
-
-      // Backup the current config file to the same directory with a .backup file extension.
-      if ( file_exists( $this->cache_config_file) ) {
-        rename( $this->cache_config_file, $this->cache_config_file . '.backup' );
-      }
-
-      // Create a new config file from the original sample
-      wp_cache_verify_config_file();
-
-      foreach ( $settings as $setting => $value) {
-        if ( is_array( $value )  ) {
-          // todo: this specific setting outlier could be avoided if the initial config file was adjusted slightly
-          if ( $setting === 'wp_cache_pages' ) {
-            foreach ($value as $key => $key_value ) {
-              $key_value = is_numeric($key_value) ? $key_value : "\"$key_value\"";
-              wp_cache_replace_line( '^ *\$' . $setting . '\[ "' . $key . '" \]' ,"\$" . $setting . "[ \"" . $key . "\" ] = $key_value;", $this->cache_config_file );
-            }
-          } else {
-              $text = wp_cache_sanitize_value( join( $value, ' ' ), $value );
-              wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $text;", $this->cache_config_file );
-          }
-        } else {
-          $value = is_numeric($value) ? $value : "\"$value\"";
-          wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", $this->cache_config_file );
-        }
-      }
-      wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&success' ) );
+    if ( ! $this->canImport() ) {
+      return;
+    }
+    check_admin_referer( self::IMPORT_NONCE );
+    $file = $_FILES[ 'wp_super_cache_import_file' ][ 'tmp_name' ];
+    if( empty( $file ) ) {
+      wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&error' ) );
       exit;
     }
+    $settings = (array) json_decode( file_get_contents( $file ), true );
+    if ( 0 === count( $settings ) ) {
+      wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&error' ) );
+      exit;
+    }
+    // Backup the current config file to the same directory with a .backup file extension.
+    if ( file_exists( $this->cache_config_file) ) {
+      rename( $this->cache_config_file, $this->cache_config_file . '.backup' );
+    }
+    // Create a new config file from the original sample
+    wp_cache_verify_config_file();
+    foreach ( $settings as $setting => $value) {
+      if ( is_array( $value )  ) {
+        // todo: this specific setting outlier could be avoided if the initial config file was adjusted slightly
+        if ( $setting === 'wp_cache_pages' ) {
+          foreach ($value as $key => $key_value ) {
+            $key_value = is_numeric($key_value) ? $key_value : "\"$key_value\"";
+            wp_cache_replace_line( '^ *\$' . $setting . '\[ "' . $key . '" \]' ,"\$" . $setting . "[ \"" . $key . "\" ] = $key_value;", $this->cache_config_file );
+          }
+        } else {
+            $text = wp_cache_sanitize_value( join( $value, ' ' ), $value );
+            wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $text;", $this->cache_config_file );
+        }
+      } else {
+        $value = is_numeric($value) ? $value : "\"$value\"";
+        wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", $this->cache_config_file );
+      }
+    }
+    wp_safe_redirect( admin_url( 'options-general.php?page=wpsupercache&tab=export&success' ) );
+    exit;
   }
 
   /**
@@ -187,18 +180,17 @@ class WP_Super_Cache_Export {
    * @return JSON file of the WP Super Cache settings
    */
   public function export() {
-    if ( $this->canExport() ) {
-      check_admin_referer(  self::EXPORT_NONCE );
-      if ( 0 === count( get_defined_vars() ) ) {
-          include $this->cache_config_file;
-          $wp_cache_config_vars = get_defined_vars();
-          nocache_headers();
-          header( "Content-disposition: attachment; filename=" . self::TITLE );
-          header( 'Content-Type: application/octet-stream; charset=' . get_option( 'blog_charset' ) );
-          echo json_encode( $wp_cache_config_vars );
-          die();
-      }
+    if ( ! $this->canExport() || 0 !== count( get_defined_vars() ) ) {
+      return;
     }
+    check_admin_referer(  self::EXPORT_NONCE );
+    include $this->cache_config_file;
+    $wp_cache_config_vars = get_defined_vars();
+    nocache_headers();
+    header( "Content-disposition: attachment; filename=" . self::TITLE );
+    header( 'Content-Type: application/octet-stream; charset=' . get_option( 'blog_charset' ) );
+    echo json_encode( $wp_cache_config_vars );
+    die();
   }
 
   /**
