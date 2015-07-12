@@ -193,7 +193,7 @@ class WP_Super_Cache_Export {
     $wp_cache_config_vars = get_defined_vars();
     nocache_headers();
     header( "Content-disposition: attachment; filename=" . self::TITLE );
-    header( 'Content-Type: application/octet-stream; charset=' . get_option( 'blog_charset' ) );
+    header( 'Content-Type: application/octet-stream;' );
     echo json_encode( $wp_cache_config_vars );
     die();
   }
