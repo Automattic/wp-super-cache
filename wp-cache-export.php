@@ -22,8 +22,6 @@ class WP_Super_Cache_Export {
 
   const EXPORT_NONCE = 'wp-super-cache-export';
 
-  static $cache_config_file;
-  static $cache_config_file_sample;
   static $MESSAGES = array();
 
   /**
@@ -43,12 +41,13 @@ class WP_Super_Cache_Export {
 
   function __construct() {
     global $wp_cache_config_file, $wp_cache_config_file_sample;
-    self::$cache_config_file = $wp_cache_config_file;
-    self::$cache_config_file_sample = $wp_cache_config_file;
+    $this->cache_config_file = $wp_cache_config_file;
+    $this->cache_config_file_sample = $wp_cache_config_file;
     self::$MESSAGES = array(
       0 =>  array( 'success', __( 'Settings imported', 'wp-super-cache' ) ),
       1 =>  array( 'warning', __( 'Please upload an exported WP Super Cache settings file.', 'wp-super-cache' ) ),
       2 =>  array( 'error', __( 'Unable to import the uploaded JSON file. Please export the settings and import them again.', 'wp-super-cache' ) ),
+      3 =>  array( 'error', __( 'Unable to create backup settings file. Please check that the wp-content folder is writable via the <em>chmod</em> command on your server.', 'wp-super-cache' ) ),
     );
     add_action( 'load-settings_page_wpsupercache', array( $this, 'export' ) );
     add_action( 'load-settings_page_wpsupercache', array( $this, 'import' ) );
@@ -96,18 +95,6 @@ class WP_Super_Cache_Export {
           <?php submit_button( __( 'Import settings', 'wp-super-cache' ) ); ?>
         </form>
 
-        <?php if ( self::backupFileExists() ) : ?>
-
-          <hr>
-
-          <h3><?php _e( "Restore WP Super Cache Settings", "wp-super-cache" ) ?></h3>
-          <p>
-            <?php _e( "Restore the previous WP Super Cache Settings settings that existed before importing the latest settings file.", "wp-super-cache" ) ?>
-            <?php submit_button( __( 'Restore settings', 'wp-super-cache' ) ); ?>
-          </p>
-
-        <?php endif; ?>
-
       </fieldset>
 
     <?php
@@ -152,8 +139,12 @@ class WP_Super_Cache_Export {
       exit;
     }
     // Backup the current config file to the same directory with a .backup file extension.
-    if ( file_exists( self::$cache_config_file) ) {
-      rename( self::$cache_config_file, self::$cache_config_file . '.backup' );
+    if ( file_exists( $this->cache_config_file) ) {
+      $renamed = @rename( $this->cache_config_file, str_replace( '.php', '-backup.php', $this->cache_config_file ) );
+      if ( ! $renamed ) {
+        wp_safe_redirect( add_query_arg( 'message', 3, $location ) );
+        exit;
+      }
     }
     // Create a new config file from the original sample
     wp_cache_verify_config_file();
@@ -163,15 +154,15 @@ class WP_Super_Cache_Export {
         if ( $setting === 'wp_cache_pages' ) {
           foreach ($value as $key => $key_value ) {
             $key_value = is_numeric($key_value) ? $key_value : "\"$key_value\"";
-            wp_cache_replace_line( '^ *\$' . $setting . '\[ "' . $key . '" \]' ,"\$" . $setting . "[ \"" . $key . "\" ] = $key_value;", self::$cache_config_file );
+            wp_cache_replace_line( '^ *\$' . $setting . '\[ "' . $key . '" \]' ,"\$" . $setting . "[ \"" . $key . "\" ] = $key_value;", $this->cache_config_file );
           }
         } else {
             $text = wp_cache_sanitize_value( join( $value, ' ' ), $value );
-            wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $text;", self::$cache_config_file );
+            wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $text;", $this->cache_config_file );
         }
       } else {
         $value = is_numeric($value) ? $value : "\"$value\"";
-        wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", self::$cache_config_file );
+        wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", $this->cache_config_file );
       }
     }
     wp_safe_redirect( add_query_arg( 'message', 0, $location ) );
@@ -198,7 +189,7 @@ class WP_Super_Cache_Export {
       return;
     }
     check_admin_referer(  self::EXPORT_NONCE );
-    include self::$cache_config_file;
+    include $this->cache_config_file;
     $wp_cache_config_vars = get_defined_vars();
     nocache_headers();
     header( "Content-disposition: attachment; filename=" . self::TITLE );
@@ -242,17 +233,6 @@ class WP_Super_Cache_Export {
     return isset( $_POST[ self::NAME ] ) &&
                 $_POST[ self::NAME ] === 'import' &&
                 current_user_can( 'manage_options' );
-  }
-
-  /**
-   * Check to see if the backup file exists.
-   *
-   * @since  1.4.4
-   *
-   * @return boolean Whether or not the backup file exists
-   */
-  private function backupFileExists() {
-    return file_exists( self::$cache_config_file . '.backup' );
   }
 
 }
