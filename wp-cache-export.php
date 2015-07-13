@@ -153,7 +153,7 @@ class WP_Super_Cache_Export {
         // todo: this specific setting outlier could be avoided if the initial config file was adjusted slightly
         if ( $setting === 'wp_cache_pages' ) {
           foreach ($value as $key => $key_value ) {
-            $key_value = is_numeric($key_value) ? $key_value : "\"$key_value\"";
+            $key_value = $this->sanitize_value( $key_value );
             wp_cache_replace_line( '^ *\$' . $setting . '\[ "' . $key . '" \]' ,"\$" . $setting . "[ \"" . $key . "\" ] = $key_value;", $this->cache_config_file );
           }
         } else {
@@ -161,7 +161,7 @@ class WP_Super_Cache_Export {
             wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $text;", $this->cache_config_file );
         }
       } else {
-        $value = is_numeric($value) ? $value : "\"$value\"";
+        $value = $this->sanitize_value( $value );
         wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", $this->cache_config_file );
       }
     }
@@ -196,6 +196,31 @@ class WP_Super_Cache_Export {
     header( 'Content-Type: application/octet-stream;' );
     echo json_encode( $wp_cache_config_vars );
     die();
+  }
+
+  /**
+   * This is a private function dedicated to sanitizing the JSON file input.
+   * Given that a malicious JSON file could be uploaded and converted into the plugin settings it is best practice to sanitize
+   * the JSON values before converting them.
+   *
+   * Since only numeric values and strings are accepted inputs we cast integers on numeric values and strip tags/escape
+   * the html of string values.
+   *
+   * @since  1.4.4
+   *
+   * @uses esc_html Escape the string values
+   *
+   * @return number|string A sanitized version of the input value.
+   */
+
+  private function sanitize_value( $value ) {
+    if ( is_numeric( $value ) ) {
+      return (int)  $value;
+    }
+    if ( is_string( $value ) ) {
+      $value = esc_html( strip_tags( $value ) );
+      return "\"$value\"";
+    }
   }
 
   /**
