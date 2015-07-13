@@ -22,7 +22,22 @@ class WP_Super_Cache_Export {
 
   const EXPORT_NONCE = 'wp-super-cache-export';
 
+  const OPTIONS = array(
+    'ossdl_cname',
+    'ossdl_https',
+    'ossdl_off_cdn_url',
+    'ossdl_off_include_dirs',
+    'ossdl_off_exclude',
+    'preload_cache_counter',
+    'wpsupercache_start',
+    'wpsupercache_count',
+    'supercache_last_cached',
+    'supercache_stats',
+    'wpsupercache_gc_time',
+  );
+
   static $MESSAGES = array();
+
 
   /**
    * Instantiate the class to enable the importing and exporting features for the WP Super Cache plugin.
@@ -43,12 +58,14 @@ class WP_Super_Cache_Export {
     global $wp_cache_config_file, $wp_cache_config_file_sample;
     $this->cache_config_file = $wp_cache_config_file;
     $this->cache_config_file_sample = $wp_cache_config_file;
+
     self::$MESSAGES = array(
       0 =>  array( 'success', __( 'Settings imported', 'wp-super-cache' ) ),
       1 =>  array( 'warning', __( 'Please upload an exported WP Super Cache settings file.', 'wp-super-cache' ) ),
       2 =>  array( 'error', __( 'Unable to import the uploaded JSON file. Please export the settings and import them again.', 'wp-super-cache' ) ),
       3 =>  array( 'error', __( 'Unable to create backup settings file. Please check that the wp-content folder is writable via the <em>chmod</em> command on your server.', 'wp-super-cache' ) ),
     );
+
     add_action( 'load-settings_page_wpsupercache', array( $this, 'export' ) );
     add_action( 'load-settings_page_wpsupercache', array( $this, 'import' ) );
   }
@@ -146,6 +163,15 @@ class WP_Super_Cache_Export {
         exit;
       }
     }
+
+    // Update the database options that are not stored in the wp-cache-config.php file
+    if ( isset( $settings[ '_wp_super_cache_options' ] ) ) {
+      foreach ( $settings[ '_wp_super_cache_options'] as $key => $value ) {
+        update_option( $key, $value );
+      }
+      unset( $settings[ '_wp_super_cache_options' ] );
+    }
+
     // Create a new config file from the original sample
     wp_cache_verify_config_file();
     foreach ( $settings as $setting => $value) {
@@ -173,8 +199,9 @@ class WP_Super_Cache_Export {
    * Exports the current settings into a JSON file that can be imported into another WP Super Cache.
    *
    * When a user clicks the export button WordPress checks if the request is valid.
-   * No variables are declared in the scope of this function. When the configuration file is included
-   * its variables are the only ones that are declared. These variables are then encoded and downloaded
+   * Within the scope of this function, when the configuration file is included
+   * its variables are the only ones that are declared and gathered.  The additional options are
+   * then retrieved from the database. These variables are then encoded and downloaded
    * as a JSON file.
    *
    * @since  1.4.4
@@ -191,11 +218,30 @@ class WP_Super_Cache_Export {
     check_admin_referer(  self::EXPORT_NONCE );
     include $this->cache_config_file;
     $wp_cache_config_vars = get_defined_vars();
+    $wp_cache_config_options = $this->gather_plugin_options();
     nocache_headers();
     header( "Content-disposition: attachment; filename=" . self::TITLE );
     header( 'Content-Type: application/octet-stream;' );
-    echo json_encode( $wp_cache_config_vars );
+    echo json_encode( array_merge($wp_cache_config_vars, $wp_cache_config_options )  );
     die();
+  }
+
+  /**
+   * This is a private function that gathers all the database options WP Super Cache stores outside of the wp-cache-config.php file.
+   * The array of option names is stored as a class constant.
+   *
+   * @since  1.4.4
+   *
+   * @uses  get_option Gather the array of option key/value pairs.
+   *
+   * @return array An array of the key/value pairs for the WP Super Cache options stored in the database
+   */
+  private function gather_plugin_options() {
+    $options = array();
+    foreach ( self::OPTIONS  as $value ) {
+      $options[ $value ] = get_option( $value );
+    }
+    return array( '_wp_super_cache_options' => $options );
   }
 
   /**
