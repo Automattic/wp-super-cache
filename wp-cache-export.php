@@ -176,7 +176,7 @@ class WP_Super_Cache_Export {
    */
 
   public function import() {
-    if ( ! $this->canImport() ) {
+    if ( ! $this->can_import() ) {
       return;
     }
     check_admin_referer( self::IMPORT_NONCE );
@@ -251,7 +251,7 @@ class WP_Super_Cache_Export {
    * @return JSON file of the WP Super Cache settings
    */
   public function export() {
-    if ( ! $this->canExport() || 0 !== count( get_defined_vars() ) ) {
+    if ( ! $this->can_export() || 0 !== count( get_defined_vars() ) ) {
       return;
     }
     check_admin_referer(  self::EXPORT_NONCE );
@@ -354,7 +354,7 @@ class WP_Super_Cache_Export {
    *
    * @return boolean Whether the user can export the settings.
    */
-  private function canExport() {
+  private function can_export() {
     return isset( $_POST[ self::NAME ] ) &&
                 $_POST[ self::NAME ] === 'export' &&
                 current_user_can( 'manage_options' );
@@ -373,7 +373,7 @@ class WP_Super_Cache_Export {
    *
    * @return boolean Whether the user can import the settings.
    */
-  private function canImport() {
+  private function can_import() {
     return isset( $_POST[ self::NAME ] ) &&
                 $_POST[ self::NAME ] === 'import' &&
                 current_user_can( 'manage_options' );
