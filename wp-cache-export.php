@@ -22,6 +22,10 @@ class WP_Super_Cache_Export {
 
   const EXPORT_NONCE = 'wp-super-cache-export';
 
+  const RESTORE_NONCE = 'wp-super-cache-restore';
+
+  const REMOVE_NONCE = 'wp-super-cache-remove';
+
   const OPTIONS = array(
     'ossdl_cname',
     'ossdl_https',
@@ -66,11 +70,16 @@ class WP_Super_Cache_Export {
       0 =>  array( 'success', __( 'Settings imported', 'wp-super-cache' ) ),
       1 =>  array( 'warning', __( 'Please upload an exported WP Super Cache settings file.', 'wp-super-cache' ) ),
       2 =>  array( 'error', __( 'Unable to import the uploaded JSON file. Please export the settings and import them again.', 'wp-super-cache' ) ),
-      3 =>  array( 'error', __( 'Unable to create backup settings file. Please check that the wp-content folder is writable via the <em>chmod</em> command on your server.', 'wp-super-cache' ) ),
+      3 =>  array( 'error', __( 'Unable to create backup settings file. Please check that the wp-content folder is writable via the <em>chmod</em> command on the server.', 'wp-super-cache' ) ),
+      4 =>  array( 'error', __( 'Unable to remove the backup file. Please check that the wp-content folder is writable via the <em>chmod</em> command on the server.', 'wp-super-cache' ) ),
+      5 =>  array( 'success', __( 'All settings have been restored.', 'wp-super-cache' ) ),
+      6 =>  array( 'success', __( 'All backup settings have been removed permanently.', 'wp-super-cache' ) ),
     );
 
     add_action( 'load-settings_page_wpsupercache', array( $this, 'export' ) );
     add_action( 'load-settings_page_wpsupercache', array( $this, 'import' ) );
+    add_action( 'load-settings_page_wpsupercache', array( $this, 'restore' ) );
+    add_action( 'load-settings_page_wpsupercache', array( $this, 'remove' ) );
   }
 
   /**
@@ -119,10 +128,22 @@ class WP_Super_Cache_Export {
 
           <hr>
 
-          <h3><?php _e( "Restore WP Super Cache Settings", "wp-super-cache" ) ?></h3>
           <p>
-            <?php _e( "Restore the previous WP Super Cache Settings settings that existed before importing the latest settings file.", "wp-super-cache" ) ?>
-            <?php submit_button( __( 'Restore settings', 'wp-super-cache' ) ); ?>
+            <?php _e( "Restore the previous WP Super Cache Settings settings or remove them permanently.", "wp-super-cache" ) ?>
+          </p>
+
+          <p>
+
+          <form action="" method="post">
+            <input type="hidden" name="<?php echo self::NAME ?>" value="restore"  />
+            <?php wp_nonce_field( self::RESTORE_NONCE ); ?>
+            <?php submit_button( __( 'Restore settings', 'wp-super-cache' ), 'secondary', 'submit', false ); ?>
+          </form>
+
+          <form action="" method="post" style="margin-top:10px;">
+            <input type="hidden" name="<?php echo self::NAME ?>" value="remove"  />
+            <?php wp_nonce_field( self::REMOVE_NONCE ); ?>
+            <?php submit_button( __( 'Remove backup settings', 'wp-super-cache' ), 'delete', 'submit',false ); ?>
           </p>
 
         <?php endif; ?>
@@ -181,9 +202,12 @@ class WP_Super_Cache_Export {
 
     // Update the database options that are not stored in the wp-cache-config.php file
     if ( isset( $settings[ '_wp_super_cache_options' ] ) ) {
+      $options = array();
       foreach ( $settings[ '_wp_super_cache_options'] as $key => $value ) {
+        $options[ $key ] = get_option( $key );
         update_option( $key, $value );
       }
+      update_option( '_wp_super_cache_backup_options', $options );
       unset( $settings[ '_wp_super_cache_options' ] );
     }
 
@@ -239,6 +263,40 @@ class WP_Super_Cache_Export {
     header( 'Content-Type: application/octet-stream;' );
     echo json_encode( array_merge($wp_cache_config_vars, $wp_cache_config_options )  );
     die();
+  }
+
+  public function restore() {
+    if ( ! $this->can_restore() ) {
+      return;
+    }
+    check_admin_referer( self::RESTORE_NONCE );
+    $location = add_query_arg( 'tab', 'export', admin_url( 'options-general.php?page=wpsupercache' ) );
+    $renamed = @rename( str_replace( '.php', '-backup.php', self::$cache_config_file ), self::$cache_config_file );
+    if ( ! $renamed ) {
+      wp_safe_redirect( add_query_arg( 'message', 4, $location ) );
+      exit;
+    }
+    foreach ( get_option( '_wp_super_cache_backup_options', array() ) as $key => $value ) {
+        update_option( $key, $value );
+    }
+    delete_option( '_wp_super_cache_backup_options' );
+    wp_safe_redirect( add_query_arg( 'message', 5, $location ) );
+    exit;
+  }
+
+  public function remove() {
+    if ( ! $this->can_remove() ) {
+      return;
+    }
+    $location = add_query_arg( 'tab', 'export', admin_url( 'options-general.php?page=wpsupercache' ) );
+    $file = @unlink( str_replace( '.php', '-backup.php', self::$cache_config_file ) );
+    if ( ! $file ) {
+      wp_safe_redirect( add_query_arg( 'message', 4, $location ) );
+      exit;
+    }
+    delete_option( '_wp_super_cache_backup_options' );
+    wp_safe_redirect( add_query_arg( 'message', 6, $location ) );
+    exit;
   }
 
   /**
@@ -319,6 +377,46 @@ class WP_Super_Cache_Export {
     return isset( $_POST[ self::NAME ] ) &&
                 $_POST[ self::NAME ] === 'import' &&
                 current_user_can( 'manage_options' );
+  }
+
+  /**
+   * This is a private function that determines if the user can restore the backed up WP Super Cache plugin settings.
+   *
+   * The $_POST variable and user permissions are checked.
+   * If either fail the user cannot restore the backup settings.
+   *
+   * @since  1.4.4
+   *
+   * @uses  current_user_can
+   *
+   * @return boolean Whether the user can restore the settings.
+   */
+  private function can_restore() {
+    return isset( $_POST[ self::NAME ] ) &&
+                $_POST[ self::NAME ] === 'restore' &&
+                $this->backupFileExists() &&
+                current_user_can( 'manage_options' );
+
+  }
+
+  /**
+   * This is a private function that determines if the user can remove the backed up WP Super Cache plugin settings.
+   *
+   * The $_POST variable and user permissions are checked.
+   * If either fail the user cannot remove the backup settings.
+   *
+   * @since  1.4.4
+   *
+   * @uses  current_user_can
+   *
+   * @return boolean Whether the user can remove the settings.
+   */
+  private function can_remove() {
+    return isset( $_POST[ self::NAME ] ) &&
+                $_POST[ self::NAME ] === 'remove' &&
+                $this->backupFileExists() &&
+                current_user_can( 'manage_options' );
+
   }
 
   /**
