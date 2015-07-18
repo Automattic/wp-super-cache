@@ -326,6 +326,22 @@ class WP_Super_Cache_Export {
     die();
   }
 
+  /**
+   * Restore the settings that existed before new settings were imported.
+   *
+   * This function will remove the current wp-cache-config.php file and replace it with the backup generated
+   * when settings were imported. The previous settings in the database are also reverted. The database option
+   * that stored these settings and their values is deleted once the restore is complete.
+   *
+   * @since  1.4.4
+   *
+   * @uses  check_admin_referer
+   * @uses  wp_safe_redirect
+   *
+   * @return  nothing Doesn't return anything. Redirects the user to the import/export form when the restore is complete.
+   *
+   */
+
   public function restore() {
     if ( ! $this->can_restore() ) {
       return;
@@ -345,6 +361,21 @@ class WP_Super_Cache_Export {
     wp_safe_redirect( add_query_arg( 'message', 5, $location ) );
     exit;
   }
+
+  /**
+   * Removes the backup file and the database backup option.
+   *
+   * If the import is successful and the user does not want to have their back ups any longer then this function will
+   * remove the wp-cache-config-backup.php file and the _wp_super_cache_backup_options database option.
+   * The backs ups are no longer retrievable after this.
+   *
+   * @since  1.4.4
+   *
+   * @uses  wp_safe_redirect
+   * @uses  delete_option
+   *
+   * @return  nothing The user is redirected to the import/export form after the removal of the backup file and database option.
+   */
 
   public function remove() {
     if ( ! $this->can_remove() ) {
