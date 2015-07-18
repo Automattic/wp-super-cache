@@ -30,14 +30,65 @@ class WP_Super_Cache_Export {
     'ossdl_cname',
     'ossdl_https',
     'ossdl_off_cdn_url',
-    'ossdl_off_include_dirs',
     'ossdl_off_exclude',
+    'ossdl_off_include_dirs',
     'preload_cache_counter',
-    'wpsupercache_start',
-    'wpsupercache_count',
     'supercache_last_cached',
     'supercache_stats',
+    'wpsupercache_count',
     'wpsupercache_gc_time',
+    'wpsupercache_start',
+  );
+
+  const SETTINGS = array(
+    "cache_acceptable_files",
+    "cache_compression",
+    "cache_enabled",
+    "cache_max_time",
+    "cache_page_secret",
+    "cache_path",
+    "cache_rebuild_files",
+    "cache_rejected_uri",
+    "cache_rejected_user_agent",
+    "cache_schedule_type",
+    "cache_scheduled_time",
+    "cache_time_interval",
+    "file_prefix",
+    "ossdlcdn",
+    "sem_id",
+    "super_cache_enabled",
+    "use_flock",
+    "wp_cache_anon_only",
+    "wp_cache_clear_on_post_edit",
+    "wp_cache_cron_check",
+    "wp_cache_debug_email",
+    "wp_cache_debug_ip",
+    "wp_cache_debug_level",
+    "wp_cache_debug_log",
+    "wp_cache_debug_to_file",
+    "wp_cache_hello_world",
+    "wp_cache_hide_donation",
+    "wp_cache_mobile",
+    "wp_cache_mobile_browsers",
+    "wp_cache_mobile_enabled",
+    "wp_cache_mobile_groups",
+    "wp_cache_mobile_prefixes",
+    "wp_cache_mobile_whitelist",
+    "wp_cache_mutex_disabled",
+    "wp_cache_not_logged_in",
+    "wp_cache_object_cache",
+    "wp_cache_pages",
+    "wp_cache_plugins_dir",
+    "wp_cache_shutdown_gc",
+    "wp_cache_slash_check",
+    "wp_super_cache_advanced_debug",
+    "wp_super_cache_debug",
+    "wp_super_cache_front_page_check",
+    "wp_super_cache_front_page_clear",
+    "wp_super_cache_front_page_notification",
+    "wp_super_cache_front_page_text",
+    "wp_super_cache_late_init",
+    "wp_supercache_cache_list",
   );
 
   static $cache_config_file;
@@ -207,6 +258,8 @@ class WP_Super_Cache_Export {
     if ( isset( $settings[ '_wp_super_cache_options' ] ) ) {
       $options = array();
       foreach ( $settings[ '_wp_super_cache_options'] as $key => $value ) {
+        if ( ! in_array($key, self::OPTIONS ) )
+          continue;
         $options[ $key ] = get_option( $key );
         update_option( $key, $value );
       }
@@ -217,11 +270,13 @@ class WP_Super_Cache_Export {
     // Create a new config file from the original sample
     wp_cache_verify_config_file();
     foreach ( $settings as $setting => $value) {
+      if ( ! in_array( $setting, self::SETTINGS ) )
+        continue;
       if ( is_array( $value )  ) {
         // todo: this specific setting outlier could be avoided if the initial config file was adjusted slightly
         if ( $setting === 'wp_cache_pages' ) {
           foreach ($value as $key => $key_value ) {
-            $key_value = $this->sanitize_value( $key_value );
+            $key_value = $this->sanitize_value( $key_value, $key );
             if ( $key_value ) wp_cache_replace_line( '^ *\$' . $setting . '\[ "' . $key . '" \]' ,"\$" . $setting . "[ \"" . $key . "\" ] = $key_value;", self::$cache_config_file );
           }
         } else {
@@ -229,7 +284,7 @@ class WP_Super_Cache_Export {
             if ( $text ) wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $text;", self::$cache_config_file );
         }
       } else {
-        $value = $this->sanitize_value( $value );
+        $value = $this->sanitize_value( $value, $setting );
         if ( $value ) wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", self::$cache_config_file );
       }
     }
@@ -339,7 +394,7 @@ class WP_Super_Cache_Export {
    * @return number|string A sanitized version of the input value.
    */
 
-  private function sanitize_value( $value ) {
+  private function sanitize_value( $value, $setting ) {
     if ( is_bool( $value ) ) {
       return $value ? 1 : 0;
     }
