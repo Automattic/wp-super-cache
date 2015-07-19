@@ -28,6 +28,9 @@ Text Domain: wp-super-cache
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+ini_set('display_errors', 'On');
+error_reporting(E_ALL | E_STRICT);
+
 // Pre-2.6 compatibility
 if( !defined('WP_CONTENT_URL') )
 	define( 'WP_CONTENT_URL', get_option('siteurl') . '/wp-content');
@@ -2324,10 +2327,10 @@ function wp_cache_files() {
 		$filem = @filemtime( $supercachedir );
 		if ( false == $wp_cache_preload_on && is_file( $supercachedir ) && $cache_max_time > 0 && $filem + $cache_max_time <= $now ) {
 			$sizes[ 'expired' ] ++;
-			if ( $valid_nonce && $_GET[ 'listfiles' ] )
+			if ( $valid_nonce && isset( $_GET[ 'listfiles' ] ) )
 				$sizes[ 'expired_list' ][ str_replace( $cache_path . 'supercache/' , '', $supercachedir ) ] = $now - $filem;
 		} else {
-			if ( $valid_nonce && $_GET[ 'listfiles' ] && $filem )
+			if ( $valid_nonce && isset( $_GET[ 'listfiles' ] ) && $filem )
 				$sizes[ 'cached_list' ][ str_replace( $cache_path . 'supercache/' , '', $supercachedir ) ] = $now - $filem;
 		}
 	}
