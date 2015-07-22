@@ -9,6 +9,10 @@
 *
 * The settings are organized in terms of their allowed values: booleans, integers, strings, database options.
 *
+* Custom settings can be added by using the filters 'wp_super_cache_extend_allowed_{type}' to add the setting to the
+* allowed values and 'wp_super_cache_sanitize_{value}' to sanitize the new value. The value can then be sanitized using
+* this class's sanitize function.
+*
 * @package  WP Super Cache
 * @since 1.4.4
 */
@@ -283,12 +287,28 @@ class WP_Super_Cache_Sanitizer {
      */
 
   function __construct() {
+
+    add_filter( 'wp_super_cache_extend_allowed_strings', function( $options ) {
+        return array_merge( $options, array( 'hello'));
+    });
+
+    add_filter( 'wp_super_cache_sanitize_hello', function( $options ) {
+        return true;
+    });
+
+
+    $this->allowed_options = apply_filters( 'wp_super_cache_extend_allowed_option', self::ALLOWED_OPTIONS );
+    $this->allowed_booleans = apply_filters( 'wp_super_cache_extend_allowed_booleans', self::ALLOWED_SETTING_BOOLEANS );
+    $this->allowed_integers = apply_filters( 'wp_super_cache_extend_allowed_integers', self::ALLOWED_SETTING_INTS );
+    $this->allowed_strings = apply_filters( 'wp_super_cache_extend_allowed_strings', self::ALLOWED_SETTING_STRINGS );
+
     $this->allowed_values = array_merge(
-        self::ALLOWED_OPTIONS,
-        self::ALLOWED_SETTING_BOOLEANS,
-        self::ALLOWED_SETTING_INTS,
-        self::ALLOWED_SETTING_STRINGS
+        $this->allowed_options,
+        $this->allowed_booleans,
+        $this->allowed_integers,
+        $this->allowed_strings
     );
+
   }
 
   /**
@@ -308,13 +328,13 @@ class WP_Super_Cache_Sanitizer {
     if ( ! in_array( $setting, $this->allowed_values ) )
         return false;
 
-    if ( in_array( $setting, self::ALLOWED_SETTING_BOOLEANS ) )
+    if ( in_array( $setting, $this->allowed_booleans ) )
       $sanitized_value = $this->sanitize_boolean( $setting, $value );
-    else if ( in_array( $setting, self::ALLOWED_SETTING_INTS ) )
+    else if ( in_array( $setting, $this->allowed_integers ) )
       $sanitized_value = $this->sanitize_int( $setting, $value );
-    else if ( in_array( $setting, self::ALLOWED_SETTING_STRINGS ) )
+    else if ( in_array( $setting, $this->allowed_strings ) )
       $sanitized_value = $this->sanitize_string( $setting, $value );
-    else if ( in_array( $setting, self::ALLOWED_OPTIONS ) )
+    else if ( in_array( $setting, $this->allowed_options ) )
       $sanitized_value = $this->sanitize_options( $setting, $value );
 
     if ( $insert === true )
@@ -337,7 +357,7 @@ class WP_Super_Cache_Sanitizer {
   private function insert( $setting, $sanitized_value ) {
     global $wp_cache_config_file;
 
-    if ( in_array( $setting, self::ALLOWED_SETTING_BOOLEANS ) ) {
+    if ( in_array( $setting, $this->allowed_booleans ) ) {
         if ( is_string( $value) ) {
             if ( $value === 'false' )
                 wp_cache_replace_line('^ *\$' . $setting, "\$" . $setting . " =  false;", $wp_cache_config_file);
@@ -346,7 +366,7 @@ class WP_Super_Cache_Sanitizer {
         } else {
             wp_cache_replace_line('^ *\$' . $setting, "\$" . $setting . " = " . $sanitized_value . ";", $wp_cache_config_file);
         }
-    } else if ( in_array( $setting, self::ALLOWED_SETTING_STRINGS ) ) {
+    } else if ( in_array( $setting, $this->allowed_strings ) ) {
         if ( is_array( $sanitized_value ) && $setting === 'wp_cache_pages' ) {
             foreach ( $sanitized_value as $page => $status ) {
                 wp_cache_replace_line('^ *\$wp_cache_pages\[ "' . $page . '" \]', "\$wp_cache_pages[ \"{$page}\" ] = $status;", $wp_cache_config_file);
@@ -354,9 +374,9 @@ class WP_Super_Cache_Sanitizer {
         } else {
             wp_cache_replace_line('^ *\$' . $setting, "\$". $setting ." = $sanitized_value;", $wp_cache_config_file);
         }
-    } else if ( in_array( $setting, self::ALLOWED_SETTING_INTS ) ) {
+    } else if ( in_array( $setting, $this->allowed_integers ) ) {
         wp_cache_replace_line('^ *\$' . $setting, "\$". $setting ." = $sanitized_value;", $wp_cache_config_file);
-    } else if ( in_array( $setting, self::ALLOWED_OPTIONS ) ) {
+    } else if ( in_array( $setting, $this->allowed_options ) ) {
         update_option( $setting, $sanitized_value );
     }
   }
@@ -372,6 +392,7 @@ class WP_Super_Cache_Sanitizer {
    */
   function sanitize_boolean( $setting, $value ) {
     // Note: necessary to force cache_enable and super_cache_enabled to be true/false
+    $sanitized_value = apply_filters( "wp_super_cache_sanitize_$value", $value );
     if ( is_bool( $value ) === true ) {
         $sanitized_value = $value ? 'true' : 'false';
     } else {
@@ -440,7 +461,8 @@ class WP_Super_Cache_Sanitizer {
             break;
 
         default:
-            $sanitized_value = intval( $value );
+            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$value", $value );
+            $sanitized_value = intval( $sanitized_value );
             break;
     }
     return $sanitized_value;
@@ -637,7 +659,8 @@ class WP_Super_Cache_Sanitizer {
             break;
 
         default:
-            $sanitized_value = "\"\"";
+            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$value", $value );
+            $sanitized_value = "\"$sanitized_value\"";
             break;
     }
     return $sanitized_value;
@@ -701,6 +724,10 @@ class WP_Super_Cache_Sanitizer {
         //     break;
         // case 'wpsupercache_start':
         //     break;
+
+        default:
+            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$value", $value );
+            break;
     }
     return $sanitized_value;
   }
