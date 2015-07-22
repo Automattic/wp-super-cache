@@ -40,88 +40,6 @@ class WP_Super_Cache_Export {
     'wpsupercache_start',
   );
 
-  const SETTINGS = array(
-    "cache_acceptable_files",
-    "cache_awaitingmoderation",
-    "cache_badbehaviour",
-    "cache_badbehaviour_file",
-    "cache_compression",
-    "cache_domain_mapping",
-    "cache_enabled",
-    "cache_gc_email_me",
-    "cache_jetpack",
-    "cache_max_time",
-    "cache_no_adverts_for_friends",
-    "cache_page_secret",
-    "cache_path",
-    "cache_rebuild_files",
-    "cache_rejected_uri",
-    "cache_rejected_user_agent",
-    "cache_schedule_interval",
-    "cache_schedule_type",
-    "cache_scheduled_time",
-    "cache_time_interval",
-    "cache_wptouch",
-    "cached_direct_pages",
-    "dismiss_gc_warning",
-    "dismiss_htaccess_warning",
-    "dismiss_readable_warning",
-    "file_prefix",
-    "ossdlcdn",
-    "sem_id",
-    "super_cache_enabled",
-    "use_flock",
-    "wp_cache_anon_only",
-    "wp_cache_clear_on_post_edit",
-    "wp_cache_cron_check",
-    "wp_cache_debug_email",
-    "wp_cache_debug_ip",
-    "wp_cache_debug_level",
-    "wp_cache_debug_log",
-    "wp_cache_debug_to_file",
-    "wp_cache_disable_utf8",
-    "wp_cache_front_page_checks",
-    "wp_cache_hello_world",
-    "wp_cache_hide_donation",
-    "wp_cache_home_path",
-    "wp_cache_make_known_anon",
-    "wp_cache_mfunc_enabled",
-    "wp_cache_mobile",
-    "wp_cache_mobile_browsers",
-    "wp_cache_mobile_enabled",
-    "wp_cache_mobile_groups",
-    "wp_cache_mobile_prefixes",
-    "wp_cache_mobile_whitelist",
-    "wp_cache_mod_rewrite",
-    "wp_cache_mutex_disabled",
-    "wp_cache_no_cache_for_get",
-    "wp_cache_not_logged_in",
-    "wp_cache_object_cache",
-    "wp_cache_pages",
-    "wp_cache_plugins_dir",
-    "wp_cache_preload_email_me",
-    "wp_cache_preload_email_volume",
-    "wp_cache_preload_interval",
-    "wp_cache_preload_on",
-    "wp_cache_preload_posts",
-    "wp_cache_preload_taxonomies",
-    "wp_cache_refresh_single_only",
-    "wp_cache_shutdown_gc",
-    "wp_cache_slash_check",
-    "wp_super_cache_advanced_debug",
-    "wp_super_cache_comments",
-    "wp_super_cache_debug",
-    "wp_super_cache_front_page_check",
-    "wp_super_cache_front_page_clear",
-    "wp_super_cache_front_page_notification",
-    "wp_super_cache_front_page_text",
-    "wp_super_cache_late_init",
-    "wp_supercache_304",
-    "wp_supercache_cache_list",
-    "wptouch_exclude_ua",
-    "WPLOCKDOWN",
-  );
-
   static $cache_config_file;
 
   static $cache_config_file_sample;
@@ -251,6 +169,7 @@ class WP_Super_Cache_Export {
    *
    * A backup of the original configuration file is stored in the wp-content directory with a .backup file extension.
    *
+   * @uses  WP_Super_Cache_Sanitizer Sanitizes and inserts the WP Super Cache settings
    * @uses  check_admin_referer() Checks if the request passes the input nonces
    * @uses  wp_safe_redirect()  Redirects safely to the Import/Export tab with an error or success message
    * @uses  wp_cache_verify_config_file() Creates a new copy of the sample configuration file.
@@ -264,6 +183,8 @@ class WP_Super_Cache_Export {
     if ( ! $this->can_import() ) {
       return;
     }
+
+
     check_admin_referer( self::IMPORT_NONCE );
     $file = $_FILES[ 'wp_super_cache_import_file' ][ 'tmp_name' ];
     $location = add_query_arg( 'tab', 'export', admin_url( 'options-general.php?page=wpsupercache' ) );
@@ -285,14 +206,13 @@ class WP_Super_Cache_Export {
       }
     }
 
-    // Update the database options that are not stored in the wp-cache-config.php file
+    $validator = new WP_Super_Cache_Sanitizer();
+    // // Update the database options that are not stored in the wp-cache-config.php file
     if ( isset( $settings[ '_wp_super_cache_options' ] ) ) {
       $options = array();
       foreach ( $settings[ '_wp_super_cache_options'] as $key => $value ) {
-        if ( ! in_array($key, self::OPTIONS ) )
-          continue;
         $options[ $key ] = get_option( $key );
-        update_option( $key, $value );
+        $validator->sanitize( $key, $value, $insert = true );
       }
       update_option( '_wp_super_cache_backup_options', $options );
       unset( $settings[ '_wp_super_cache_options' ] );
@@ -301,23 +221,7 @@ class WP_Super_Cache_Export {
     // Create a new config file from the original sample
     wp_cache_verify_config_file();
     foreach ( $settings as $setting => $value) {
-      if ( ! in_array( $setting, self::SETTINGS ) )
-        continue;
-      if ( is_array( $value )  ) {
-        // todo: this specific setting outlier could be avoided if the initial config file was adjusted slightly
-        if ( $setting === 'wp_cache_pages' ) {
-          foreach ($value as $key => $key_value ) {
-            $key_value = $this->sanitize_value( $key_value, $key );
-            if ( $key_value ) wp_cache_replace_line( '^ *\$' . $setting . '\[ "' . $key . '" \]' ,"\$" . $setting . "[ \"" . $key . "\" ] = $key_value;", self::$cache_config_file );
-          }
-        } else {
-            $text = wp_cache_sanitize_value( join( $value, ' ' ), $value );
-            if ( $text ) wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $text;", self::$cache_config_file );
-        }
-      } else {
-        $value = $this->sanitize_value( $value, $setting );
-        if ( $value ) wp_cache_replace_line( '^ *\$' . $setting. ' =', "\$$setting = $value;", self::$cache_config_file );
-      }
+      $validator->sanitize( $setting, $value, $insert = true );
     }
     include self::$cache_config_file;
     // Reset the garbage collection to the new values

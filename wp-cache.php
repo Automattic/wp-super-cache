@@ -64,6 +64,7 @@ if( !defined( 'WP_CACHE' ) || ( defined( 'WP_CACHE' ) && constant( 'WP_CACHE' ) 
 
 include(WPCACHEHOME . 'wp-cache-base.php');
 
+include(WPCACHEHOME . 'wp-cache-sanitizer.php');
 include(WPCACHEHOME . 'wp-cache-export.php');
 
 function wp_super_cache_text_domain() {
