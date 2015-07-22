@@ -40,7 +40,6 @@ class WP_Super_Cache_Sanitizer {
       "cache_jetpack",
       "cache_path",
       "cache_rebuild_files",
-      "cache_schedule_interval",
       "dismiss_gc_warning",
       "dismiss_htaccess_warning",
       "dismiss_readable_warning",
@@ -53,7 +52,6 @@ class WP_Super_Cache_Sanitizer {
       "wp_cache_cron_check",
       "wp_cache_debug_email",
       "wp_cache_debug_level",
-      "wp_cache_debug_log",
       "wp_cache_debug_to_file",
       "wp_cache_disable_utf8",
       "wp_cache_front_page_checks",
@@ -108,9 +106,11 @@ class WP_Super_Cache_Sanitizer {
       "cache_page_secret",
       "cache_rejected_user_agent",
       "cache_scheduled_time",
+      "cache_schedule_interval",
       "cache_schedule_type",
       "cached_direct_pages",
       "wp_cache_debug_ip",
+      "wp_cache_debug_log",
       "wp_cache_home_path",
       "wp_cache_mobile_browsers",
       "wp_cache_mobile_groups",
@@ -491,6 +491,10 @@ class WP_Super_Cache_Sanitizer {
             $sanitized_value = preg_match( '/^\d{2}:\d{2}$/', $value ) ? "\"$value\"" : "\"00:00\"";
             break;
 
+        case "cache_schedule_interval":
+            $sanitized_value = in_array( $value, array( 'daily', 'twicedaily', 'hourly' ) ) ? "\"$value\"" : "\"daily\"";
+            break;
+
         case 'cache_schedule_type':
             $sanitized_value = in_array( $value, array( 'time', 'interval' ) ) ? "\"$value\"" : "\"interval\"";
             break;
@@ -523,6 +527,15 @@ class WP_Super_Cache_Sanitizer {
 
         case "wp_cache_debug_ip":
             $sanitized_value = filter_var( $value, FILTER_VALIDATE_IP ) === false ? "" : esc_html( $value );
+            $sanitized_value = "\"$sanitized_value\"" ;
+            break;
+
+        case "wp_cache_debug_log":
+            $sanitized_value = md5( time() ) . ".txt";
+            $logname = str_replace( '.txt', '', $value );
+            if ( strlen( $logname ) === 32 && ctype_xdigit( $logname ) ) {
+                $sanitized_value = $value;
+            }
             $sanitized_value = "\"$sanitized_value\"" ;
             break;
 
