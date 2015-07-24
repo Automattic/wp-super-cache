@@ -42,7 +42,6 @@ class WP_Super_Cache_Sanitizer {
       "cache_enabled",
       "cache_gc_email_me",
       "cache_jetpack",
-      "cache_path",
       "cache_rebuild_files",
       "dismiss_gc_warning",
       "dismiss_htaccess_warning",
