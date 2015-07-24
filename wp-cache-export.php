@@ -42,7 +42,7 @@ class WP_Super_Cache_Export {
 
   static $cache_config_file;
 
-  static $cache_config_file_sample;
+  static $cache_config_file_backup;
 
   static $MESSAGES = array();
 
@@ -66,7 +66,7 @@ class WP_Super_Cache_Export {
     global $wp_cache_config_file, $wp_cache_config_file_sample;
 
     self::$cache_config_file = $wp_cache_config_file;
-    self::$cache_config_file_sample = $wp_cache_config_file;
+    self::$cache_config_file_backup = str_replace( '.php', '-backup.php', self::$cache_config_file );
 
     self::$MESSAGES = array(
       0 =>  array( 'success', __( 'Settings imported', 'wp-super-cache' ) ),
@@ -197,15 +197,16 @@ class WP_Super_Cache_Export {
       wp_safe_redirect( add_query_arg( 'message', 2, $location ) );
       exit;
     }
+    if ( ! file_exists(self::$cache_config_file) )
+      wp_cache_verify_config_file();
     // Backup the current config file to the same directory with a .backup file extension.
     if ( file_exists( self::$cache_config_file) ) {
-      $renamed = @rename( self::$cache_config_file, str_replace( '.php', '-backup.php', self::$cache_config_file ) );
+      $renamed = @rename( self::$cache_config_file, self::$cache_config_file_backup );
       if ( ! $renamed ) {
         wp_safe_redirect( add_query_arg( 'message', 3, $location ) );
         exit;
       }
     }
-
     $validator = new WP_Super_Cache_Sanitizer();
     // // Update the database options that are not stored in the wp-cache-config.php file
     if ( isset( $settings[ '_wp_super_cache_options' ] ) ) {
@@ -225,7 +226,8 @@ class WP_Super_Cache_Export {
     }
     include self::$cache_config_file;
     // Reset the garbage collection to the new values
-    schedule_wp_gc( $forced = 1 );
+    if ( function_exists( 'schedule_wp_gc' ) )
+      schedule_wp_gc( $forced = 1 );
     wp_safe_redirect( add_query_arg( 'message', 0, $location ) );
     exit;
   }
@@ -283,7 +285,10 @@ class WP_Super_Cache_Export {
     }
     check_admin_referer( self::RESTORE_NONCE );
     $location = add_query_arg( 'tab', 'export', admin_url( 'options-general.php?page=wpsupercache' ) );
-    $renamed = @rename( str_replace( '.php', '-backup.php', self::$cache_config_file ), self::$cache_config_file );
+    if ( file_exists(self::$cache_config_file) )
+      @unlink( self::$cache_config_file );
+    if ( $this->backupFileExists() )
+      $renamed = @rename( self::$cache_config_file_backup, self::$cache_config_file );
     if ( ! $renamed ) {
       wp_safe_redirect( add_query_arg( 'message', 4, $location ) );
       exit;
@@ -317,7 +322,8 @@ class WP_Super_Cache_Export {
       return;
     }
     $location = add_query_arg( 'tab', 'export', admin_url( 'options-general.php?page=wpsupercache' ) );
-    $file = @unlink( str_replace( '.php', '-backup.php', self::$cache_config_file ) );
+    if ( $this->backupFileExists() )
+      $file = @unlink( self::$cache_config_file_backup );
     if ( ! $file ) {
       wp_safe_redirect( add_query_arg( 'message', 4, $location ) );
       exit;
@@ -458,7 +464,7 @@ class WP_Super_Cache_Export {
    * @return boolean Whether or not the backup file exists
    */
   private function backupFileExists() {
-    return file_exists( str_replace( '.php', '-backup.php', self::$cache_config_file ) );
+    return file_exists( self::$cache_config_file_backup );
   }
 
 }
