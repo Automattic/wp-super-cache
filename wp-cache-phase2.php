@@ -46,6 +46,7 @@ function wp_cache_phase2() {
 		do_cacheaction( 'add_cacheaction' );
 	}
 
+	// never store admin and POST requests 
 	if ( is_admin() ) {
 		wp_cache_debug( 'Not caching wp-admin requests.', 5 );
 		return false;
@@ -260,9 +261,6 @@ function wp_cache_ob_callback( $buffer ) {
 	} elseif ( $wp_cache_no_cache_for_get && false == empty( $_GET ) && false == defined( 'DOING_CRON' ) ) {
 		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . serialize( $_GET ), 1 );
 		$cache_this_page = false;
-	/*} elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
-		wp_cache_debug( 'Not caching POST request.', 5 );
-		$cache_this_page = false;*/
 	} elseif ( $wp_cache_object_cache && !empty( $_GET ) ) {
 		wp_cache_debug( 'Not caching GET request while object cache storage enabled.', 5 );
 		$cache_this_page = false;
@@ -309,12 +307,13 @@ function wp_cache_ob_callback( $buffer ) {
 
 	if ( !isset( $wp_query ) )
 		wp_cache_debug( 'wp_cache_ob_callback: WARNING! $query not defined but the plugin has worked around that problem.', 4 );
+	
+	$buffer = wp_cache_get_ob( $buffer );
 
 	if ( $cache_this_page ) {
 
 		wp_cache_debug( 'Output buffer callback', 4 );
 
-		$buffer = wp_cache_get_ob( $buffer );
 		wp_cache_shutdown_callback();
 		return $buffer;
 	} else {
