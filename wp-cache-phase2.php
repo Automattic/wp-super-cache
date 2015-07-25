@@ -50,6 +50,10 @@ function wp_cache_phase2() {
 		wp_cache_debug( 'Not caching wp-admin requests.', 5 );
 		return false;
 	}
+	elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
+		wp_cache_debug( 'Not caching POST request.', 5 );
+		return false;
+	}
 
 	if ( !empty( $_GET ) && !defined( "DOING_CRON" ) ) {
 		wp_cache_debug( 'Supercache caching disabled. Only using wp-cache. Non empty GET request. ' . serialize( $_GET ), 5 );
@@ -256,9 +260,9 @@ function wp_cache_ob_callback( $buffer ) {
 	} elseif ( $wp_cache_no_cache_for_get && false == empty( $_GET ) && false == defined( 'DOING_CRON' ) ) {
 		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . serialize( $_GET ), 1 );
 		$cache_this_page = false;
-	} elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
+	/*} elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
 		wp_cache_debug( 'Not caching POST request.', 5 );
-		$cache_this_page = false;
+		$cache_this_page = false;*/
 	} elseif ( $wp_cache_object_cache && !empty( $_GET ) ) {
 		wp_cache_debug( 'Not caching GET request while object cache storage enabled.', 5 );
 		$cache_this_page = false;
