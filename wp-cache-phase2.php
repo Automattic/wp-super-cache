@@ -4,11 +4,13 @@ function wp_cache_phase2() {
 	global $cache_filename, $cache_acceptable_files, $wp_cache_gzip_encoding, $super_cache_enabled, $cache_rebuild_files, $wp_cache_last_gc;
 	global $cache_max_time, $wp_cache_request_uri, $super_cache_enabled, $wp_cache_object_cache, $cache_time_interval;
 	global $cache_enabled, $wp_cache_gmt_offset, $wp_cache_blog_charset, $cache_schedule_type, $cache_scheduled_time, $cache_schedule_interval;
-
+	
 	if ( $cache_enabled == false ) {
 		wp_cache_debug( "Caching disabled! quiting!", 1 );
 		return false;
 	}
+	
+	$script = basename($_SERVER['PHP_SELF']);
 
 	wp_cache_debug( 'In WP Cache Phase 2', 5 );
 
@@ -46,13 +48,16 @@ function wp_cache_phase2() {
 		do_cacheaction( 'add_cacheaction' );
 	}
 
-	// never store admin and POST requests 
 	if ( is_admin() ) {
 		wp_cache_debug( 'Not caching wp-admin requests.', 5 );
 		return false;
 	}
 	elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
 		wp_cache_debug( 'Not caching POST request.', 5 );
+		return false;
+	}
+	elseif ( !in_array($script, $cache_acceptable_files) && wp_cache_is_rejected( $wp_cache_request_uri ) ) {
+		wp_cache_debug( 'URI rejected. Not Caching', 2 );
 		return false;
 	}
 
@@ -143,7 +148,7 @@ function wp_cache_get_response_headers() {
 function wp_cache_is_rejected($uri) {
 	global $cache_rejected_uri;
 
-	$auto_rejected = array( '/wp-admin/', 'xmlrpc.php', 'wp-app.php' );
+	$auto_rejected = array( '/wp-admin/', 'xmlrpc.php', 'wp-app.php' , '/testinlagg-i-natt/' );
 	foreach( $auto_rejected as $u ) {
 		if( strstr( $uri, $u ) )
 			return true; // we don't allow caching of wp-admin for security reasons
@@ -267,9 +272,9 @@ function wp_cache_ob_callback( $buffer ) {
 	} elseif ( isset( $_GET[ 'preview' ] ) ) {
 		wp_cache_debug( 'Not caching preview post.', 2 );
 		$cache_this_page = false;
-	} elseif ( !in_array($script, $cache_acceptable_files) && wp_cache_is_rejected( $wp_cache_request_uri ) ) {
+/*	} elseif ( !in_array($script, $cache_acceptable_files) && wp_cache_is_rejected( $wp_cache_request_uri ) ) {
 		wp_cache_debug( 'URI rejected. Not Caching', 2 );
-		$cache_this_page = false;
+		$cache_this_page = false;*/
 	} elseif ( wp_cache_user_agent_is_rejected() ) {
 		wp_cache_debug( "USER AGENT ({$_SERVER[ 'HTTP_USER_AGENT' ]}) rejected. Not Caching", 4 );
 		$cache_this_page = false;
