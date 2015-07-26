@@ -148,7 +148,7 @@ function wp_cache_get_response_headers() {
 function wp_cache_is_rejected($uri) {
 	global $cache_rejected_uri;
 
-	$auto_rejected = array( '/wp-admin/', 'xmlrpc.php', 'wp-app.php' , '/testinlagg-i-natt/' );
+	$auto_rejected = array( '/wp-admin/', 'xmlrpc.php', 'wp-app.php' );
 	foreach( $auto_rejected as $u ) {
 		if( strstr( $uri, $u ) )
 			return true; // we don't allow caching of wp-admin for security reasons
@@ -272,9 +272,6 @@ function wp_cache_ob_callback( $buffer ) {
 	} elseif ( isset( $_GET[ 'preview' ] ) ) {
 		wp_cache_debug( 'Not caching preview post.', 2 );
 		$cache_this_page = false;
-/*	} elseif ( !in_array($script, $cache_acceptable_files) && wp_cache_is_rejected( $wp_cache_request_uri ) ) {
-		wp_cache_debug( 'URI rejected. Not Caching', 2 );
-		$cache_this_page = false;*/
 	} elseif ( wp_cache_user_agent_is_rejected() ) {
 		wp_cache_debug( "USER AGENT ({$_SERVER[ 'HTTP_USER_AGENT' ]}) rejected. Not Caching", 4 );
 		$cache_this_page = false;
