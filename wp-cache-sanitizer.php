@@ -287,15 +287,6 @@ class WP_Super_Cache_Sanitizer {
 
   function __construct() {
 
-    add_filter( 'wp_super_cache_extend_allowed_strings', function( $options ) {
-        return array_merge( $options, array( 'hello'));
-    });
-
-    add_filter( 'wp_super_cache_sanitize_hello', function( $options ) {
-        return true;
-    });
-
-
     $this->allowed_options = apply_filters( 'wp_super_cache_extend_allowed_option', self::ALLOWED_OPTIONS );
     $this->allowed_booleans = apply_filters( 'wp_super_cache_extend_allowed_booleans', self::ALLOWED_SETTING_BOOLEANS );
     $this->allowed_integers = apply_filters( 'wp_super_cache_extend_allowed_integers', self::ALLOWED_SETTING_INTS );
