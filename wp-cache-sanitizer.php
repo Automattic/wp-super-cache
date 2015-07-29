@@ -348,14 +348,7 @@ class WP_Super_Cache_Sanitizer {
     global $wp_cache_config_file;
 
     if ( in_array( $setting, $this->allowed_booleans ) ) {
-        if ( is_string( $value) ) {
-            if ( $value === 'false' )
-                wp_cache_replace_line('^ *\$' . $setting . ' =', "\$" . $setting . " =  false;", $wp_cache_config_file);
-            if ( $value === 'true' )
-                wp_cache_replace_line('^ *\$' . $setting . ' =', "\$" . $setting . " = true;", $wp_cache_config_file);
-        } else {
-                wp_cache_replace_line('^ *\$' . $setting . ' =', "\$" . $setting . " = " . $sanitized_value . ";", $wp_cache_config_file);
-        }
+        wp_cache_replace_line('^ *\$' . $setting . ' =', "\$" . $setting . " = " . $sanitized_value . ";", $wp_cache_config_file);
     } else if ( in_array( $setting, $this->allowed_strings ) ) {
         if ( is_array( $sanitized_value ) && $setting === 'wp_cache_pages' ) {
             foreach ( $sanitized_value as $page => $status ) {
