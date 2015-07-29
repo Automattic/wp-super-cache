@@ -95,7 +95,7 @@ class WP_Super_Cache_Export {
    *
    *  @since  1.4.4
    */
-  public function form() {
+  static function form() {
     ?>
 
     <?php if (  isset( $_GET['message'] ) ):  ?>
@@ -463,7 +463,7 @@ class WP_Super_Cache_Export {
    *
    * @return boolean Whether or not the backup file exists
    */
-  private function backupFileExists() {
+  static private function backupFileExists() {
     return file_exists( self::$cache_config_file_backup );
   }
 
