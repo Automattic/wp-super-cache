@@ -131,7 +131,7 @@ class WP_Super_Cache_Export {
           <hr>
 
           <p>
-            <?php _e( "Restore the previous WP Super Cache Settings settings or remove them permanently.", "wp-super-cache" ) ?>
+            <?php _e( "Restore the previous WP Super Cache settings or remove them permanently.", "wp-super-cache" ) ?>
           </p>
 
           <p>
