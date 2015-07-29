@@ -46,7 +46,6 @@ class WP_Super_Cache_Sanitizer {
       "dismiss_gc_warning",
       "dismiss_htaccess_warning",
       "dismiss_readable_warning",
-      "file_prefix",
       "ossdlcdn",
       "super_cache_enabled",
       "use_flock",
@@ -112,6 +111,7 @@ class WP_Super_Cache_Sanitizer {
       "cache_schedule_interval",
       "cache_schedule_type",
       "cached_direct_pages",
+      "file_prefix",
       "wp_cache_debug_ip",
       "wp_cache_debug_log",
       "wp_cache_home_path",
@@ -528,6 +528,11 @@ class WP_Super_Cache_Sanitizer {
             } else {
                 $sanitized_value = '';
             }
+            break;
+
+        case 'file_prefix':
+            $sanitized_value = ! is_string( $value ) ? 'wp-cache-' : esc_html( $value );
+            $sanitized_value = "\"$sanitized_value\"";
             break;
 
         case "wp_cache_debug_ip":
