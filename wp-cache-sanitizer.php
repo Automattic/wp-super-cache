@@ -69,7 +69,6 @@ class WP_Super_Cache_Sanitizer {
       "wp_cache_no_cache_for_get",
       "wp_cache_not_logged_in",
       "wp_cache_object_cache",
-      "wp_cache_plugins_dir",
       "wp_cache_preload_email_me",
       "wp_cache_preload_on",
       "wp_cache_preload_taxonomies",
@@ -119,6 +118,7 @@ class WP_Super_Cache_Sanitizer {
       "wp_cache_mobile_groups",
       "wp_cache_mobile_prefixes",
       "wp_cache_pages",
+      'wp_cache_plugins_dir',
       "wp_cache_preload_email_volume",
       "wp_cache_preload_posts",
       "wp_super_cache_front_page_text",
@@ -606,6 +606,10 @@ class WP_Super_Cache_Sanitizer {
                 }
             }
             break;
+
+        case 'wp_cache_plugins_dir':
+          $sanitized_value = 'WPCACHEHOME . \'plugins\'';
+          break;
 
         // Note: same approach as wp-cache.php:1875
         case 'wp_super_cache_front_page_text':
