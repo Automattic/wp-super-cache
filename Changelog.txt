@@ -1,8 +1,40 @@
+2015-07-30 19:54 daneodekirk
+
+	* Changelog.txt: Dev: update changelog
+
 2015-07-29 13:08  donncha
 
 	* wp-cache-phase2.php: Remove this function call as it's not
 	  defined. Ref:
 	  https://github.com/Automattic/wp-super-cache/commit/4f3229009e5c6c8487dd883910ea076a8e3b7e26
+
+2015-07-28 18:10 daneodekirk
+
+	* wp-cache-export.php: Bug: move wp_cache_plugins_dir setting
+	  into allowed string settings.
+
+2015-07-28 18:02 daneodekirk
+
+	* wp-cache-export.php: Bug: move file_prefix setting
+	  from boolean to string value
+
+2015-07-28 17:53 daneodekirk
+
+	* wp-cache-export.php: Dev: declaring static functions appropriately.
+
+2015-07-28 17:48 daneodekirk
+
+	* wp-cache-sanitizer.php: Bug: remove unnecessary logic
+	  and undeclared variable.
+
+2015-07-28 17:20 daneodekirk
+
+	* wp-cache-export.php:  Fix: typo in the restore button
+	  information message.
+
+2015-07-27 19:15 daneodekirk
+
+	* wp-cache-sanitizer.php:  Dev: remove filter example.
 
 2015-07-27 16:36  kraftbj
 
@@ -20,6 +52,21 @@
 
 	* wp-cache.php: Check if listfile isset to prevent PHP warning.
 
+2015-07-23 19:35 daneodekirk
+
+	* wp-cache-export.php: Bug: resolve bug that occurs
+	  when importing settings when no original wp-cache-config.php file exists
+
+2015-07-23 19:35 daneodekirk
+
+	* wp-cache-sanitizer.php: Bug: variables starting with
+	  the same string could replace multiple lines
+
+2015-07-23 19:11 daneodekirk
+
+	* wp-cache-sanitizer.php: Bug: removed variable from
+	  imported settings
+
 2015-07-23 13:56  donncha
 
 	* wp-cache.php: Remember the settings on the advanced settings page
@@ -34,6 +81,45 @@
 
 	* wp-cache-phase2.php: Fixed typo in debug log entry
 
+2015-07-21 20:18 daneodekirk
+
+	* wp-cache-sanitizer.php: Feature: allow plugins to add
+	  custom settings to the WP_Super_Cache_Sanitizer class
+
+2015-07-21 20:17 daneodekirk
+
+	* wp-cache-sanitizer.php: Dev: added cache_schedule_interval
+	  and wp_cache_debug_log to the proper setting type array
+
+2015-07-21 18:30 daneodekirk
+
+	* wp-cache-export.php, wp-cache-sanitizer.php, wp-cache.php:
+	  Feature: added sanitizer class to check against and write the plugin settings
+
+2015-07-19 14:33 daneodekirk
+
+	* wp-cache-export.php: Dev: add additional settings to
+	  allowed import list
+
+2015-07-18 13:54 daneodekirk
+
+	* wp-cache-export.php: Dev: added documentation to
+	  the restore and remove functions
+
+2015-07-18 13:47 daneodekirk
+
+	* wp-cache-export.php: Dev: added whitelist of settings
+	  that can be imported
+
+2015-07-16 15:33 daneodekirk
+
+	* wp-cache-export.php: Dev: reset the garbage collection
+	  after importing new settings
+
+2015-07-16 13:29 daneodekirk
+
+	* wp-cache-export.php: Bug: fixed importing boolean values.
+
 2015-07-15 11:56  donncha
 
 	* wp-cache.php: * Added uninstall function as well as deactivate
@@ -44,6 +130,84 @@
 	  * Fixed a bug where deactivating the plugin without visiting the
 	  settings page causes a fatal error so the plugin can't be
 	  deactivated
+
+2015-07-13 14:44 daneodekirk
+
+	* wp-cache-export.php: Dev: changing two function names
+	  to match coding standards
+
+2015-07-13 14:43 daneodekirk
+
+	* wp-cache-export.php:  Feature: added restore and remove
+	  options to the import/export tab
+
+2015-07-13 11:41 daneodekirk
+
+	* wp-cache-export.php:  Dev: merge conflicts.
+
+2015-07-13 10:54 daneodekirk
+
+	* wp-cache-export.php: Dev: added database options to the export
+	  and import settings process
+
+2015-07-13 09:32 daneodekirk
+
+	* wp-cache-export.php: Dev: added separate sanitization function
+	  for data being imported from the import/export tab
+
+2015-07-11 17:40 daneodekirk
+
+	* wp-cache-export.php: Dev: removed the charset from the
+	  headers when exporting the settings
+
+2015-07-11 17:33 daneodekirk
+
+	* wp-cache-export.php: Feature: added an error message to
+	  the import/export tab regarding folder permission errors
+
+2015-07-11 17:15 daneodekirk
+
+	* wp-cache-export.php:  Feature: added restore button to
+	  the import/export tab
+
+2015-07-11 16:56 daneodekirk
+
+	* wp-cache-export.php:   Feature: restructured how notifications
+	  are handled in the import/export tab.
+
+2015-07-11 15:23 daneodekirk
+
+	* wp-cache-export.php:   Dev: restructured the if statements for
+	  the import and export functions.
+
+2015-07-11 15:11 daneodekirk
+
+	* wp-cache-export.php:  Dev: restructured bracket style to match current code standards.
+
+2015-07-11 14:56 daneodekirk
+
+	* wp-cache-export.php:  Dev: typos fixed in the code comments.
+
+2015-07-09 18:09 daneodekirk
+
+	* wp-cache.php, wp-cache-export.php: Feature: add ability to import
+	  and export the plugin settings.
+
+2015-07-09 17:22 daneodekirk
+
+	* wp-cache.php: Fix: default 'easy' tab now highlights if no other tabs match the GET parameter
+
+2015-07-09 17:18 daneodekirk
+
+	* wp-cache.php: Feature: add the Import/Export tab to the plugin admin page
+
+2015-07-09 17:18 daneodekirk
+
+	* wp-cache.php: Feature: add the Import/Export tab to the plugin admin page
+
+2015-07-09 17:13 daneodekirk
+
+	* wp-cache.php: Dev: change the 'wp_cache_easy_on' inputs to use the WordPress checked function
 
 2015-07-02 14:19  donncha
 
