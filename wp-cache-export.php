@@ -213,6 +213,7 @@ class WP_Super_Cache_Export {
       $options = array();
       foreach ( $settings[ '_wp_super_cache_options'] as $key => $value ) {
         $options[ $key ] = get_option( $key );
+        // The sanitize function will sanitize and insert the setting to the wp-cache-config.php file if passed the parameter $insert = true.
         $validator->sanitize( $key, $value, $insert = true );
       }
       update_option( '_wp_super_cache_backup_options', $options );
