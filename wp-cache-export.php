@@ -14,7 +14,7 @@
 
 class WP_Super_Cache_Export {
 
-  const TITLE = 'WP_Super_Cache_Export.json';
+  const FILENAME = 'WP_Super_Cache_Export.json';
 
   const NAME = '_wp_super_cache_export';
 
@@ -257,7 +257,7 @@ class WP_Super_Cache_Export {
     $wp_cache_config_vars = get_defined_vars();
     $wp_cache_config_options = $this->gather_plugin_options();
     nocache_headers();
-    header( "Content-disposition: attachment; filename=" . self::TITLE );
+    header( "Content-disposition: attachment; filename=" . self::FILENAME );
     header( 'Content-Type: application/octet-stream;' );
     echo json_encode( array_merge($wp_cache_config_vars, $wp_cache_config_options )  );
     die();
