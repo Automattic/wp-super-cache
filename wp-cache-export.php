@@ -199,7 +199,7 @@ class WP_Super_Cache_Export {
     }
     if ( ! file_exists(self::$cache_config_file) )
       wp_cache_verify_config_file();
-    // Backup the current config file to the same directory with a .backup file extension.
+    // Backup the current config file to the same directory as wp-cache-config-backup.php
     if ( file_exists( self::$cache_config_file) ) {
       $renamed = @rename( self::$cache_config_file, self::$cache_config_file_backup );
       if ( ! $renamed ) {
