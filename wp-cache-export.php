@@ -353,34 +353,6 @@ class WP_Super_Cache_Export {
   }
 
   /**
-   * This is a private function dedicated to sanitizing the JSON file input.
-   * Given that a malicious JSON file could be uploaded and converted into the plugin settings it is best practice to sanitize
-   * the JSON values before converting them.
-   *
-   * Since only numeric values and strings are accepted inputs we cast integers on numeric values and strip tags/escape
-   * the html of string values.
-   *
-   * @since  1.4.4
-   *
-   * @uses esc_html Escape the string values
-   *
-   * @return number|string A sanitized version of the input value.
-   */
-
-  private function sanitize_value( $value, $setting ) {
-    if ( is_bool( $value ) ) {
-      return $value ? 1 : 0;
-    }
-    if ( is_numeric( $value ) ) {
-      return (int)  $value;
-    }
-    if ( is_string( $value ) ) {
-      $value = esc_html( strip_tags( $value ) );
-      return "\"$value\"";
-    }
-  }
-
-  /**
    * This is a private function that determines if the user can export the WP Super Cache plugin settings.
    *
    * The $_POST variable and user permissions are checked.
