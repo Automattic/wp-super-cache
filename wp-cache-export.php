@@ -300,7 +300,6 @@ class WP_Super_Cache_Export {
         update_option( $key, $value );
     }
     delete_option( '_wp_super_cache_backup_options' );
-    include self::$cache_config_file;
     // Reset the garbage collection to the new values
     if ( function_exists( 'schedule_wp_gc' ) )
       schedule_wp_gc( $forced = 1 );
