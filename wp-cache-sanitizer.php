@@ -21,7 +21,7 @@ class WP_Super_Cache_Sanitizer {
 
   // The list of allowed database options
   // Note: The stats and counts are commented out as they may not be necessary to import since they are site specific.
-  const ALLOWED_OPTIONS = array(
+  protected $ALLOWED_OPTIONS = array(
       'ossdl_cname',
       'ossdl_https',
       'ossdl_off_cdn_url',
@@ -37,7 +37,7 @@ class WP_Super_Cache_Sanitizer {
 
   // The list of allowed global boolean variables that are written to the
   // wp-cache-config.php file as either true, false, 0 or 1
-  const ALLOWED_SETTING_BOOLEANS = array(
+  protected $ALLOWED_SETTING_BOOLEANS = array(
       "cache_compression",
       "cache_enabled",
       "cache_gc_email_me",
@@ -87,7 +87,7 @@ class WP_Super_Cache_Sanitizer {
   );
 
   // The list of allowed global integer variables that are written to the wp-cache-config.php
-  const ALLOWED_SETTING_INTS = array(
+  protected $ALLOWED_SETTING_INTS = array(
       "cache_badbehaviour",
       "cache_awaitingmoderation",
       "cache_domain_mapping",
@@ -99,7 +99,7 @@ class WP_Super_Cache_Sanitizer {
   );
 
   // The list of allowed global string variables that are written to the wp-cache-config.php
-  const ALLOWED_SETTING_STRINGS = array(
+  protected $ALLOWED_SETTING_STRINGS = array(
       "cache_acceptable_files",
       "cache_badbehaviour_file",
       "cache_no_adverts_for_friends",
@@ -126,7 +126,7 @@ class WP_Super_Cache_Sanitizer {
   );
 
   // The default list of mobile browsers taken from wp-cache.php:648
-  const MOBILE_BROWSERS = array(
+  protected $MOBILE_BROWSERS = array(
       '2.0 MMP',
       '240x320',
       '400X240',
@@ -188,7 +188,7 @@ class WP_Super_Cache_Sanitizer {
   );
   // The default list of mobile prefixes taken from wp-cache.php:653
   // Note: the wp-cache.php list is taken from http://svn.wp-plugins.org/wordpress-mobile-pack/trunk/plugins/wpmp_switcher/lite_detection.php
-  const MOBILE_PREFIXES = array(
+  protected $MOBILE_PREFIXES = array(
       'w3c ',
       'w3c-',
       'acs-',
@@ -287,10 +287,10 @@ class WP_Super_Cache_Sanitizer {
 
   function __construct() {
 
-    $this->allowed_options = apply_filters( 'wp_super_cache_extend_allowed_option', self::ALLOWED_OPTIONS );
-    $this->allowed_booleans = apply_filters( 'wp_super_cache_extend_allowed_booleans', self::ALLOWED_SETTING_BOOLEANS );
-    $this->allowed_integers = apply_filters( 'wp_super_cache_extend_allowed_integers', self::ALLOWED_SETTING_INTS );
-    $this->allowed_strings = apply_filters( 'wp_super_cache_extend_allowed_strings', self::ALLOWED_SETTING_STRINGS );
+    $this->allowed_options = apply_filters( 'wp_super_cache_extend_allowed_option', $this->ALLOWED_OPTIONS );
+    $this->allowed_booleans = apply_filters( 'wp_super_cache_extend_allowed_booleans', $this->ALLOWED_SETTING_BOOLEANS );
+    $this->allowed_integers = apply_filters( 'wp_super_cache_extend_allowed_integers', $this->ALLOWED_SETTING_INTS );
+    $this->allowed_strings = apply_filters( 'wp_super_cache_extend_allowed_strings', $this->ALLOWED_SETTING_STRINGS );
 
   }
 
@@ -556,7 +556,7 @@ class WP_Super_Cache_Sanitizer {
             } elseif ( function_exists( 'lite_detection_ua_contains' ) ) {
                 $value = explode( '|', lite_detection_ua_contains() );
             } else {
-                $value = self::MOBILE_BROWSERS;
+                $value = $this->MOBILE_BROWSERS;
             }
             $sanitized_value = apply_filters( 'cached_mobile_browsers', $value );
             if ( is_array( $sanitized_value ) ) {
@@ -609,7 +609,7 @@ class WP_Super_Cache_Sanitizer {
             if ( function_exists( "lite_detection_ua_prefixes" ) ) {
                 $value = lite_detection_ua_prefixes();
             } else {
-                $value = self::MOBILE_PREFIXES;
+                $value = $this->MOBILE_PREFIXES;
             }
             if ( is_array( $value ) ) {
                 $sanitized_value = implode( ', ', $value );

@@ -26,7 +26,7 @@ class WP_Super_Cache_Export {
 
   const REMOVE_NONCE = 'wp-super-cache-remove';
 
-  const OPTIONS = array(
+  protected $OPTIONS = array(
     'ossdl_cname',
     'ossdl_https',
     'ossdl_off_cdn_url',
@@ -350,7 +350,7 @@ class WP_Super_Cache_Export {
    */
   private function gather_plugin_options() {
     $options = array();
-    foreach ( self::OPTIONS  as $value ) {
+    foreach ( $this->OPTIONS  as $value ) {
       $options[ $value ] = get_option( $value );
     }
     return array( '_wp_super_cache_options' => $options );
