@@ -69,13 +69,13 @@ class WP_Super_Cache_Export {
     self::$cache_config_file_backup = str_replace( '.php', '-backup.php', self::$cache_config_file );
 
     self::$MESSAGES = array(
-      0 =>  array( 'success', __( 'Settings imported', 'wp-super-cache' ) ),
-      1 =>  array( 'warning', __( 'Please upload an exported WP Super Cache settings file.', 'wp-super-cache' ) ),
-      2 =>  array( 'error', __( 'Unable to import the uploaded JSON file. Please export the settings and import them again.', 'wp-super-cache' ) ),
-      3 =>  array( 'error', __( 'Unable to create backup settings file. Please check that the wp-content folder is writable via the <em>chmod</em> command on the server.', 'wp-super-cache' ) ),
-      4 =>  array( 'error', __( 'Unable to remove the backup file. Please check that the wp-content folder is writable via the <em>chmod</em> command on the server.', 'wp-super-cache' ) ),
-      5 =>  array( 'success', __( 'All settings have been restored.', 'wp-super-cache' ) ),
-      6 =>  array( 'success', __( 'All backup settings have been removed permanently.', 'wp-super-cache' ) ),
+      0 =>  array( 'success', esc_html__( 'Settings imported', 'wp-super-cache' ) ),
+      1 =>  array( 'warning', esc_html__( 'Please upload an exported WP Super Cache settings file.', 'wp-super-cache' ) ),
+      2 =>  array( 'error', esc_html__( 'Unable to import the uploaded JSON file. Please export the settings and import them again.', 'wp-super-cache' ) ),
+      3 =>  array( 'error', esc_html__( 'Unable to create backup settings file. Please check that the wp-content folder is writable via the <em>chmod</em> command on the server.', 'wp-super-cache' ) ),
+      4 =>  array( 'error', esc_html__( 'Unable to remove the backup file. Please check that the wp-content folder is writable via the <em>chmod</em> command on the server.', 'wp-super-cache' ) ),
+      5 =>  array( 'success', esc_html__( 'All settings have been restored.', 'wp-super-cache' ) ),
+      6 =>  array( 'success', esc_html__( 'All backup settings have been removed permanently.', 'wp-super-cache' ) ),
     );
 
     add_action( 'load-settings_page_wpsupercache', array( $this, 'export' ) );
@@ -105,25 +105,25 @@ class WP_Super_Cache_Export {
     <?php endif; ?>
 
       <fieldset class="options">
-        <h3><?php _e( "Export WP Super Cache Settings", "wp-super-cache" ) ?></h3>
-        <p><?php  _e( "Export the WP Super Cache Settings to transfer them to another WordPress site.", "wp-super-cache" ) ?></p>
+        <h3><?php esc_html_e( "Export WP Super Cache Settings", "wp-super-cache" ) ?></h3>
+        <p><?php  esc_html_e( "Export the WP Super Cache Settings to transfer them to another WordPress site.", "wp-super-cache" ) ?></p>
 
         <form action="" method="post">
           <input type="hidden" name="<?php echo self::NAME ?>" value="export" />
           <?php wp_nonce_field( self::EXPORT_NONCE ); ?>
-          <?php submit_button( __( 'Export settings', 'wp-super-cache' ) ); ?>
+          <?php submit_button( esc_html__( 'Export settings', 'wp-super-cache' ) ); ?>
         </form>
 
         <hr>
 
-        <h3><?php _e( "Import WP Super Cache Settings", "wp-super-cache" ) ?></h3>
-        <p><?php _e( "Import the WP Super Cache Settings to from another WordPress site. This file must be a json format and exported from a WP Super Cache plugin.", "wp-super-cache" ) ?></p>
+        <h3><?php esc_html_e( "Import WP Super Cache Settings", "wp-super-cache" ) ?></h3>
+        <p><?php esc_html_e( "Import the WP Super Cache Settings to from another WordPress site. This file must be a json format and exported from a WP Super Cache plugin.", "wp-super-cache" ) ?></p>
 
         <form action="" method="post" enctype="multipart/form-data">
           <?php wp_nonce_field( self::IMPORT_NONCE ); ?>
           <input type="hidden" name="<?php echo self::NAME ?>" value="import"  />
           <input type="file" name="wp_super_cache_import_file"/>
-          <?php submit_button( __( 'Import settings', 'wp-super-cache' ) ); ?>
+          <?php submit_button( esc_html__( 'Import settings', 'wp-super-cache' ) ); ?>
         </form>
 
         <?php if ( self::backupFileExists() ) : ?>
@@ -131,7 +131,7 @@ class WP_Super_Cache_Export {
           <hr>
 
           <p>
-            <?php _e( "Restore the previous WP Super Cache settings or remove them permanently.", "wp-super-cache" ) ?>
+            <?php esc_html_e( "Restore the previous WP Super Cache settings or remove them permanently.", "wp-super-cache" ) ?>
           </p>
 
           <p>
@@ -139,13 +139,13 @@ class WP_Super_Cache_Export {
           <form action="" method="post">
             <input type="hidden" name="<?php echo self::NAME ?>" value="restore"  />
             <?php wp_nonce_field( self::RESTORE_NONCE ); ?>
-            <?php submit_button( __( 'Restore settings', 'wp-super-cache' ), 'secondary', 'submit', false ); ?>
+            <?php submit_button( esc_html__( 'Restore settings', 'wp-super-cache' ), 'secondary', 'submit', false ); ?>
           </form>
 
           <form action="" method="post" style="margin-top:10px;">
             <input type="hidden" name="<?php echo self::NAME ?>" value="remove"  />
             <?php wp_nonce_field( self::REMOVE_NONCE ); ?>
-            <?php submit_button( __( 'Remove backup settings', 'wp-super-cache' ), 'delete', 'submit',false ); ?>
+            <?php submit_button( esc_html__( 'Remove backup settings', 'wp-super-cache' ), 'delete', 'submit',false ); ?>
           </p>
 
         <?php endif; ?>
