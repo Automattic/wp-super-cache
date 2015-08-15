@@ -93,7 +93,6 @@ class WP_Super_Cache_Sanitizer {
       "cache_domain_mapping",
       "cache_time_interval",
       "cache_max_time",
-      "cache_rejected_uri",
       "wp_cache_preload_interval",
       "cache_wptouch",
       "sem_id",
@@ -105,6 +104,7 @@ class WP_Super_Cache_Sanitizer {
       "cache_badbehaviour_file",
       "cache_no_adverts_for_friends",
       "cache_page_secret",
+      "cache_rejected_uri",
       "cache_rejected_user_agent",
       "cache_scheduled_time",
       "cache_schedule_interval",
@@ -408,13 +408,6 @@ class WP_Super_Cache_Sanitizer {
                 $sanitized_value = $value;
             break;
 
-        case "cache_rejected_uri":
-            global $cache_rejected_uri;
-            foreach ( $value as $index => $url ) {
-                $value[ $index ] = str_replace( '\\\\', '\\', $url );
-            }
-            $sanitized_value = wp_cache_sanitize_value( implode(', ', $value), $cache_rejected_uri );
-            break;
 
         case "wp_cache_preload_interval":
             $sanitized_value = is_numeric( $value ) && $value >= 30 ? intval( $value ) : 0;
@@ -468,6 +461,14 @@ class WP_Super_Cache_Sanitizer {
         case 'cache_no_adverts_for_friends':
             $sanitized_value = in_array( $value, array( 'yes', 'no' ) ) ? $value : "yes";
             $sanitized_value = "\"$sanitized_value\"";
+            break;
+
+        case "cache_rejected_uri":
+            global $cache_rejected_uri;
+            foreach ( $value as $index => $url ) {
+                $value[ $index ] = str_replace( '\\\\', '\\', $url );
+            }
+            $sanitized_value = wp_cache_sanitize_value( implode(', ', $value), $cache_rejected_uri );
             break;
 
         case 'cache_rejected_user_agent':
