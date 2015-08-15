@@ -408,15 +408,13 @@ class WP_Super_Cache_Sanitizer {
             break;
 
         case "cache_time_interval":
-            $sanitized_value = 600;
-            $value = is_numeric( $value ) ? intval( $value ) : $sanitized_value;
+            $sanitized_value = is_numeric( $value ) ? intval( $value ) : 600;
             if ( $sanitized_value !== $value )
                 $sanitized_value = $value;
             break;
 
         case "cache_max_time":
-            $sanitized_value = 3600;
-            $value = is_numeric( $value ) ? intval( $value ) : $sanitized_value;
+            $sanitized_value = is_numeric( $value ) ? intval( $value ) : 3600;
             if ( $sanitized_value !== $value )
                 $sanitized_value = $value;
             break;
