@@ -10,7 +10,7 @@
 * The settings are organized in terms of their allowed values: booleans, integers, strings, database options.
 *
 * Custom settings can be added by using the filters 'wp_super_cache_extend_allowed_{type}' to add the setting to the
-* allowed values and 'wp_super_cache_sanitize_{value}' to sanitize the new value. The value can then be sanitized using
+* allowed values and 'wp_super_cache_sanitize_{setting}' to sanitize the new setting value. The value can then be sanitized using
 * this class's sanitize function.
 *
 * @package  WP Super Cache
@@ -375,7 +375,7 @@ class WP_Super_Cache_Sanitizer {
    */
   function sanitize_boolean( $setting, $value ) {
     // Note: necessary to force cache_enable and super_cache_enabled to be true/false
-    $sanitized_value = apply_filters( "wp_super_cache_sanitize_$value", $value );
+    $sanitized_value = apply_filters( "wp_super_cache_sanitize_$setting", $value );
     if ( is_bool( $value ) === true ) {
         $sanitized_value = $value ? 'true' : 'false';
     } else {
@@ -442,7 +442,7 @@ class WP_Super_Cache_Sanitizer {
             break;
 
         default:
-            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$value", $value );
+            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$setting", $value );
             $sanitized_value = intval( $sanitized_value );
             break;
     }
@@ -649,7 +649,7 @@ class WP_Super_Cache_Sanitizer {
             break;
 
         default:
-            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$value", $value );
+            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$setting", $value );
             $sanitized_value = "\"$sanitized_value\"";
             break;
     }
@@ -716,7 +716,7 @@ class WP_Super_Cache_Sanitizer {
         //     break;
 
         default:
-            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$value", $value );
+            $sanitized_value = apply_filters( "wp_super_cache_sanitize_$setting", $value );
             break;
     }
     return $sanitized_value;
