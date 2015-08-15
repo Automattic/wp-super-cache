@@ -35,6 +35,14 @@ class WP_Super_Cache_Sanitizer {
       // 'wpsupercache_start',
   );
 
+  protected $ALLOWED_SETTING_ARRAYS = array(
+      "cache_acceptable_files",
+      "cache_rejected_uri",
+      "cache_rejected_user_agent",
+      "cached_direct_pages",
+      "wp_cache_pages",
+  );
+
   // The list of allowed global boolean variables that are written to the
   // wp-cache-config.php file as either true, false, 0 or 1
   protected $ALLOWED_SETTING_BOOLEANS = array(
@@ -100,16 +108,12 @@ class WP_Super_Cache_Sanitizer {
 
   // The list of allowed global string variables that are written to the wp-cache-config.php
   protected $ALLOWED_SETTING_STRINGS = array(
-      "cache_acceptable_files",
       "cache_badbehaviour_file",
       "cache_no_adverts_for_friends",
       "cache_page_secret",
-      "cache_rejected_uri",
-      "cache_rejected_user_agent",
       "cache_scheduled_time",
       "cache_schedule_interval",
       "cache_schedule_type",
-      "cached_direct_pages",
       "file_prefix",
       "wp_cache_debug_ip",
       "wp_cache_debug_log",
@@ -117,7 +121,6 @@ class WP_Super_Cache_Sanitizer {
       "wp_cache_mobile_browsers",
       "wp_cache_mobile_groups",
       "wp_cache_mobile_prefixes",
-      "wp_cache_pages",
       'wp_cache_plugins_dir',
       "wp_cache_preload_email_volume",
       "wp_cache_preload_posts",
@@ -288,6 +291,7 @@ class WP_Super_Cache_Sanitizer {
   function __construct() {
 
     $this->allowed_options = apply_filters( 'wp_super_cache_extend_allowed_option', $this->ALLOWED_OPTIONS );
+    $this->allowed_arrays = apply_filters( 'wp_super_cache_extend_allowed_booleans', $this->ALLOWED_SETTING_ARRAYS );
     $this->allowed_booleans = apply_filters( 'wp_super_cache_extend_allowed_booleans', $this->ALLOWED_SETTING_BOOLEANS );
     $this->allowed_integers = apply_filters( 'wp_super_cache_extend_allowed_integers', $this->ALLOWED_SETTING_INTS );
     $this->allowed_strings = apply_filters( 'wp_super_cache_extend_allowed_strings', $this->ALLOWED_SETTING_STRINGS );
@@ -314,6 +318,8 @@ class WP_Super_Cache_Sanitizer {
       $sanitized_value = $this->sanitize_int( $setting, $value );
     else if ( in_array( $setting, $this->allowed_strings ) )
       $sanitized_value = $this->sanitize_string( $setting, $value );
+    else if ( in_array( $setting, $this->allowed_arrays ) )
+      $sanitized_value = $this->sanitize_array( $setting, $value );
     else if ( in_array( $setting, $this->allowed_options ) )
       $sanitized_value = $this->sanitize_options( $setting, $value );
 
@@ -343,14 +349,16 @@ class WP_Super_Cache_Sanitizer {
 
     if ( in_array( $setting, $this->allowed_booleans ) ) {
         wp_cache_replace_line('^ *\$' . $setting . ' =', "\$" . $setting . " = " . $sanitized_value . ";", $wp_cache_config_file);
-    } else if ( in_array( $setting, $this->allowed_strings ) ) {
+    } else if ( in_array( $setting, $this->allowed_arrays ) ) {
         if ( is_array( $sanitized_value ) && $setting === 'wp_cache_pages' ) {
             foreach ( $sanitized_value as $page => $status ) {
                 wp_cache_replace_line('^ *\$wp_cache_pages\[ "' . $page . '" \]', "\$wp_cache_pages[ \"{$page}\" ] = $status;", $wp_cache_config_file);
             }
         } else {
-            wp_cache_replace_line('^ *\$' . $setting . ' =', "\$". $setting ." = $sanitized_value;", $wp_cache_config_file);
+          wp_cache_replace_line('^ *\$' . $setting . ' =', "\$". $setting ." = $sanitized_value;", $wp_cache_config_file);
         }
+    } else if ( in_array( $setting, $this->allowed_strings ) ) {
+        wp_cache_replace_line('^ *\$' . $setting . ' =', "\$". $setting ." = $sanitized_value;", $wp_cache_config_file);
     } else if ( in_array( $setting, $this->allowed_integers ) ) {
         wp_cache_replace_line('^ *\$' . $setting . ' =', "\$". $setting ." = $sanitized_value;", $wp_cache_config_file);
     } else if ( in_array( $setting, $this->allowed_options ) ) {
@@ -374,6 +382,88 @@ class WP_Super_Cache_Sanitizer {
         $sanitized_value = $value ? 'true' : 'false';
     } else {
         $sanitized_value = intval( $value ) === 1 ? 1 : 0;
+    }
+    return $sanitized_value;
+  }
+
+  /**
+   * This sanitizes the settings where the allowed values are only arrays.
+   * The sanitization method is different per setting name.
+   *
+   * @param String $setting The current array setting to be sanitized
+   * @param Mixed $value The mixed value of the current setting that will be sanitized.
+   *
+   * @return  Array A sanitized version of the inputed value
+   */
+  function sanitize_array( $setting, $value ) {
+    switch ( $setting )  {
+
+      case "cache_rejected_uri":
+          global $cache_rejected_uri;
+          foreach ( $value as $index => $url ) {
+              $value[ $index ] = str_replace( '\\\\', '\\', $url );
+          }
+          $sanitized_value = wp_cache_sanitize_value( implode(', ', $value), $cache_rejected_uri );
+          break;
+
+      case 'cache_acceptable_files' :
+          global $cache_acceptable_files;
+          if ( is_array( $value ) ) {
+              $value = implode( ',', $value );
+          }
+          $sanitized_value = wp_cache_sanitize_value( $value, $cache_acceptable_files );
+          break;
+
+      case 'cache_rejected_user_agent':
+          global $cache_rejected_user_agent;
+          if ( is_array( $value ) ) {
+              $value = implode( ',', $value );
+          }
+          $value = str_replace( ' ', '___', $value );
+          $sanitized_value = str_replace( '___', ' ', wp_cache_sanitize_value( $value, $cache_rejected_user_agent ) );
+          break;
+
+      case 'cached_direct_pages':
+          if ( is_array( $value ) )  {
+              foreach ( $value as $page ) {
+                  $page = str_replace( get_option( 'siteurl' ), '', $page );
+                  if( substr( $page, 0, 1 ) != '/' )
+                      $page = '/' . $page;
+                  $page = esc_sql( $page );
+                  $page = "'$page'";
+                  $sanitized_values[] = $page;
+              }
+              $sanitized_values = array_unique( $sanitized_values );
+              $sanitized_value = 'array(' . implode(', ', $sanitized_values ) . ');';
+          } else {
+              $sanitized_value = '';
+          }
+          break;
+
+      case 'wp_cache_pages':
+          $sanitized_value = array(
+              'single' => 0,
+              'pages' => 0,
+              'archives' => 0,
+              'tag' => 0,
+              'frontpage' => 0,
+              'home' => 0,
+              'category' => 0,
+              'feed' => 0,
+              'author' => 0,
+              'search' => 0,
+          );
+          foreach ( $value as $page => $cache ) {
+              if ( array_key_exists( $page, $sanitized_value ) ) {
+                  $sanitized_value[ $page ] = intval( $cache ) === 1 ? 1 : 0;
+              }
+          }
+          break;
+
+      default:
+          $sanitized_value = apply_filters( "wp_super_cache_sanitize_$setting", $value );
+          if ( ! is_array($sanitized_value) ) (array) $sanitized_value;
+          break;
     }
     return $sanitized_value;
   }
@@ -445,14 +535,6 @@ class WP_Super_Cache_Sanitizer {
   function sanitize_string( $setting, $value ) {
     switch ( $setting ) {
 
-        case 'cache_acceptable_files' :
-            global $cache_acceptable_files;
-            if ( is_array( $value ) ) {
-                $value = implode( ',', $value );
-            }
-            $sanitized_value = wp_cache_sanitize_value( $value, $cache_acceptable_files );
-            break;
-
         case 'cache_badbehaviour_file':
             $sanitized_value = function_exists('get_bb_file_loc') ? get_bb_file_loc() : "";
             $sanitized_value = "\"$sanitized_value\"";
@@ -461,23 +543,6 @@ class WP_Super_Cache_Sanitizer {
         case 'cache_no_adverts_for_friends':
             $sanitized_value = in_array( $value, array( 'yes', 'no' ) ) ? $value : "yes";
             $sanitized_value = "\"$sanitized_value\"";
-            break;
-
-        case "cache_rejected_uri":
-            global $cache_rejected_uri;
-            foreach ( $value as $index => $url ) {
-                $value[ $index ] = str_replace( '\\\\', '\\', $url );
-            }
-            $sanitized_value = wp_cache_sanitize_value( implode(', ', $value), $cache_rejected_uri );
-            break;
-
-        case 'cache_rejected_user_agent':
-            global $cache_rejected_user_agent;
-            if ( is_array( $value ) ) {
-                $value = implode( ',', $value );
-            }
-            $value = str_replace( ' ', '___', $value );
-            $sanitized_value = str_replace( '___', ' ', wp_cache_sanitize_value( $value, $cache_rejected_user_agent ) );
             break;
 
         case "cache_scheduled_time":
@@ -499,23 +564,6 @@ class WP_Super_Cache_Sanitizer {
                 $sanitized_value = $value;
             }
             $sanitized_value = "\"$sanitized_value\"";
-            break;
-
-        case 'cached_direct_pages':
-            if ( is_array( $value ) )  {
-                foreach ( $value as $page ) {
-                    $page = str_replace( get_option( 'siteurl' ), '', $page );
-                    if( substr( $page, 0, 1 ) != '/' )
-                        $page = '/' . $page;
-                    $page = esc_sql( $page );
-                    $page = "'$page'";
-                    $sanitized_values[] = $page;
-                }
-                $sanitized_values = array_unique( $sanitized_values );
-                $sanitized_value = 'array(' . implode(', ', $sanitized_values ) . ');';
-            } else {
-                $sanitized_value = '';
-            }
             break;
 
         case 'file_prefix':
@@ -575,26 +623,6 @@ class WP_Super_Cache_Sanitizer {
             $sanitized_value = "\"$sanitized_value\"" ;
             break;
 
-        // Note: this returns an array and not a string
-        case 'wp_cache_pages':
-            $sanitized_value = array(
-                'single' => 0,
-                'pages' => 0,
-                'archives' => 0,
-                'tag' => 0,
-                'frontpage' => 0,
-                'home' => 0,
-                'category' => 0,
-                'feed' => 0,
-                'author' => 0,
-                'search' => 0,
-            );
-            foreach ( $value as $page => $cache ) {
-                if ( array_key_exists( $page, $sanitized_value ) ) {
-                    $sanitized_value[ $page ] = intval( $cache ) === 1 ? 1 : 0;
-                }
-            }
-            break;
 
         case 'wp_cache_plugins_dir':
           $sanitized_value = 'WPCACHEHOME . \'plugins\'';
