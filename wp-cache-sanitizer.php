@@ -390,14 +390,9 @@ class WP_Super_Cache_Sanitizer {
   function sanitize_int( $setting, $value ) {
     switch ( $setting ) {
         case "cache_badbehaviour":
-            $value = $value == '' || $value == 'no' ? 0 : $value;
-            $sanitized_value = intval( $value );
-            break;
-
         case "cache_awaitingmoderation":
         case "cache_wptouch":
         case "cache_domain_mapping":
-            $value = $value == '' ? '0' : $value;
             $sanitized_value = intval( $value );
             break;
 
