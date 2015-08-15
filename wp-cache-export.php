@@ -286,9 +286,7 @@ class WP_Super_Cache_Export {
     }
     check_admin_referer( self::RESTORE_NONCE );
     $location = add_query_arg( 'tab', 'export', admin_url( 'options-general.php?page=wpsupercache' ) );
-    if ( file_exists(self::$cache_config_file) )
-      @unlink( self::$cache_config_file );
-    if ( $this->backupFileExists() )
+    if ( $this->backupFileExists() && file_exists( self::$cache_config_file ) )
       $renamed = @rename( self::$cache_config_file_backup, self::$cache_config_file );
     if ( ! $renamed ) {
       wp_safe_redirect( add_query_arg( 'message', 4, $location ) );
