@@ -538,10 +538,11 @@ class WP_Super_Cache_Sanitizer {
             break;
 
         case "wp_cache_home_path":
+            global $wp_cache_home_path;
             $sanitized_value = '/';
             $home_path = parse_url( site_url() );
             $home_path = trailingslashit( array_key_exists( 'path', $home_path ) ? $home_path[ 'path' ] : '' );
-            if ( isset( $wp_cache_home_path ) )
+            if ( false == isset( $wp_cache_home_path ) )
                 $sanitized_value =  $wp_cache_home_path;
             if ( "$home_path" !== "$sanitized_value" )
                 $sanitized_value = $home_path;
