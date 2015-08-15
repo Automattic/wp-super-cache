@@ -188,6 +188,10 @@ class WP_Super_Cache_Export {
     check_admin_referer( self::IMPORT_NONCE );
     $file = $_FILES[ 'wp_super_cache_import_file' ][ 'tmp_name' ];
     $location = add_query_arg( 'tab', 'export', admin_url( 'options-general.php?page=wpsupercache' ) );
+    if ( ! is_uploaded_file($file) ) {
+      wp_safe_redirect( add_query_arg( 'message', 1, $location ) );
+      exit;
+    }
     if( empty( $file ) ) {
       wp_safe_redirect( add_query_arg( 'message', 1, $location ) );
       exit;
