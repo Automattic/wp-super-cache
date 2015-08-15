@@ -264,7 +264,7 @@ class WP_Super_Cache_Export {
     nocache_headers();
     header( "Content-disposition: attachment; filename=" . self::FILENAME );
     header( 'Content-Type: application/octet-stream;' );
-    echo json_encode( array_merge($wp_cache_config_vars, $wp_cache_config_options )  );
+    echo wp_json_encode( array_merge($wp_cache_config_vars, $wp_cache_config_options ), JSON_PRETTY_PRINT );
     die();
   }
 
