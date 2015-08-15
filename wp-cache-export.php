@@ -301,6 +301,9 @@ class WP_Super_Cache_Export {
     }
     delete_option( '_wp_super_cache_backup_options' );
     include self::$cache_config_file;
+    // Reset the garbage collection to the new values
+    if ( function_exists( 'schedule_wp_gc' ) )
+      schedule_wp_gc( $forced = 1 );
     wp_safe_redirect( add_query_arg( 'message', 5, $location ) );
     exit;
   }
