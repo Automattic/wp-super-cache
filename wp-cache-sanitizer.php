@@ -292,13 +292,6 @@ class WP_Super_Cache_Sanitizer {
     $this->allowed_integers = apply_filters( 'wp_super_cache_extend_allowed_integers', self::ALLOWED_SETTING_INTS );
     $this->allowed_strings = apply_filters( 'wp_super_cache_extend_allowed_strings', self::ALLOWED_SETTING_STRINGS );
 
-    $this->allowed_values = array_merge(
-        $this->allowed_options,
-        $this->allowed_booleans,
-        $this->allowed_integers,
-        $this->allowed_strings
-    );
-
   }
 
   /**
@@ -315,9 +308,6 @@ class WP_Super_Cache_Sanitizer {
    */
   function sanitize( $setting, $value, $insert = false ) {
 
-    if ( ! in_array( $setting, $this->allowed_values ) )
-        return false;
-
     if ( in_array( $setting, $this->allowed_booleans ) )
       $sanitized_value = $this->sanitize_boolean( $setting, $value );
     else if ( in_array( $setting, $this->allowed_integers ) )
@@ -327,10 +317,14 @@ class WP_Super_Cache_Sanitizer {
     else if ( in_array( $setting, $this->allowed_options ) )
       $sanitized_value = $this->sanitize_options( $setting, $value );
 
-    if ( $insert === true )
-        $this->insert( $setting, $sanitized_value );
+    if ( isset( $sanitized_value ) ) {
+      if ( $insert === true )
+          $this->insert( $setting, $sanitized_value );
+      return $sanitized_value;
+    } else {
+      return false;
+    }
 
-    return $sanitized_value;
   }
 
   /**
