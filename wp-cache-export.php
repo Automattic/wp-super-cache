@@ -71,7 +71,7 @@ class WP_Super_Cache_Export {
     self::$MESSAGES = array(
       0 =>  array( 'success', esc_html__( 'Settings imported', 'wp-super-cache' ) ),
       1 =>  array( 'warning', esc_html__( 'Please upload an exported WP Super Cache settings file.', 'wp-super-cache' ) ),
-      2 =>  array( 'error', esc_html__( 'Unable to import the uploaded JSON file. Please export the settings and import them again.', 'wp-super-cache' ) ),
+      2 =>  array( 'error', esc_html__( 'Unable to import the uploaded JSON file. The file is either malformed or empty.', 'wp-super-cache' ) ),
       3 =>  array( 'error', esc_html__( 'Unable to create backup settings file. Please check that the wp-content folder is writable via the <em>chmod</em> command on the server.', 'wp-super-cache' ) ),
       4 =>  array( 'error', esc_html__( 'Unable to remove the backup file. Please check that the wp-content folder is writable via the <em>chmod</em> command on the server.', 'wp-super-cache' ) ),
       5 =>  array( 'success', esc_html__( 'All settings have been restored.', 'wp-super-cache' ) ),
