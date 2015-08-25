@@ -1105,6 +1105,10 @@ function wp_cache_post_id_gc( $siteurl, $post_id, $all = 'all' ) {
 
 	$permalink = trailingslashit( str_replace( get_option( 'home' ), '', post_permalink( $post_id ) ) );
 	$dir = get_current_url_supercache_dir( $post_id );
+	if ( $dir == get_supercache_dir() ) {
+		wp_cache_debug( "wp_cache_post_id_gc post_id: $post_id " . get_permalink( $post_id ) . " no rewrite. No GC.", 4 );
+		return; // When rewrite is false on CPTs, the query args are stripped resulting in all cache being flushed.
+	}
 	wp_cache_debug( "wp_cache_post_id_gc post_id: $post_id " . post_permalink( $post_id ) . " clearing cache in $dir.", 4 );
 	if ( $all == 'all' ) {
 		prune_super_cache( $dir, true, true );
