@@ -64,6 +64,9 @@ if( !defined( 'WP_CACHE' ) || ( defined( 'WP_CACHE' ) && constant( 'WP_CACHE' ) 
 
 include(WPCACHEHOME . 'wp-cache-base.php');
 
+include(WPCACHEHOME . 'wp-cache-sanitizer.php');
+include(WPCACHEHOME . 'wp-cache-export.php');
+
 function wp_super_cache_text_domain() {
 	load_plugin_textdomain( 'wp-super-cache', WPCACHEHOME . 'languages', basename( dirname( __FILE__ ) ) . '/languages' );
 }
@@ -648,6 +651,7 @@ function wp_cache_manager_updates() {
 			}
 		}
 	}
+
 }
 if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'wpsupercache' )
 	add_action( 'admin_init', 'wp_cache_manager_updates' );
@@ -1075,6 +1079,9 @@ jQuery(document).ready(function(){
 		wp_cache_restore();
 
 		break;
+		case 'export':
+			WP_Super_Cache_Export::form();
+		break;
 		case "easy":
 		default:
 			echo '<form name="wp_manager" action="" method="post">';
@@ -1085,8 +1092,8 @@ jQuery(document).ready(function(){
 				<th scope="row"><label for="wp_cache_status"><?php _e( 'Caching', 'wp-super-cache' ); ?></label></th>
 				<td>
 				<fieldset>
-				<label><input type='radio' name='wp_cache_easy_on' value='1' <?php if ( $cache_enabled == true ) { echo 'checked=checked'; } ?>> <?php _e( 'Caching On', 'wp-super-cache' ); echo " <em>(" . __( "Recommended", "wp-super-cache" ) . ")</em>"; ?></label><br />
-				<label><input type='radio' name='wp_cache_easy_on' value='0' <?php if ( $cache_enabled == false ) { echo 'checked=checked'; } ?>> <?php _e( 'Caching Off', 'wp-super-cache' ); ?></label><br />
+				<label><input type='radio' name='wp_cache_easy_on' value='1' <?php checked( $cache_enabled, true ) ; ?>> <?php _e( 'Caching On', 'wp-super-cache' ); echo " <em>(" . __( "Recommended", "wp-super-cache" ) . ")</em>"; ?></label><br />
+				<label><input type='radio' name='wp_cache_easy_on' value='0' <?php checked( $cache_enabled, false ); ?>> <?php _e( 'Caching Off', 'wp-super-cache' ); ?></label><br />
 				<em><?php _e( 'Note: enables PHP caching, cache rebuild, and mobile support', 'wp-super-cache' ); ?></em><br />
 				</legend>
 				</fieldset>
@@ -1282,15 +1289,22 @@ function wpsc_plugins_tab() {
 
 function wpsc_admin_tabs( $current = 0 ) {
 	global $wp_db_version;
-	if ( $current == 0 ) {
-		if ( isset( $_GET[ 'tab' ] ) ) {
-			$current = $_GET[ 'tab' ];
-		} else {
-			$current = 'easy';
-		}
-	}
-	$tabs = array( 'easy' => __( 'Easy', 'wp-super-cache' ), 'settings' => __( 'Advanced', 'wp-super-cache' ), 'cdn' => __( 'CDN', 'wp-super-cache' ), 'contents' => __( 'Contents', 'wp-super-cache' ), 'preload' => __( 'Preload', 'wp-super-cache' ), 'plugins' => __( 'Plugins', 'wp-super-cache' ), 'debug' => __( 'Debug', 'wp-super-cache' ) );
+
+	$tabs = array(
+		'easy'     => __( 'Easy', 'wp-super-cache' ),
+		'settings' => __( 'Advanced', 'wp-super-cache' ),
+		'cdn'      => __( 'CDN', 'wp-super-cache' ),
+		'contents' => __( 'Contents', 'wp-super-cache' ),
+		'preload'  => __( 'Preload', 'wp-super-cache' ),
+		'plugins'  => __( 'Plugins', 'wp-super-cache' ),
+		'debug'    => __( 'Debug', 'wp-super-cache' ),
+		'export'    => __( 'Import/Export', 'wp-super-cache' ) );
+
 	$links = array();
+	$current = isset( $_GET['tab'] ) && array_key_exists( $_GET['tab'],  $tabs ) ?
+			     $_GET['tab']  :
+			     'easy';
+
 	foreach( $tabs as $tab => $name ) {
 		if ( $current == $tab ) {
 			$links[] = "<a class='nav-tab nav-tab-active' href='?page=wpsupercache&tab=$tab'>$name</a>";
