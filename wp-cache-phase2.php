@@ -137,6 +137,9 @@ function wp_cache_get_response_headers() {
 
 function wp_cache_is_rejected($uri) {
 	global $cache_rejected_uri;
+	
+	// If uri is '' or '/' it will always match $auto_rejected
+	if ( $uri == '' || $uri == '/') return false;
 
 	$auto_rejected = array( '/wp-admin/', 'xmlrpc.php', 'wp-app.php' );
 	foreach( $auto_rejected as $u ) {
@@ -248,6 +251,11 @@ function wp_cache_ob_callback( $buffer ) {
 
 	$script = basename($_SERVER['PHP_SELF']);
 
+	// Post requests do not invalidate existing cache
+	if ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) ) {
+		wp_cache_debug( 'POST request - cache unaffected.', 5 );
+		return $buffer;
+	}
 	// All the things that can stop a page being cached
 	$cache_this_page = true;
 	if ( defined( 'DONOTCACHEPAGE' ) ) {
@@ -256,8 +264,8 @@ function wp_cache_ob_callback( $buffer ) {
 	} elseif ( $wp_cache_no_cache_for_get && false == empty( $_GET ) && false == defined( 'DOING_CRON' ) ) {
 		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . json_encode( $_GET ), 1 );
 		$cache_this_page = false;
-	} elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
-		wp_cache_debug( 'Not caching POST request.', 5 );
+	} elseif ( get_option( 'gzipcompression' ) ) {
+		wp_cache_debug( 'Not caching gzipped site', 5 );
 		$cache_this_page = false;
 	} elseif ( $wp_cache_object_cache && !empty( $_GET ) ) {
 		wp_cache_debug( 'Not caching GET request while object cache storage enabled.', 5 );
