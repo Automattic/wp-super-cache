@@ -411,13 +411,15 @@ function wp_cache_get_ob(&$buffer) {
 
 	if ( !preg_match( apply_filters( 'wp_cache_eof_tags', '/(<\/html>|<\/rss>|<\/feed>|<\/urlset|<\?xml)/i' ), $buffer ) ) {
 		$new_cache = false;
-		if( false === strpos( $_SERVER[ 'REQUEST_URI' ], 'robots.txt' ) ) {
+		if( true === strpos( $_SERVER[ 'REQUEST_URI' ], 'robots.txt' ) ) {
+			wp_cache_debug( "robots.txt detected. Not caching.", 2 );
+		} elseif ( true === strpos( $_SERVER[ 'REQUEST_URI' ], '/wp-json' ) ) {
+			wp_cache_debug( "WP-API detected. Not caching.", 2 );
+		} else {
 			if ( isset( $GLOBALS[ 'wp_super_cache_debug' ] ) && $GLOBALS[ 'wp_super_cache_debug' ] ) {
 				wp_cache_debug( "No closing html tag. Not caching.", 2 );
 				wp_cache_add_to_buffer( $buffer, "Page not cached by WP Super Cache. No closing HTML tag. Check your theme." );
 			}
-		} else {
-			wp_cache_debug( "robots.txt detected. Not caching.", 2 );
 		}
 	}
 	
