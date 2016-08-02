@@ -135,6 +135,8 @@ function wp_cache_serve_cache_file() {
 		return false;
 	}
 
+	do_cacheaction( 'serve_cache_file_init' );
+
 	if ( wp_cache_user_agent_is_rejected() ) {
 		wp_cache_debug( "No wp-cache file served as user agent rejected.", 5 );
 		return false;
@@ -207,7 +209,7 @@ function wp_cache_serve_cache_file() {
 			$wp_cache_home_path = '/';
 
 		// make sure ending slashes are ok
-		if ( $wp_cache_request_uri == $wp_cache_home_path || ( $wp_cache_slash_check && substr( $wp_cache_request_uri, -1 ) == '/' ) || ( $wp_cache_slash_check == 0 && substr( $wp_cache_request_uri, -1 ) != '/' ) ) {
+		if ( $wp_cache_request_uri == $wp_cache_home_path || ( $wp_cache_slash_check && substr( $wp_cache_request_uri, -1 ) == '/' ) || ( $wp_cache_slash_check == 0 && substr( $wp_cache_request_uri, -1 ) != '/' ) || do_cacheaction( 'serve_supercache_file', false ) ) {
 
 			if ( $wp_cache_mfunc_enabled == 0 ) {
 				// get data from file
@@ -269,6 +271,8 @@ function wp_cache_serve_cache_file() {
 				}
 				header( 'Last-Modified: ' . $local_mod_time );
 			}
+
+			do_cacheaction( 'before_serve_supercache_file' );
 			echo $cachefiledata;
 			exit();
 		} else {
@@ -729,6 +733,7 @@ function supercache_filename() {
 		$extra_str = do_cacheaction( 'supercache_filename_str', $extra_str );
 	}
 	$filename = 'index' . $extra_str . '.html';
+	$filename = do_cacheaction( 'supercache_filename', $filename );
 
 	return $filename;
 }

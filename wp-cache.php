@@ -3125,7 +3125,7 @@ function wpsc_get_htaccess_info() {
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html -f\n";
 	$rules .= "RewriteRule ^(.*) \"{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html\" [L]\n";
 	$rules .= "</IfModule>\n";
-	$rules = apply_filters( 'supercacherewriterules', $rules );
+	$rules = apply_filters( 'supercacherewriterules', $rules, $apache_root, $inst_root, $home_root_lc );
 
 	$rules = str_replace( "CONDITION_RULES", implode( "\n", $condition_rules ) . "\n", $rules );
 
