@@ -466,6 +466,12 @@ You'll have to use a separate mobile plugin to render a page formatted for those
 * [WordPress Mobile Edition](http://wordpress.org/plugins/wordpress-mobile-edition/)
 * [WordPress Mobile Pack](http://wordpress.org/plugins/wordpress-mobile-pack/) (can't have "Don't cache pages for known users." enabled)
 
+= Why aren't REST API endpoints being cached? =
+
+If you're using mod_rewrite, it's possible that your .htaccess file needs to be regenerated.
+To find out, open the Advanced Settings page, and look at Mod Rewrite Rules section.
+If you see a message telling you that a difference has been detected, then click on the `Upgrade Mod_Rewrite Rules` button.
+
 = Troubleshooting =
 
 If things don't work when you installed the plugin here are a few things to check:

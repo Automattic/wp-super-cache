@@ -3120,23 +3120,27 @@ function wpsc_get_htaccess_info() {
 		$rules .= "AddDefaultCharset {$charset}\n";
 	}
 
+	$rules .= "# HTML / HTTPS / gzipped\n";
 	$rules .= "CONDITION_RULES";
 	$rules .= "RewriteCond %{HTTP:Accept-Encoding} gzip\n";
 	$rules .= "RewriteCond %{HTTPS} on\n";
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index-https.html.gz -f\n";
 	$rules .= "RewriteRule ^(.*) \"{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index-https.html.gz\" [L]\n\n";
 
+	$rules .= "# HTML / HTTP / gzipped\n";
 	$rules .= "CONDITION_RULES";
 	$rules .= "RewriteCond %{HTTP:Accept-Encoding} gzip\n";
 	$rules .= "RewriteCond %{HTTPS} !on\n";
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html.gz -f\n";
 	$rules .= "RewriteRule ^(.*) \"{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html.gz\" [L]\n\n";
 
+	$rules .= "# HTML / HTTPS / uncompressed\n";
 	$rules .= "CONDITION_RULES";
 	$rules .= "RewriteCond %{HTTPS} on\n";
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index-https.html -f\n";
 	$rules .= "RewriteRule ^(.*) \"{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index-https.html\" [L]\n\n";
 
+	$rules .= "# HTML / HTTP / uncompressed\n";
 	$rules .= "CONDITION_RULES";
 	$rules .= "RewriteCond %{HTTPS} !on\n";
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html -f\n";
