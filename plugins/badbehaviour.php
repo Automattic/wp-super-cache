@@ -51,7 +51,7 @@ function wp_supercache_badbehaviour_admin() {
 		} else {
 			$changed = true;
 		}
-		$cache_badbehaviour = (int)$_POST['cache_badbehaviour'];
+		$cache_badbehaviour = $changed;
 		wp_cache_replace_line('^ *\$cache_compression', "\$cache_compression = 0;", $wp_cache_config_file);
 		wp_cache_replace_line('^ *\$cache_badbehaviour', "\$cache_badbehaviour = $cache_badbehaviour;", $wp_cache_config_file);
 		wp_cache_replace_line('^ *\$cache_badbehaviour_file', "\$cache_badbehaviour_file = '$bbfile';", $wp_cache_config_file);

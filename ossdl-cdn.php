@@ -27,8 +27,8 @@ if ($arr_of_cnames[0] == '') $arr_of_cnames = array();
 /**
  * Determines whether to exclude a match.
  *
- * @param String $match URI to examine
- * @param Array $excludes array of "badwords"
+ * @param string $match URI to examine
+ * @param array $excludes array of "badwords"
  * @return Boolean true if to exclude given match from rewriting
  */
 function scossdl_off_exclude_match($match, $excludes) {
@@ -153,7 +153,7 @@ function scossdl_off_options() {
 		<p><?php _e( 'You can define different CDN URLs for each site on a multsite network.', 'wp-super-cache' ); ?></p>
 		<p><form method="post" action="">
 		<?php wp_nonce_field('wp-cache'); ?>
-		<table class="form-table"><tbod>
+		<table class="form-table"><tbody>
 			<tr valign="top">
 				<td style='text-align: right'>
 					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" <?php if ( $ossdlcdn ) echo "checked=1"; ?> />
