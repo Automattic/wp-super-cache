@@ -209,8 +209,12 @@ function wp_cache_serve_cache_file() {
 			$wp_cache_home_path = '/';
 
 		// make sure ending slashes are ok
-		if ( $wp_cache_request_uri == $wp_cache_home_path || ( $wp_cache_slash_check && substr( $wp_cache_request_uri, -1 ) == '/' ) || ( $wp_cache_slash_check == 0 && substr( $wp_cache_request_uri, -1 ) != '/' ) || do_cacheaction( 'serve_supercache_file', false ) ) {
-
+		if (
+			$wp_cache_request_uri == $wp_cache_home_path ||
+			( $wp_cache_slash_check && substr( $wp_cache_request_uri, -1 ) == '/' ) ||
+			( $wp_cache_slash_check == 0 && substr( $wp_cache_request_uri, -1 ) != '/' ) ||
+			do_cacheaction( 'serve_supercache_file', false )
+		) {
 			if ( $wp_cache_mfunc_enabled == 0 ) {
 				// get data from file
 				if ( $wp_cache_gzip_encoding ) {
