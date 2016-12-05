@@ -1192,7 +1192,7 @@ function wp_cache_post_change( $post_id ) {
 		} else {
 			wp_cache_debug( "wp_cache_post_change: not deleting all pages.", 4 );
 		}
-		if( $all == true && get_option( 'show_on_front' ) == 'page' ) {
+		if( $all == true && get_option( 'show_on_front' ) == 'posts' ) {
 			wp_cache_debug( "Post change: deleting page_on_front and page_for_posts pages.", 4 );
 			wp_cache_debug( "Post change: page_on_front " . get_option( 'page_on_front' ), 4 );
 			wp_cache_post_id_gc( $siteurl, get_option( 'page_on_front' ), 'single' );
