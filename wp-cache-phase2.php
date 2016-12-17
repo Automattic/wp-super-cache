@@ -4,11 +4,13 @@ function wp_cache_phase2() {
 	global $cache_filename, $cache_acceptable_files, $wp_cache_gzip_encoding, $super_cache_enabled, $cache_rebuild_files, $wp_cache_last_gc;
 	global $cache_max_time, $wp_cache_request_uri, $super_cache_enabled, $wp_cache_object_cache, $cache_time_interval;
 	global $cache_enabled, $wp_cache_gmt_offset, $wp_cache_blog_charset, $cache_schedule_type, $cache_scheduled_time, $cache_schedule_interval;
-
+	
 	if ( $cache_enabled == false ) {
 		wp_cache_debug( "Caching disabled! quiting!", 1 );
 		return false;
 	}
+	
+	$script = basename($_SERVER['PHP_SELF']);
 
 	wp_cache_debug( 'In WP Cache Phase 2', 5 );
 
@@ -48,6 +50,14 @@ function wp_cache_phase2() {
 
 	if ( is_admin() ) {
 		wp_cache_debug( 'Not caching wp-admin requests.', 5 );
+		return false;
+	}
+	elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
+		wp_cache_debug( 'Not caching POST request.', 5 );
+		return false;
+	}
+	elseif ( !in_array($script, $cache_acceptable_files) && wp_cache_is_rejected( $wp_cache_request_uri ) ) {
+		wp_cache_debug( 'URI rejected. Not Caching', 2 );
 		return false;
 	}
 
@@ -260,17 +270,11 @@ function wp_cache_ob_callback( $buffer ) {
 	} elseif ( $wp_cache_no_cache_for_get && false == empty( $_GET ) && false == defined( 'DOING_CRON' ) ) {
 		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . json_encode( $_GET ), 1 );
 		$cache_this_page = false;
-	} elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
-		wp_cache_debug( 'Not caching POST request.', 5 );
-		$cache_this_page = false;
 	} elseif ( $wp_cache_object_cache && !empty( $_GET ) ) {
 		wp_cache_debug( 'Not caching GET request while object cache storage enabled.', 5 );
 		$cache_this_page = false;
 	} elseif ( isset( $_GET[ 'preview' ] ) ) {
 		wp_cache_debug( 'Not caching preview post.', 2 );
-		$cache_this_page = false;
-	} elseif ( !in_array($script, $cache_acceptable_files) && wp_cache_is_rejected( $wp_cache_request_uri ) ) {
-		wp_cache_debug( 'URI rejected. Not Caching', 2 );
 		$cache_this_page = false;
 	} elseif ( wp_cache_user_agent_is_rejected() ) {
 		wp_cache_debug( "USER AGENT ({$_SERVER[ 'HTTP_USER_AGENT' ]}) rejected. Not Caching", 4 );
@@ -309,12 +313,13 @@ function wp_cache_ob_callback( $buffer ) {
 
 	if ( !isset( $wp_query ) )
 		wp_cache_debug( 'wp_cache_ob_callback: WARNING! $query not defined but the plugin has worked around that problem.', 4 );
+	
+	$buffer = wp_cache_get_ob( $buffer );
 
 	if ( $cache_this_page ) {
 
 		wp_cache_debug( 'Output buffer callback', 4 );
 
-		$buffer = wp_cache_get_ob( $buffer );
 		wp_cache_shutdown_callback();
 		return $buffer;
 	} else {
