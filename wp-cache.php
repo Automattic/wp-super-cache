@@ -754,9 +754,8 @@ jQuery(document).ready(function(){
 #nav h2 {
 	border-bottom: 1px solid #ccc;
 	padding-bottom: 0;
-}
-table.wpsc-settings-table {
-	clear: both;
+	float: left;
+	width: 100%;
 }
 </style>
 <?php
@@ -807,7 +806,7 @@ table.wpsc-settings-table {
 		update_cached_mobile_ua_list( $wp_cache_mobile_browsers, $wp_cache_mobile_prefixes, $mobile_groups );
 	}
 
-	?> <table class="wpsc-settings-table"><td valign='top'><?php
+	?> <table><td valign='top'><?php
 	switch( $_GET[ 'tab' ] ) {
 		case "cdn":
 		scossdl_off_options();
