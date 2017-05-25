@@ -13,7 +13,6 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 
 		$this->add_rewrite_notice( $notices );
 		$this->add_cache_disabled_notice( $notices );
-		$this->add_writable_notice( $notices );
 		$this->add_compression_notice( $notices );
 
 		return rest_ensure_response( $notices );
@@ -32,21 +31,6 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 					'Read Only Mode. Configuration cannot be changed.',
 					'wp-super-cache'
 				),
-			);
-		}
-	}
-
-	/**
-	 * @param array $notices
-	 */
-	protected function add_writable_notice( & $notices ) {
-		if ( is_writeable_ACLSafe( ABSPATH ) ) {
-			$notices['cache_writable'] = array(
-				'type' => 'warning',
-				'message' => sprintf( __(
-					'%s is writable. Please make it readonly after your page is generated as this is a security risk.',
-					'wp-super-cache'
-				), ABSPATH )
 			);
 		}
 	}
