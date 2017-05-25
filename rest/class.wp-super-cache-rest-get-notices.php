@@ -78,7 +78,9 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 	 * @param array $notices
 	 */
 	protected function add_rewrite_notice( & $notices ) {
-		global $wp_cache_mod_rewrite, $cache_enabled, $home_path, $super_cache_enabled;
+		global $home_path, $wp_cache_config_file;
+
+		include( $wp_cache_config_file );
 
 		// Return if the rewrite caching is disabled.
 		if ( ! $cache_enabled || ! $super_cache_enabled || ! $wp_cache_mod_rewrite ) {
