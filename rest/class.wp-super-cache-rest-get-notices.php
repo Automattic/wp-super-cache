@@ -93,7 +93,7 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 		extract( wpsc_get_htaccess_info() );
 
 		if ( $scrules != $rules ) {
-			$notices['mod_rewrite'] = array(
+			$notices[ 'mod_rewrite_rules' ] = array(
 				'type' => 'warning',
 				'message' => __(
 					'The rewrite rules required by this plugin have changed or are missing.',
