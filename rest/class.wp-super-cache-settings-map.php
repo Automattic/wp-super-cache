@@ -134,7 +134,7 @@ class WP_Super_Cache_Settings_Map {
 			'global' => 'wp_cache_pages',
 		),
 		'minimum_preload_interval' => array(
-			'global' => 'get_minimum_preload_interval',
+			'get' => 'get_minimum_preload_interval',
 		),
 		'preload_interval' => array(
 			'global' => 'wp_cache_preload_interval',
