@@ -80,7 +80,7 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 			$notices[ 'mod_rewrite_rules' ] = array(
 				'type' => 'warning',
 				'message' => __(
-					'The rewrite rules required by this plugin have changed or are missing.',
+					'The rewrite rules required by this plugin have changed or are missing. Cache files will still be served by PHP.',
 					'wp-super-cache'
 				),
 			);
