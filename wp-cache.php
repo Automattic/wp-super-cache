@@ -1452,11 +1452,14 @@ function wpsc_update_direct_pages() {
 	if ( $valid_nonce && array_key_exists('new_direct_page', $_POST) && $_POST[ 'new_direct_page' ] && '' != $_POST[ 'new_direct_page' ] ) {
 		$page = str_replace( get_option( 'siteurl' ), '', $_POST[ 'new_direct_page' ] );
 		$page = str_replace( '..', '', preg_replace('/[ <>\'\"\r\n\t\(\)]/', '', $page ) );
-		if( substr( $page, 0, 1 ) != '/' )
+		if ( substr( $page, 0, 1 ) != '/' )
 			$page = '/' . $page;
-		if ( false == is_array( $cached_direct_pages ) || in_array( $page, $cached_direct_pages ) == false ) {
+		if ( $page != '/' || false == is_array( $cached_direct_pages ) || in_array( $page, $cached_direct_pages ) == false ) {
 			$cached_direct_pages[] = $page;
 			$out .= "'$page', ";
+
+			@unlink( trailingslashit( ABSPATH . $page ) . "index.html" );
+			wpsc_delete_files( get_supercache_dir() . $page );
 		}
 	}
 
