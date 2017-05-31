@@ -1537,9 +1537,7 @@ function wp_lock_down() {
 	<fieldset class="options">
 	<h3><?php _e( 'Directly Cached Files', 'wp-super-cache' ); ?></h3><?php
 
-	error_log( __LINE__ . " cached direct pages: " . print_r( $cached_direct_pages, 1 ) );
 	$cached_direct_pages = wpsc_update_direct_pages();
-	error_log( __LINE__ . " cached direct pages: " . print_r( $cached_direct_pages, 1 ) );
 
 	$readonly = '';
 	if( !is_writeable_ACLSafe( ABSPATH ) ) {
