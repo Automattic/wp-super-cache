@@ -1465,6 +1465,9 @@ function wpsc_update_direct_pages() {
 
 	if ( $out != '' ) {
 		$out = substr( $out, 0, -2 );
+		if ( $out == "''" ) {
+			$out = '';
+		}
 		$out = '$cached_direct_pages = array( ' . $out . ' );';
 		wp_cache_replace_line('^ *\$cached_direct_pages', "$out", $wp_cache_config_file);
 	}
