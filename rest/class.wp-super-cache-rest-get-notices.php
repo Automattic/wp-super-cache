@@ -30,7 +30,7 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 		if ( $cache_enabled && !$wp_cache_mod_rewrite ) {
 			$scrules = trim( implode( "\n", extract_from_markers( trailingslashit( get_home_path() ) . '.htaccess', 'WPSuperCache' ) ) );
 			if ( $scrules != '' ) {
-				$notices[ '[php_mod_rewrite' ] = array(
+				$notices[ 'php_mod_rewrite' ] = array(
 					'type' => 'warning',
 					'message' => __(
 						'Notice: PHP caching enabled but Supercache mod_rewrite rules detected. Cached files will be served using those rules. If your site is working ok, please ignore this message.  Otherwise, you can edit the .htaccess file in the root of your install and remove the SuperCache rules.',
