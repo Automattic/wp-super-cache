@@ -123,10 +123,10 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 		if ( !is_writeable_ACLSafe( $home_path . ".htaccess" ) ) {
 			$notices[ 'htaccess_ro' ] = array(
 				'type' => 'warning',
-				'message' => __(
-					'The .htaccess file is readonly and cannot be updated. Cache files will still be served by PHP.',
+				'message' => sprintf( __(
+					'The .htaccess file is readonly and cannot be updated. Cache files will still be served by PHP. See <a href="%s">Changing File Permissions</a> on WordPress.org for help on fixing this.',
 					'wp-super-cache'
-				),
+				), 'https://codex.wordpress.org/Changing_File_Permissions' ),
 			);
 		}
 	}
