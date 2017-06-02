@@ -133,6 +133,9 @@ class WP_Super_Cache_Settings_Map {
 		'pages' => array(
 			'global' => 'wp_cache_pages',
 		),
+		'minimum_preload_interval' => array(
+			'get' => 'get_minimum_preload_interval',
+		),
 		'preload_interval' => array(
 			'global' => 'wp_cache_preload_interval',
 			'set' => 'set_preload_setting',
@@ -184,6 +187,10 @@ class WP_Super_Cache_Settings_Map {
 		),
 		'cache_direct_pages' => array(
 			'global' => 'cached_direct_pages',
+			'set'    => 'set_cache_direct_pages',
+		),
+		'new_direct_page' => array(
+			'set' => 'new_direct_page',
 		),
 		'ossdl_cname' => array(
 			'option' => 'ossdl_cname',

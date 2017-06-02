@@ -120,7 +120,6 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 				),
 			);
 		}
-
 		if ( !is_writeable_ACLSafe( $home_path . ".htaccess" ) ) {
 			$notices[ 'htaccess_ro' ] = array(
 				'type' => 'warning',

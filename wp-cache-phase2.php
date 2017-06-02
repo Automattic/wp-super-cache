@@ -1048,6 +1048,9 @@ function wp_cache_shutdown_callback() {
 				case 'rdf':
 					$value = "application/rdf+xml";
 					break;
+				case ( 'sitemap' || 'sitemap_n' ):
+					$value = "text/xml";
+					break;
 				case 'rss':
 				case 'rss2':
 				default:
@@ -1412,7 +1415,7 @@ function wp_cache_post_change( $post_id ) {
 function wp_cache_microtime_diff($a, $b) {
 	list($a_dec, $a_sec) = explode(' ', $a);
 	list($b_dec, $b_sec) = explode(' ', $b);
-	return $b_sec - $a_sec + $b_dec - $a_dec;
+	return (float)$b_sec - (float)$a_sec + (float)$b_dec - (float)$a_dec;
 }
 
 function wp_cache_post_id() {
