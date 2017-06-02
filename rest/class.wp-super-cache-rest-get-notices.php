@@ -18,7 +18,11 @@ class WP_Super_Cache_Rest_Get_Notices extends WP_REST_Controller {
 		$this->add_compression_notice( $notices );
 		$this->add_php_mod_rewrite_notice( $notices );
 
-		return rest_ensure_response( $notices );
+		if ( empty( $notices ) ) {
+			return "{}";
+		} else {
+			return rest_ensure_response( $notices );
+		}
 	}
 
 	/**
