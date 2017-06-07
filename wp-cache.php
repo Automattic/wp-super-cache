@@ -457,7 +457,7 @@ function wp_cache_manager_updates() {
 		if( isset( $_POST[ 'wp_cache_easy_on' ] ) && $_POST[ 'wp_cache_easy_on' ] == 1 ) {
 			$_POST[ 'wp_cache_mobile_enabled' ] = 1;
 			$_POST[ 'wp_cache_status' ] = 'all';
-			$_POST[ 'super_cache_enabled' ] = 2; // PHP
+			$_POST[ 'super_cache_enabled' ] = 1;
 			$_POST[ 'cache_rebuild_files' ] = 1;
 			unset( $_POST[ 'cache_compression' ] );
 			if ( $cache_path != WP_CONTENT_DIR . '/cache/' )
@@ -567,29 +567,25 @@ function wp_cache_manager_updates() {
 		wp_cache_replace_line('^ *\$wp_supercache_cache_list', "\$wp_supercache_cache_list = " . $wp_supercache_cache_list . ";", $wp_cache_config_file);
 
 		if ( isset( $_POST[ 'wp_cache_status' ] ) && 'all' == $_POST[ 'wp_cache_status' ] ) {
-			if ( $_POST[ 'wp_cache_status' ] == 'all' ) {
-				wp_cache_enable();
-			}
-
-
-			if ( isset( $_POST[ 'super_cache_enabled' ] ) ) {
-				if ( $_POST[ 'super_cache_enabled' ] == 0 ) {
-					wp_cache_enable(); // logged in cache
-					wp_super_cache_disable();
-				} else {
-					wp_super_cache_enable();
-					$super_cache_enabled = true;
-				}
-				if( $_POST[ 'super_cache_enabled' ] == 1 ) {
-					$wp_cache_mod_rewrite = 1; // we need this because supercached files can be served by PHP too.
-				} else {
-					$wp_cache_mod_rewrite = 0; // cache files served by PHP
-				}
-				wp_cache_replace_line('^ *\$wp_cache_mod_rewrite', '$wp_cache_mod_rewrite = ' . $wp_cache_mod_rewrite . ";", $wp_cache_config_file);
-			}
+			wp_cache_enable();
 		} else {
 			wp_cache_disable();
 		}
+
+		if ( isset( $_POST[ 'super_cache_enabled' ] ) ) {
+			wp_super_cache_enable();
+			$super_cache_enabled = true;
+		} else {
+			wp_super_cache_disable();
+			$super_cache_enabled = false;
+		}
+
+		if ( $_POST[ 'wp_cache_mod_rewrite' ] == 1 ) {
+			$wp_cache_mod_rewrite = 1;
+		} else {
+			$wp_cache_mod_rewrite = 0; // cache files served by PHP
+		}
+		wp_cache_setting( 'wp_cache_mod_rewrite', $wp_cache_mod_rewrite );
 
 		if( isset( $_POST[ 'wp_cache_hello_world' ] ) ) {
 			$wp_cache_hello_world = 1;
@@ -947,17 +943,28 @@ table.wpsc-settings-table {
 		echo '<input type="hidden" name="action" value="scupdates" />';
 		?><table class="form-table">
 		<tr valign="top">
-			<th scope="row"><label for="wp_cache_status"><?php _e( 'Caching', 'wp-super-cache' ); ?></label></th>
+			<th scope="row"><label for="wp_cache_status"><?php _e( 'Standard Caching', 'wp-super-cache' ); ?></label></th>
 			<td>
 				<fieldset>
-				<legend class="hidden">Caching</legend>
-				<label><input type='radio' name='wp_cache_status' value='all' <?php if ( $cache_enabled == true ) { echo 'checked=checked'; } ?>> <?php _e( 'Caching On', 'wp-super-cache' ); echo " <em>(" . __( "Recommended", "wp-super-cache" ) . ")</em>"; ?></label><br />
-				<label><input type='radio' name='wp_cache_status' value='0' <?php if ( $cache_enabled == false ) { echo 'checked=checked'; } ?>> <?php _e( 'Caching Off', 'wp-super-cache' ); ?></label><br /><br />
-				<label><input type='radio' name='super_cache_enabled' <?php if( $super_cache_enabled && $wp_cache_mod_rewrite == 1 ) echo "checked"; ?> value='1'> <?php _e( 'Use mod_rewrite to serve cache files.', 'wp-super-cache' ); ?></label><br />
-				<label><input type='radio' name='super_cache_enabled' <?php if( $wp_cache_mod_rewrite == 0 ) echo "checked"; ?> value='2'> <?php _e( 'Use PHP to serve cache files.', 'wp-super-cache' ); echo " <em>(" . __( "Recommended", "wp-super-cache" ) . ")</em>"; ?></label><br />
-				<label><input type='radio' name='super_cache_enabled' <?php if( $super_cache_enabled == false ) echo "checked"; ?> value='0'> <?php _e( 'Legacy page caching.', 'wp-super-cache' ); ?></label><br />
-				<em><?php _e( 'Mod_rewrite is fastest, PHP is almost as fast and easier to get working, while legacy caching is slower again, but more flexible and also easy to get working. New users should use PHP caching.', 'wp-super-cache' ); ?></em><br />
-				</legend>
+				<legend class="hidden"><?php _e( 'Standard Caching' ); ?></legend>
+				<label><input type='checkbox' name='wp_cache_status' value='all' <?php if ( $cache_enabled == true ) { echo 'checked=checked'; } ?>> <em><?php _e( 'Cache all visits to this site for fast retrieval.' ); ?></em></label>
+				</fieldset>
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row"><label for="super_cache_enabled"><?php _e( 'Super Caching', 'wp-super-cache' ); ?></label></th>
+			<td>
+				<fieldset>
+				<legend class="hidden"><?php _e( 'Super Caching' ); ?></legend>
+				<label><input type='checkbox' name='super_cache_enabled' <?php if ( $super_cache_enabled != false ) echo "checked"; ?> value='1'></label> <em><?php _e( 'Cache anonymous visits to this site for fast retrieval. Faster than standard caching.' ); ?></em>
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row"><label for="super_cache_enabled"><?php _e( 'Cache Delivery Method', 'wp-super-cache' ); ?></label></th>
+			<td>
+				<label><input type='radio' name='wp_cache_mod_rewrite' <?php if ( $wp_cache_mod_rewrite == 0 ) echo "checked"; ?> value='0'> <?php _e( 'Simple', 'wp-super-cache' ); echo " <em>(" . __( "Recommended", "wp-super-cache" ) . ")</em>"; ?></label><br />
+				<label><input type='radio' name='wp_cache_mod_rewrite' <?php if ( $wp_cache_mod_rewrite == 1 ) echo "checked"; ?> value='1'> <?php _e( 'Expert', 'wp-super-cache' ); ?></label><br />
+				<em><small class='description'><?php _e( 'Expert caching requires changes to important server files and may require manual intervention if enabled.', 'wp-super-cache' ); ?></small></em>
 				</fieldset>
 			</td>
 		</tr>
@@ -966,6 +973,8 @@ table.wpsc-settings-table {
 			<td>
 				<fieldset>
 				<legend class="hidden">Miscellaneous</legend>
+				<label><input type='checkbox' name='wp_cache_not_logged_in' <?php if ( $wp_cache_not_logged_in ) echo "checked"; ?> value='1'> <?php _e( 'Don&#8217;t cache pages for <acronym title="Logged in users and those that comment">known users</acronym>.', 'wp-super-cache' ); echo " <em>(" . __( "Recommended", "wp-super-cache" ) . ")</em>"; ?></label><br />
+				<label><input type='checkbox' name='wp_cache_no_cache_for_get' <?php if( $wp_cache_no_cache_for_get ) echo "checked"; ?> value='1'> <?php _e( 'Don&#8217;t cache pages with GET parameters. (?x=y at the end of a url)', 'wp-super-cache' ); ?></label><br />
 				<?php if ( false == defined( 'WPSC_DISABLE_COMPRESSION' ) ) { ?>
 					<?php if ( false == function_exists( 'gzencode' ) ) { ?>
 						<em><?php _e( 'Warning! Compression is disabled as gzencode() function was not found.', 'wp-super-cache' ); ?></em><br />
@@ -975,7 +984,6 @@ table.wpsc-settings-table {
 					<?php }
 				}
 				?>
-				<label><input type='checkbox' name='wp_cache_not_logged_in' <?php if ( $wp_cache_not_logged_in ) echo "checked"; ?> value='1'> <?php _e( 'Don&#8217;t cache pages for <acronym title="Logged in users and those that comment">known users</acronym>.', 'wp-super-cache' ); echo " <em>(" . __( "Recommended", "wp-super-cache" ) . ")</em>"; ?></label><br />
 				<label><input type='checkbox' name='cache_rebuild_files' <?php if ( $cache_rebuild_files ) echo "checked"; ?> value='1'> <?php _e( 'Cache rebuild. Serve a supercache file to anonymous users while a new file is being generated.', 'wp-super-cache' ); echo " <em>(" . __( "Recommended", "wp-super-cache" ) . ")</em>"; ?></label><br />
 				<?php
 				$disable_304 = true;
@@ -991,7 +999,6 @@ table.wpsc-settings-table {
 					?><em><?php _e( '304 support is disabled by default because some hosts have had problems with the headers used in the past.', 'wp-super-cache' ); ?></em><br /><?php
 				}
 				?>
-				<label><input type='checkbox' name='wp_cache_no_cache_for_get' <?php if( $wp_cache_no_cache_for_get ) echo "checked"; ?> value='1'> <?php _e( 'Don&#8217;t cache pages with GET parameters. (?x=y at the end of a url)', 'wp-super-cache' ); ?></label><br />
 				<label><input type='checkbox' name='wp_cache_make_known_anon' <?php if( $wp_cache_make_known_anon ) echo "checked"; ?> value='1'> <?php _e( 'Make known users anonymous so they&#8217;re served supercached static files.', 'wp-super-cache' ); ?></label><br />
 				<label><input type='checkbox' name='wp_cache_hello_world' <?php if( $wp_cache_hello_world ) echo "checked"; ?> value='1'> <?php printf( __( 'Proudly tell the world your server is <a href="%s">Stephen Fry proof</a>! (places a message in your blog&#8217;s footer)', 'wp-super-cache' ), 'https://twitter.com/#!/HibbsLupusTrust/statuses/136429993059291136' ); ?></label><br />
 				</legend>
