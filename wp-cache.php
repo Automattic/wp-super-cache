@@ -573,6 +573,7 @@ function wp_cache_manager_updates() {
 		}
 
 		if ( isset( $_POST[ 'super_cache_enabled' ] ) ) {
+			wp_cache_enable();
 			wp_super_cache_enable();
 			$super_cache_enabled = true;
 		} else {
