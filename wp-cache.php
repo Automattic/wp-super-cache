@@ -456,7 +456,7 @@ function wp_cache_manager_updates() {
 		$_POST[ 'action' ] = 'scupdates';
 		if( isset( $_POST[ 'wp_cache_easy_on' ] ) && $_POST[ 'wp_cache_easy_on' ] == 1 ) {
 			$_POST[ 'wp_cache_mobile_enabled' ] = 1;
-			$_POST[ 'wp_cache_status' ] = '2';
+			$_POST[ 'wp_cache_enabled' ] = 1;
 			$_POST[ 'super_cache_enabled' ] = 1;
 			$_POST[ 'cache_rebuild_files' ] = 1;
 			unset( $_POST[ 'cache_compression' ] );
@@ -477,8 +477,7 @@ function wp_cache_manager_updates() {
 			}
 
 		} else {
-			unset( $_POST[ 'wp_cache_status' ] );
-			$_POST[ 'super_cache_enabled' ] = 0;
+			unset( $_POST[ 'wp_cache_enabled' ] );
 			wp_clear_scheduled_hook( 'wp_cache_check_site_hook' );
 			wp_clear_scheduled_hook( 'wp_cache_gc' );
 			wp_clear_scheduled_hook( 'wp_cache_gc_watcher' );
