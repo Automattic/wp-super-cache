@@ -456,7 +456,7 @@ function wp_cache_manager_updates() {
 		$_POST[ 'action' ] = 'scupdates';
 		if( isset( $_POST[ 'wp_cache_easy_on' ] ) && $_POST[ 'wp_cache_easy_on' ] == 1 ) {
 			$_POST[ 'wp_cache_mobile_enabled' ] = 1;
-			$_POST[ 'wp_cache_status' ] = 'all';
+			$_POST[ 'wp_cache_status' ] = '2';
 			$_POST[ 'super_cache_enabled' ] = 1;
 			$_POST[ 'cache_rebuild_files' ] = 1;
 			unset( $_POST[ 'cache_compression' ] );
@@ -566,19 +566,22 @@ function wp_cache_manager_updates() {
 		}
 		wp_cache_replace_line('^ *\$wp_supercache_cache_list', "\$wp_supercache_cache_list = " . $wp_supercache_cache_list . ";", $wp_cache_config_file);
 
-		if ( isset( $_POST[ 'wp_cache_status' ] ) && 'all' == $_POST[ 'wp_cache_status' ] ) {
-			wp_cache_enable();
-		} else {
-			wp_cache_disable();
-		}
+		if ( isset( $_POST[ 'wp_cache_status' ] ) ) {
+			if ( 0 == $_POST[ 'wp_cache_status' ] ) {
+				wp_cache_disable();
+				wp_super_cache_disable();
+				$super_cache_enabled = false;
+			} else {
+				wp_cache_enable();
+			}
 
-		if ( isset( $_POST[ 'super_cache_enabled' ] ) ) {
-			wp_cache_enable();
-			wp_super_cache_enable();
-			$super_cache_enabled = true;
-		} else {
-			wp_super_cache_disable();
-			$super_cache_enabled = false;
+			if ( 1 == $_POST[ 'wp_cache_status' ] ) {
+				wp_super_cache_disable();
+				$super_cache_enabled = false;
+			} elseif ( 2 == $_POST[ 'wp_cache_status' ] ) {
+				wp_super_cache_enable();
+				$super_cache_enabled = true;
+			}
 		}
 
 		if ( $_POST[ 'wp_cache_mod_rewrite' ] == 1 ) {
@@ -944,20 +947,17 @@ table.wpsc-settings-table {
 		echo '<input type="hidden" name="action" value="scupdates" />';
 		?><table class="form-table">
 		<tr valign="top">
-			<th scope="row"><label for="wp_cache_status"><?php _e( 'Standard Caching', 'wp-super-cache' ); ?></label></th>
+			<th scope="row"><label for="wp_cache_status"><?php _e( 'Caching', 'wp-super-cache' ); ?></label></th>
 			<td>
 				<fieldset>
-				<legend class="hidden"><?php _e( 'Standard Caching' ); ?></legend>
-				<label><input type='checkbox' name='wp_cache_status' value='all' <?php if ( $cache_enabled == true ) { echo 'checked=checked'; } ?>> <em><?php _e( 'Cache all visits to this site for fast retrieval.' ); ?></em></label>
+				<legend class="hidden"><?php _e( 'Caching' ); ?></legend>
+				<label><input type='radio' name='wp_cache_status' value='0' <?php if ( $cache_enabled == false ) { echo 'checked=checked'; } ?>> <?php _e( 'Disable Caching', 'wp-super-cache' ); ?><br />
+					<em><small class='description'><?php _e( 'Disable and delete all cache files.', 'wp-super-cache' ); ?></small></em></label><br />
+				<label><input type='radio' name='wp_cache_status' value='1' <?php if ( $cache_enabled == true && $super_cache_enabled == false ) { echo 'checked=checked'; } ?>> <?php _e( 'Standard Caching', 'wp-super-cache' ); ?><br />
+					<em><small class='description'><?php _e( 'Cache all visits to this site for fast retrieval.', 'wp-super-cache' ); ?></small></em></label><br />
+				<label><input type='radio' name='wp_cache_status' value='2' <?php if ( $cache_enabled == true && $super_cache_enabled == true ) { echo 'checked=checked'; } ?>> <?php _e( 'Super Caching', 'wp-super-cache' ); ?><br />
+					<em><small class='description'><?php _e( 'Includes standard caching, and speeds up requests from <acronym title="visitors who are logged out or do not leave comments">anonymous visitors</acronym> that probably make up most of your traffic.', 'wp-super-cache' ); ?></small></em></label>
 				</fieldset>
-			</td>
-		</tr>
-		<tr valign="top">
-			<th scope="row"><label for="super_cache_enabled"><?php _e( 'Super Caching', 'wp-super-cache' ); ?></label></th>
-			<td>
-				<fieldset>
-				<legend class="hidden"><?php _e( 'Super Caching' ); ?></legend>
-				<label><input type='checkbox' name='super_cache_enabled' <?php if ( $super_cache_enabled != false ) echo "checked"; ?> value='1'></label> <em><?php _e( 'Cache anonymous visits to this site for fast retrieval. Faster than standard caching.' ); ?></em>
 			</td>
 		</tr>
 		<tr valign="top">
