@@ -288,6 +288,17 @@ function wp_cache_manager_error_checks() {
 	} elseif ( !defined( 'SUBMITDISABLED' ) ) {
 		define( "SUBMITDISABLED", ' ' );
 	}
+        
+        /**
+         * Check for permissions for the cache directory itself to decide if "Delete cache" button must be enabled
+         */
+        if (!defined( 'WP_SUPERCACHE_FLUSH_CACHE_DISABLED' )) {
+            if ( !is_writeable_ACLSafe($cache_path)) {
+                define('WP_SUPERCACHE_FLUSH_CACHE_DISABLED', 'disabled style="color: #aaa" ');
+            } else {
+                define('WP_SUPERCACHE_FLUSH_CACHE_DISABLED', ' ');
+            }
+        }
 
 	$valid_nonce = isset($_REQUEST['_wpnonce']) ? wp_verify_nonce($_REQUEST['_wpnonce'], 'wp-cache') : false;
 	// Check that garbage collection is running
@@ -1182,7 +1193,7 @@ table.wpsc-settings-table {
 			echo "<p>" . __( "Cached pages are stored on your server as html and PHP files. If you need to delete them, use the button below.", 'wp-super-cache' ) . "</p>";
 			echo '<form name="wp_cache_content_delete" action="?page=wpsupercache&tab=contents" method="post">';
 			echo '<input type="hidden" name="wp_delete_cache" />';
-			echo '<div class="submit"><input id="deletepost" class="button-secondary" type="submit" ' . SUBMITDISABLED . 'value="' . __( 'Delete Cache', 'wp-super-cache' ) . ' " /></div>';
+			echo '<div class="submit"><input id="deletepost" class="button-secondary" type="submit" ' . WP_SUPERCACHE_FLUSH_CACHE_DISABLED . 'value="' . __( 'Delete Cache', 'wp-super-cache' ) . ' " /></div>';
 			wp_nonce_field('wp-cache');
 			echo "</form>\n";
 
