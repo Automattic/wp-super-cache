@@ -1297,7 +1297,7 @@ function wp_cache_post_id_gc( $siteurl, $post_id, $all = 'all' ) {
 }
 
 function wp_cache_post_change( $post_id ) {
-	global $file_prefix, $cache_path, $blog_id, $super_cache_enabled, $blog_cache_dir, $blogcacheid, $wp_cache_refresh_single_only, $wp_cache_object_cache;
+	global $file_prefix, $cache_path, $blog_id, $super_cache_enabled, $blog_cache_dir, $blogcacheid, $wp_cache_refresh_single_only, $wp_cache_object_cache, $wp_cache_clear_on_post_edit;
 	static $last_processed = -1;
 
 	if ( $post_id == $last_processed ) {
@@ -1324,8 +1324,11 @@ function wp_cache_post_change( $post_id ) {
 			wp_cache_debug( "wp_cache_post_change: comment detected. only deleting post page.", 4 );
 			$all = false;
 		}
-	} else {
+	} elseif( isset( $wp_cache_clear_on_post_edit ) && $wp_cache_clear_on_post_edit ) {
+		wp_cache_debug( "wp_cache_post_change: ensure not to delete all cache on post edit/change, per setting.", 4 );
 		$all = true;
+	} else {
+		$all = false;
 	}
 
 	$all_backup = $all;
