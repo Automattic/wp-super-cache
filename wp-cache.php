@@ -34,6 +34,7 @@ if( !defined('WP_CONTENT_URL') )
 if( !defined('WP_CONTENT_DIR') )
 	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
 
+global $wp_cache_config_file, $wp_cache_link, $cache_path;
 $wp_cache_config_file = WP_CONTENT_DIR . '/wp-cache-config.php';
 
 if ( !defined( 'WPCACHEHOME' ) ) {
