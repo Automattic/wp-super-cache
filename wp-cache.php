@@ -3123,8 +3123,40 @@ function wpsc_get_logged_in_cookie() {
 	return $logged_in_cookie;
 }
 
+/**
+ * Get the rewrite condition rules
+ *
+ * @return array
+ */
+function wpsc_get_condition_rules() {
+	global $wp_cache_mobile_enabled, $wp_cache_mobile_browsers, $wp_cache_mobile_prefixes;
+
+	$condition_rules = array();
+
+	// Make unslashed requests bypass cache, so they'll get Location header for slashed URL
+	if( substr( get_option( 'permalink_structure' ), -1 ) == '/' ) {
+		$condition_rules[] = "RewriteCond %{REQUEST_URI} !^.*[^/]$";
+		$condition_rules[] = "RewriteCond %{REQUEST_URI} !^.*//.*$";
+	}
+
+	$condition_rules[] = "RewriteCond %{REQUEST_METHOD} !POST";
+	$condition_rules[] = "RewriteCond %{QUERY_STRING} !.*=.*";
+	$condition_rules[] = "RewriteCond %{HTTP:Cookie} !^.*(comment_author_|" . wpsc_get_logged_in_cookie() . "|wp-postpass_).*$";
+	$condition_rules[] = "RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\\\"]+ [NC]";
+	$condition_rules[] = "RewriteCond %{HTTP:Profile} !^[a-z0-9\\\"]+ [NC]";
+
+	if ( $wp_cache_mobile_enabled ) {
+		if ( false == empty( $wp_cache_mobile_browsers ) )
+			$condition_rules[] = "RewriteCond %{HTTP_USER_AGENT} !^.*(" . addcslashes( implode( '|', $wp_cache_mobile_browsers ), ' ' ) . ").* [NC]";
+		if ( false == empty( $wp_cache_mobile_prefixes ) )
+			$condition_rules[] = "RewriteCond %{HTTP_user_agent} !^(" . addcslashes( implode( '|', $wp_cache_mobile_prefixes ), ' ' ) . ").* [NC]";
+	}
+
+	return apply_filters( 'supercache_rewrite_conditions', $condition_rules );
+}
+
 function wpsc_get_htaccess_info() {
-	global $wp_cache_mobile_enabled, $wp_cache_mobile_prefixes, $wp_cache_mobile_browsers, $wp_cache_disable_utf8;
+	global $wp_cache_disable_utf8;
 	if ( isset( $_SERVER[ "PHP_DOCUMENT_ROOT" ] ) ) {
 		$document_root = $_SERVER[ "PHP_DOCUMENT_ROOT" ];
 		$apache_root = $_SERVER[ "PHP_DOCUMENT_ROOT" ];
@@ -3160,22 +3192,7 @@ function wpsc_get_htaccess_info() {
 	$wprules = str_replace( "RewriteBase $home_root\n", '', $wprules );
 	$scrules = implode( "\n", extract_from_markers( $home_path.'.htaccess', 'WPSuperCache' ) );
 
-	if( substr( get_option( 'permalink_structure' ), -1 ) == '/' ) {
-		$condition_rules[] = "RewriteCond %{REQUEST_URI} !^.*[^/]$";
-		$condition_rules[] = "RewriteCond %{REQUEST_URI} !^.*//.*$";
-	}
-	$condition_rules[] = "RewriteCond %{REQUEST_METHOD} !POST";
-	$condition_rules[] = "RewriteCond %{QUERY_STRING} !.*=.*";
-	$condition_rules[] = "RewriteCond %{HTTP:Cookie} !^.*(comment_author_|" . wpsc_get_logged_in_cookie() . "|wp-postpass_).*$";
-	$condition_rules[] = "RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\\\"]+ [NC]";
-	$condition_rules[] = "RewriteCond %{HTTP:Profile} !^[a-z0-9\\\"]+ [NC]";
-	if ( $wp_cache_mobile_enabled ) {
-		if ( false == empty( $wp_cache_mobile_browsers ) )
-			$condition_rules[] = "RewriteCond %{HTTP_USER_AGENT} !^.*(" . addcslashes( implode( '|', $wp_cache_mobile_browsers ), ' ' ) . ").* [NC]";
-		if ( false == empty( $wp_cache_mobile_prefixes ) )
-			$condition_rules[] = "RewriteCond %{HTTP_user_agent} !^(" . addcslashes( implode( '|', $wp_cache_mobile_prefixes ), ' ' ) . ").* [NC]";
-	}
-	$condition_rules = apply_filters( 'supercacherewriteconditions', $condition_rules );
+	$condition_rules = wpsc_get_condition_rules();
 
 	$rules = "<IfModule mod_rewrite.c>\n";
 	$rules .= "RewriteEngine On\n";
@@ -3186,29 +3203,33 @@ function wpsc_get_htaccess_info() {
 		$rules .= "AddDefaultCharset {$charset}\n";
 	}
 
+	$rules .= "# HTML / HTTPS / gzipped\n";
 	$rules .= "CONDITION_RULES";
 	$rules .= "RewriteCond %{HTTP:Accept-Encoding} gzip\n";
 	$rules .= "RewriteCond %{HTTPS} on\n";
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index-https.html.gz -f\n";
 	$rules .= "RewriteRule ^(.*) \"{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index-https.html.gz\" [L]\n\n";
 
+	$rules .= "# HTML / HTTP / gzipped\n";
 	$rules .= "CONDITION_RULES";
 	$rules .= "RewriteCond %{HTTP:Accept-Encoding} gzip\n";
 	$rules .= "RewriteCond %{HTTPS} !on\n";
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html.gz -f\n";
 	$rules .= "RewriteRule ^(.*) \"{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html.gz\" [L]\n\n";
 
+	$rules .= "# HTML / HTTPS / uncompressed\n";
 	$rules .= "CONDITION_RULES";
 	$rules .= "RewriteCond %{HTTPS} on\n";
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index-https.html -f\n";
 	$rules .= "RewriteRule ^(.*) \"{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index-https.html\" [L]\n\n";
 
+	$rules .= "# HTML / HTTP / uncompressed\n";
 	$rules .= "CONDITION_RULES";
 	$rules .= "RewriteCond %{HTTPS} !on\n";
 	$rules .= "RewriteCond {$apache_root}{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html -f\n";
 	$rules .= "RewriteRule ^(.*) \"{$inst_root}cache/supercache/%{SERVER_NAME}{$home_root_lc}$1/index.html\" [L]\n";
 	$rules .= "</IfModule>\n";
-	$rules = apply_filters( 'supercacherewriterules', $rules );
+	$rules = apply_filters( 'supercacherewriterules', $rules, $apache_root, $inst_root, $home_root_lc );
 
 	$rules = str_replace( "CONDITION_RULES", implode( "\n", $condition_rules ) . "\n", $rules );
 
