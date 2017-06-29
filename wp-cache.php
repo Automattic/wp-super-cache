@@ -28,6 +28,8 @@ Text Domain: wp-super-cache
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+define( 'WP_SUPER_CACHE_VERSION', '1.4.9' );
+
 // Pre-2.6 compatibility
 if( !defined('WP_CONTENT_URL') )
 	define( 'WP_CONTENT_URL', get_option('siteurl') . '/wp-content');
