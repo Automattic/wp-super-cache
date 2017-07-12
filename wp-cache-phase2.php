@@ -225,6 +225,7 @@ function wp_cache_get_response_headers() {
 						'X-UA-Compatible',
 					);
 
+	$known_headers = apply_filters( 'wpsc_known_headers', $known_headers );
 
 	if ( ! isset( $known_headers[ 'age' ] ) ) {
 		$known_headers = array_map( 'mb_strtolower', $known_headers );
