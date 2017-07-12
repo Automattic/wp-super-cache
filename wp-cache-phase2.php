@@ -176,6 +176,60 @@ if ( !function_exists( 'wp_cache_user_agent_is_rejected' ) ) {
 }
 
 function wp_cache_get_response_headers() {
+	static $known_headers = array(
+						'Access-Control-Allow-Origin',
+						'Accept-Ranges',
+						'Age',
+						'Allow',
+						'Cache-Control',
+						'Connection',
+						'Content-Encoding',
+						'Content-Language',
+						'Content-Length',
+						'Content-Location',
+						'Content-MD5',
+						'Content-Disposition',
+						'Content-Range',
+						'Content-Type',
+						'Date',
+						'ETag',
+						'Expires',
+						'Last-Modified',
+						'Link',
+						'Location',
+						'P3P',
+						'Pragma',
+						'Proxy-Authenticate',
+						"Referrer-Policy",
+						'Refresh',
+						'Retry-After',
+						'Server',
+						'Status',
+						'Strict-Transport-Security',
+						'Trailer',
+						'Transfer-Encoding',
+						'Upgrade',
+						'Vary',
+						'Via',
+						'Warning',
+						'WWW-Authenticate',
+						'X-Frame-Options',
+						'Public-Key-Pins',
+						'X-XSS-Protection',
+						'Content-Security-Policy',
+						"X-Pingback",
+						'X-Content-Security-Policy',
+						'X-WebKit-CSP',
+						'X-Content-Type-Options',
+						'X-Powered-By',
+						'X-UA-Compatible',
+					);
+
+
+	if ( ! isset( $known_headers[ 'age' ] ) ) {
+		$known_headers = array_map( 'mb_strtolower', $known_headers );
+	}
+
 	$headers = array();
 	if ( function_exists( 'apache_response_headers' ) ) {
 		$headers = apache_response_headers();
@@ -188,6 +242,12 @@ function wp_cache_get_response_headers() {
 			$header_value = isset( $header_parts[1] ) ? trim( $header_parts[1] ) : '';
 
 			$headers[$header_name] = $header_value;
+		}
+	}
+
+	foreach( $headers as $key => $value ) {
+		if ( ! in_array( mb_strtolower( $key ), $known_headers ) ) {
+			unset( $headers[ $key ] );
 		}
 	}
 
@@ -1015,11 +1075,9 @@ function wp_cache_shutdown_callback() {
 	$wp_cache_meta[ 'key' ] = $wp_cache_key;
 	$wp_cache_meta = apply_filters( 'wp_cache_meta', $wp_cache_meta );
 
-	$response = wp_cache_get_response_headers();
-	foreach ($known_headers as $key) {
-		if(isset($response[$key])) {
-			$wp_cache_meta[ 'headers' ][ $key ] = "$key: " . $response[$key];
-		}
+	$headers = wp_cache_get_response_headers();
+	foreach( $headers as $key => $value ) {
+		$wp_cache_meta[ 'headers' ][ $key ] = "$key: $value";
 	}
 
 	wp_cache_debug( "wp_cache_shutdown_callback: collecting meta data.", 2 );
