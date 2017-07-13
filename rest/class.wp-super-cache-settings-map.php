@@ -35,6 +35,9 @@ class WP_Super_Cache_Settings_Map {
 			'global' => 'cache_gc_email_me',
 			'set' => 'set_time_setting',
 		),
+		'cache_path_url' => array(
+			'get' => 'get_cache_path_url',
+		),
 		'cache_type' => array(
 			'get' => 'get_cache_type',
 			'set' => 'set_super_cache_enabled',
@@ -66,6 +69,9 @@ class WP_Super_Cache_Settings_Map {
 		),
 		'clear_cache_on_post_edit' => array(
 			'global' => 'wp_cache_clear_on_post_edit',
+		),
+		'wpsc_save_headers' => array(
+			'global' => 'wpsc_save_headers',
 		),
 		'cache_rebuild' => array(
 			'global' => 'cache_rebuild_files',
