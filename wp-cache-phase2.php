@@ -257,6 +257,9 @@ function wp_cache_get_response_headers() {
 
 function wp_cache_is_rejected($uri) {
 	global $cache_rejected_uri;
+	
+	// If uri is '' or '/' it will always match $auto_rejected
+	if ( $uri == '' || $uri == '/') return false;
 
 	$auto_rejected = array( '/wp-admin/', 'xmlrpc.php', 'wp-app.php' );
 	foreach( $auto_rejected as $u ) {
