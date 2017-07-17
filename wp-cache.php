@@ -2027,10 +2027,22 @@ function wp_cache_debug_settings() {
 	wp_nonce_field('wp-cache');
 	submit_button( __( 'Delete', 'wp-super-cache' ), 'delete', 'wpsc_delete_log', false );
 	echo "</form>";
+	echo '<form name="wpsc_delete" action="" method="post">';
+	if ( ! isset( $wp_super_cache_debug ) || $wp_super_cache_debug == 0 ) {
+		$debug_status_message = __( 'Enable Logging', 'wp-super-cache' );
+		$not_status = 1;
+	} else {
+		$debug_status_message = __( 'Disable Logging', 'wp-super-cache' );
+		$not_status = 0;
+	}
+	echo "<input type='hidden' name='wp_cache_debug' value='1' />";
+	echo "<input type='hidden' name='wp_super_cache_debug' value='" . $not_status . "' />";
+	wp_nonce_field('wp-cache');
+	submit_button( $debug_status_message, 'primary', 'wpsc_log_status', true );
+	echo "</form>";
 	echo '<form name="wp_cache_debug" action="" method="post">';
 	echo "<input type='hidden' name='wp_cache_debug' value='1' /><br />";
 	echo "<table class='form-table'>";
-	echo "<tr><th>" . __( 'Debugging', 'wp-super-cache' ) . "</th><td><label><input type='checkbox' name='wp_super_cache_debug' value='1' " . checked( 1, $wp_super_cache_debug, false ) . " /> " . __( 'enabled', 'wp-super-cache' ) . "</label></td></tr>";
 	echo "<tr><th>" . __( 'IP Address', 'wp-super-cache' ) . "</th><td> <input type='text' size='20' name='wp_cache_debug_ip' value='{$wp_cache_debug_ip}' /> " . sprintf( __( '(only log requests from this IP address. Your IP is %s)', 'wp-super-cache' ), $_SERVER[ 'REMOTE_ADDR' ] ) . "</td></tr>";
 	echo "<tr><th valign='top'>" . __( 'Cache Status Messages', 'wp-super-cache' ) . "</th><td><input type='checkbox' name='wp_super_cache_comments' value='1' " . checked( 1, $wp_super_cache_comments, false ) . " /> " . __( 'enabled', 'wp-super-cache' ) . "<br />";
 	echo  __( 'Display comments at the end of every page like this:', 'wp-super-cache' ) . "<br />";
