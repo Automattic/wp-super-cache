@@ -45,6 +45,9 @@ function wpsc_init() {
 	} elseif ( WPCACHEHOME != dirname( __FILE__ ) . '/' ) {
 		$wp_cache_config_file_sample = dirname( __FILE__ ) . '/wp-cache-config-sample.php';
 		$wp_cache_file = dirname( __FILE__ ) . '/advanced-cache.php';
+		if ( ! defined( 'ADVANCEDCACHEPROBLEM' ) ) {
+			define( 'ADVANCEDCACHEPROBLEM', 1 ); // force an update of WPCACHEHOME
+		}
 	} else {
 		$wp_cache_config_file_sample = WPCACHEHOME . 'wp-cache-config-sample.php';
 		$wp_cache_file = WPCACHEHOME . 'advanced-cache.php';
