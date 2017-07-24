@@ -3858,10 +3858,31 @@ function update_mod_rewrite_rules( $add_rules = true ) {
 	wpsc_remove_marker( $home_path . '.htaccess', 'WordPress' ); // remove original WP rules so SuperCache rules go on top
 	if ( insert_with_markers( $home_path . '.htaccess', 'WPSuperCache', explode( "\n", $rules ) ) && insert_with_markers( $home_path . '.htaccess', 'WordPress', $wprules ) ) {
 		$new_page = wp_remote_get( $url, array( 'timeout' => 60, 'blocking' => true ) );
-		if ( is_wp_error( $new_page ) || $new_page[ 'body' ] != $original_page[ 'body' ] ) {
+		$restore_backup = false;
+		if ( is_wp_error( $new_page ) ) {
+			$restore_backup = true;
+			wp_cache_debug( 'update_mod_rewrite_rules: failed to update rules. error fetching second page: ' . $new_page->get_error_message() );
+		}
+		if ( $new_page[ 'body' ] != $original_page[ 'body' ] ) {
+			$restore_backup = true;
+			wp_cache_debug( 'update_mod_rewrite_rules: failed to update rules. page test failed as pages did not match. Files dumped in ' . $cache_path . ' for inspection.' );
+			wp_cache_debug( 'update_mod_rewrite_rules: original page: 1-' . md5( $original_page[ 'body' ] ) . '.txt' );
+			wp_cache_debug( 'update_mod_rewrite_rules: new page: 1-' . md5( $new_page[ 'body' ] ) . '.txt' );
+			file_put_contents( $cache_path . '1-' . md5( $original_page[ 'body' ] ) . '.txt', $original_page[ 'body' ] );
+			file_put_contents( $cache_path . '2-' . md5( $new_page[ 'body' ] ) . '.txt', $new_page[ 'body' ] );
+		}
+
+		if ( $restore_backup ) {
+			global $wp_cache_debug;
 			file_put_contents( $home_path . '.htaccess', $backup_file_contents );
 			unlink( $backup_filename );
-			$update_mod_rewrite_rules_error = "page error or pages do not match and original .htaccess restored";
+			$update_mod_rewrite_rules_error = "Page error or pages do not match and original .htaccess restored.";
+			if ( $wp_cache_debug ) {
+				$update_mod_rewrite_rules_error .= " See debug log for further details.";
+			} else {
+				$update_mod_rewrite_rules_error .= " Enable debug log on Debugging page for further details and try again.";
+			}
+
 			return false;
 		}
 	} else {
