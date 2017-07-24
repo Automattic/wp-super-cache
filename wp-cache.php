@@ -1126,6 +1126,7 @@ table.wpsc-settings-table {
 			if ( $cache_enabled ) {
 				echo "<h3>" . __( 'Cache Tester', 'wp-super-cache' ) . "</h3>";
 				echo '<p>' . __( 'Test your cached website by clicking the test button below.', 'wp-super-cache' ) . '</p>';
+				echo '<p>' . __( 'Note: if you use Cloudflare or other transparent front-end proxy service this test may fail. If you have Cloudflare minification enabled this plugin will think the pages are different and report an error.', 'wp-super-cache' ) . '</p>';
 				if ( array_key_exists('action', $_POST) && $_POST[ 'action' ] == 'test' && $valid_nonce ) {
 					$url = trailingslashit( get_bloginfo( 'url' ) );
 					if ( isset( $_POST[ 'httponly' ] ) )
