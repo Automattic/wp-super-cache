@@ -693,7 +693,7 @@ function wpsc_is_in_cache_directory( $directory ) {
 
 	$directory = wpsc_get_realpath( $directory );
 
-	if ( substr( $directory, 0, strlen( $rp_cache_path ) ) != $rp_cache_path ) {
+	if ( substr( $directory, 0, strlen( $rp_cache_path ) ) == $rp_cache_path ) {
 		return true;
 	} else {
 		return false;
