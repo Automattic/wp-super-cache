@@ -1,13 +1,13 @@
 <?php
 //error_reporting(E_ERROR | E_PARSE); // uncomment to debug this file!
 // Pre-2.6 compatibility
-if ( !defined('WP_CONTENT_DIR') )
+if ( ! defined('WP_CONTENT_DIR') )
 	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
 
-if ( !@include( WP_CONTENT_DIR . '/wp-cache-config.php' ) )
+if ( ! @include( WP_CONTENT_DIR . '/wp-cache-config.php' ) )
 	return false;
 
-if ( !defined( 'WPCACHEHOME' ) )
+if ( ! defined( 'WPCACHEHOME' ) )
 	define('WPCACHEHOME', dirname(__FILE__).'/');
 
 if ( defined( 'DISABLE_SUPERCACHE' ) ) {
@@ -28,7 +28,7 @@ $wp_cache_phase1_loaded = true;
 $mutex_filename  = 'wp_cache_mutex.lock';
 $new_cache = false;
 
-if ( !isset( $wp_cache_plugins_dir ) )
+if ( ! isset( $wp_cache_plugins_dir ) )
 	$wp_cache_plugins_dir = WPCACHEHOME . 'plugins';
 
 require_once( WPCACHEHOME . 'wp-cache-phase2.php');
@@ -74,7 +74,7 @@ function gzip_accepted(){
 	if ( 1 == ini_get( 'zlib.output_compression' ) || "on" == strtolower( ini_get( 'zlib.output_compression' ) ) ) // don't compress WP-Cache data files when PHP is already doing it
 		return false;
 
-	if ( !isset( $_SERVER[ 'HTTP_ACCEPT_ENCODING' ] ) || ( isset( $_SERVER[ 'HTTP_ACCEPT_ENCODING' ] ) && strpos( $_SERVER[ 'HTTP_ACCEPT_ENCODING' ], 'gzip' ) === false ) ) return false;
+	if ( ! isset( $_SERVER[ 'HTTP_ACCEPT_ENCODING' ] ) || ( isset( $_SERVER[ 'HTTP_ACCEPT_ENCODING' ] ) && strpos( $_SERVER[ 'HTTP_ACCEPT_ENCODING' ], 'gzip' ) === false ) ) return false;
 	return 'gzip';
 }
 
@@ -158,7 +158,7 @@ function wp_cache_serve_cache_file() {
 	extract( wp_super_cache_init() );
 
 	if ( $wp_cache_object_cache && wp_cache_get_cookies_values() == '' ) {
-		if ( !empty( $_GET ) ) {
+		if ( ! empty( $_GET ) ) {
 			wp_cache_debug( "Non empty GET request. Not serving request from object cache. " . json_encode( $_GET ), 1 );
 			return false;
 		}
@@ -179,13 +179,13 @@ function wp_cache_serve_cache_file() {
 		if ( file_exists( get_current_url_supercache_dir() . 'meta-' . $cache_filename ) ) {
 			$cache_file = get_current_url_supercache_dir() . $cache_filename;
 			$meta_pathname = get_current_url_supercache_dir() . 'meta-' . $cache_filename;
-		} elseif ( !file_exists( $cache_file ) ) {
+		} elseif ( ! file_exists( $cache_file ) ) {
 			wp_cache_debug( "wp_cache_serve_cache_file: found cache file but then it disappeared!" );
 			return false;
 		}
 
 		wp_cache_debug( "wp-cache file exists: $cache_file", 5 );
-		if ( !( $meta = json_decode( wp_cache_get_legacy_cache( $meta_pathname ), true ) ) ) {
+		if ( ! ( $meta = json_decode( wp_cache_get_legacy_cache( $meta_pathname ), true ) ) ) {
 			wp_cache_debug( "couldn't load wp-cache meta file", 5 );
 			return true;
 		}
@@ -283,7 +283,7 @@ function wp_cache_serve_cache_file() {
 						$remote_mod_time = null;
 				}
 				$local_mod_time = gmdate("D, d M Y H:i:s",filemtime( $file )).' GMT';
-				if ( !is_null($remote_mod_time) && $remote_mod_time == $local_mod_time ) {
+				if ( ! is_null($remote_mod_time) && $remote_mod_time == $local_mod_time ) {
 					header("HTTP/1.0 304 Not Modified");
 					exit();
 				}
@@ -299,7 +299,7 @@ function wp_cache_serve_cache_file() {
 
 	$cache_file = do_cacheaction( 'wp_cache_served_cache_file', $cache_file );
 	// Sometimes the gzip headers are lost. Make sure html returned isn't compressed!
-	if ( $cache_compression && $wp_cache_gzip_encoding && !in_array( 'Content-Encoding: ' . $wp_cache_gzip_encoding, $meta[ 'headers' ] ) ) {
+	if ( $cache_compression && $wp_cache_gzip_encoding && ! in_array( 'Content-Encoding: ' . $wp_cache_gzip_encoding, $meta[ 'headers' ] ) ) {
 		$ungzip = true;
 		wp_cache_debug( "GZIP headers not found. Force uncompressed output.", 1 );
 	} else {
@@ -380,14 +380,14 @@ if ( defined('DOING_CRON') ) {
 	return true;
 }
 
-if ( !isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && false == $wp_super_cache_late_init ) ) {
+if ( ! isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && false == $wp_super_cache_late_init ) ) {
 	wp_cache_serve_cache_file();
 }
 
 function wp_cache_postload() {
 	global $cache_enabled, $wp_super_cache_late_init;
 
-	if ( !$cache_enabled )
+	if ( ! $cache_enabled )
 		return true;
 
 	if ( isset( $wp_super_cache_late_init ) && true == $wp_super_cache_late_init ) {
@@ -449,7 +449,7 @@ function add_cacheaction( $action, $func ) {
 function do_cacheaction( $action, $value = '' ) {
 	global $wp_supercache_actions;
 
-	if ( !isset( $wp_supercache_actions ) || !is_array( $wp_supercache_actions ) )
+	if ( ! isset( $wp_supercache_actions ) || ! is_array( $wp_supercache_actions ) )
 		return $value;
 
 	if ( array_key_exists($action, $wp_supercache_actions) && is_array( $wp_supercache_actions[ $action ] ) ) {
@@ -482,7 +482,7 @@ function wp_cache_mobile_group( $user_agent ) {
 // From http://wordpress.org/plugins/wordpress-mobile-edition/ by Alex King
 function wp_cache_check_mobile( $cache_key ) {
 	global $wp_cache_mobile_enabled, $wp_cache_mobile_browsers, $wp_cache_mobile_prefixes;
-	if ( !isset( $wp_cache_mobile_enabled ) || false == $wp_cache_mobile_enabled )
+	if ( ! isset( $wp_cache_mobile_enabled ) || false == $wp_cache_mobile_enabled )
 		return $cache_key;
 
 	wp_cache_debug( "wp_cache_check_mobile: $cache_key" );
@@ -499,7 +499,7 @@ function wp_cache_check_mobile( $cache_key ) {
 		break;
 	}
 
-	if ( !isset( $_SERVER[ "HTTP_USER_AGENT" ] ) ) {
+	if ( ! isset( $_SERVER[ "HTTP_USER_AGENT" ] ) ) {
 		return $cache_key;
 	}
 
@@ -552,8 +552,8 @@ function wp_cache_debug( $message, $level = 1 ) {
 	global $wp_cache_debug_log, $cache_path, $wp_cache_debug_ip, $wp_super_cache_debug;
 
 	// If either of the debug or log globals aren't set, then we can stop
-	if ( !isset($wp_super_cache_debug)
-		 || !isset($wp_cache_debug_log) )
+	if ( ! isset($wp_super_cache_debug)
+		 || ! isset($wp_cache_debug_log) )
 		return false;
 
 	// If either the debug or log globals are false or empty, we can stop
@@ -579,9 +579,9 @@ function wp_cache_debug( $message, $level = 1 ) {
 function wp_cache_user_agent_is_rejected() {
 	global $cache_rejected_user_agent;
 
-	if ( !function_exists('apache_request_headers') ) return false;
+	if ( ! function_exists('apache_request_headers') ) return false;
 	$headers = apache_request_headers();
-	if ( !isset($headers["User-Agent"]) ) return false;
+	if ( ! isset($headers["User-Agent"]) ) return false;
 	if ( false == is_array( $cache_rejected_user_agent ) )
 		return false;
 	foreach ($cache_rejected_user_agent as $expr) {

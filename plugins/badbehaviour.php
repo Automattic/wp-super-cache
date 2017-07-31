@@ -12,7 +12,7 @@ add_cacheaction( 'wp_cache_served_cache_file', 'wp_supercache_badbehaviour' );
 
 function wp_supercache_badbehaviour_include() {
 	$bbfile = get_bb_file_loc();
-	if ( !$bbfile )
+	if ( ! $bbfile )
 		require_once( $bbfile );
 }
 
@@ -42,7 +42,7 @@ function wp_supercache_badbehaviour_admin() {
 
 	if ( isset( $_POST['cache_badbehaviour'] ) && $valid_nonce ) {
 		$bbfile = get_bb_file_loc();
-		if ( !$bbfile ) {
+		if ( ! $bbfile ) {
 			$_POST[ 'cache_badbehaviour' ] = 0;
 			$err = __( 'Bad Behaviour not found. Please check your install.', 'wp-super-cache' );
 		}
@@ -63,7 +63,7 @@ function wp_supercache_badbehaviour_admin() {
 		<h4><?php _e( 'Bad Behavior', 'wp-super-cache' ); ?></h4>
 		<form name="wp_manager" action="" method="post">
 		<label><input type="radio" name="cache_badbehaviour" value="1" <?php if ( $cache_badbehaviour ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Enabled', 'wp-super-cache' ); ?></label>
-		<label><input type="radio" name="cache_badbehaviour" value="0" <?php if ( !$cache_badbehaviour ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Disabled', 'wp-super-cache' ); ?></label>
+		<label><input type="radio" name="cache_badbehaviour" value="0" <?php if ( ! $cache_badbehaviour ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Disabled', 'wp-super-cache' ); ?></label>
 		<p><?php _e( '', 'wp-super-cache' ); ?></p><?php
 		echo '<p>' . sprintf( __( '(Only WPCache caching supported, disabled compression and requires <a href="http://www.bad-behavior.ioerror.us/">Bad Behavior</a> in "%s/plugins/bad-behavior/") ', 'wp-super-cache' ), WP_CONTENT_DIR ) . '</p>';
 		if ( isset( $changed ) && $changed ) {

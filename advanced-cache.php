@@ -11,15 +11,15 @@ function wpcache_broken_message() {
 	$robots_request = strpos( $_SERVER[ 'REQUEST_URI' ], 'robots.txt' ) != false;
 
 	$skip_output = ( $doing_ajax || $xmlrpc_request || $rest_request || $robots_request);
-	if ( false == strpos( $_SERVER[ 'REQUEST_URI' ], 'wp-admin' ) && !$skip_output ) {
+	if ( false == strpos( $_SERVER[ 'REQUEST_URI' ], 'wp-admin' ) && ! $skip_output ) {
 		echo "<!-- WP Super Cache is installed but broken. The constant WPCACHEHOME must be set in the file wp-config.php and point at the WP Super Cache plugin directory. -->";
 	}
 }
 
 if ( false == defined( 'WPCACHEHOME' ) ) {
 	define( 'ADVANCEDCACHEPROBLEM', 1 );
-} elseif ( !include_once( WPCACHEHOME . 'wp-cache-phase1.php' ) ) {
-	if ( !@is_file( WPCACHEHOME . 'wp-cache-phase1.php' ) ) {
+} elseif ( ! include_once( WPCACHEHOME . 'wp-cache-phase1.php' ) ) {
+	if ( ! @is_file( WPCACHEHOME . 'wp-cache-phase1.php' ) ) {
 		define( 'ADVANCEDCACHEPROBLEM', 1 );
 	}
 }

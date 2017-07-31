@@ -14,7 +14,7 @@ if ( get_option( 'ossdl_off_exclude' ) == false )
 	add_option('ossdl_off_exclude', '.php');
 $ossdl_off_exclude = trim(get_option('ossdl_off_exclude'));
 $arr_of_excludes = array_map('trim', explode(',', $ossdl_off_exclude));
-if ( !is_array( $arr_of_excludes ) )
+if ( ! is_array( $arr_of_excludes ) )
 	$arr_of_excludes = array();
 
 if ( get_option( 'ossdl_cname' ) == false )
@@ -136,7 +136,7 @@ function scossdl_off_update() {
 		update_option('ossdl_off_include_dirs', $_POST['ossdl_off_include_dirs'] == '' ? 'wp-content,wp-includes' : $_POST['ossdl_off_include_dirs']);
 		update_option('ossdl_off_exclude', $_POST['ossdl_off_exclude']);
 		update_option('ossdl_cname', $_POST['ossdl_cname']);
-		if ( !isset( $_POST[ 'ossdl_https' ] ) )
+		if ( ! isset( $_POST[ 'ossdl_https' ] ) )
 			$_POST[ 'ossdl_https' ] = 0;
 		update_option('ossdl_https', (int)$_POST['ossdl_https']);
 		if ( isset( $_POST[ 'ossdlcdn' ] ) ) {

@@ -53,7 +53,7 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 
 		include( $wp_cache_config_file );
 
-		if ( $cache_enabled && !$wp_cache_mod_rewrite ) {
+		if ( $cache_enabled && ! $wp_cache_mod_rewrite ) {
 			$scrules = trim( implode( "\n", extract_from_markers( trailingslashit( get_home_path() ) . '.htaccess', 'WPSuperCache' ) ) );
 			if ( $scrules != '' ) {
 				$status[ 'php_mod_rewrite' ] = true;
@@ -107,7 +107,7 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 			$status[ 'mod_rewrite_missing' ] = true;
 		}
 
-		if ( !is_writeable_ACLSafe( $home_path . ".htaccess" ) ) {
+		if ( ! is_writeable_ACLSafe( $home_path . ".htaccess" ) ) {
 			$status[ 'htaccess_ro' ] = true;
 		}
 	}
