@@ -46,7 +46,7 @@ function domain_mapping_supercachedir( $dir ) {
 
 function domain_mapping_actions() {
 	global $cache_domain_mapping;
-	if( $cache_domain_mapping == '1' ) {
+	if ( $cache_domain_mapping == '1' ) {
 		add_filter( 'wp_super_cache_supercachedir', 'domain_mapping_supercachedir' );
 		add_action( 'gc_cache', 'domain_mapping_gc_cache', 10, 2 );
 	}
@@ -58,7 +58,7 @@ function wp_supercache_domain_mapping_admin() {
 
 	$cache_domain_mapping = $cache_domain_mapping == '' ? '0' : $cache_domain_mapping;
 
-	if(isset($_POST['cache_domain_mapping']) && $valid_nonce) {
+	if (isset($_POST['cache_domain_mapping']) && $valid_nonce) {
 		if ( $cache_domain_mapping == (int)$_POST['cache_domain_mapping'] ) {
 			$changed = false;
 		} else {
@@ -72,8 +72,8 @@ function wp_supercache_domain_mapping_admin() {
 		<fieldset id="<?php echo $id; ?>" class="options">
 		<h4><?php _e( 'Domain Mapping', 'wp-super-cache' ); ?></h4>
 		<form name="wp_manager" action="" method="post">
-		<label><input type="radio" name="cache_domain_mapping" value="1" <?php if( $cache_domain_mapping ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Enabled', 'wp-super-cache' ); ?></label>
-		<label><input type="radio" name="cache_domain_mapping" value="0" <?php if( !$cache_domain_mapping ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Disabled', 'wp-super-cache' ); ?></label>
+		<label><input type="radio" name="cache_domain_mapping" value="1" <?php if ( $cache_domain_mapping ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Enabled', 'wp-super-cache' ); ?></label>
+		<label><input type="radio" name="cache_domain_mapping" value="0" <?php if ( !$cache_domain_mapping ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Disabled', 'wp-super-cache' ); ?></label>
 		<p><?php _e( '', 'wp-super-cache' ); ?></p><?php
 		echo '<p>' . __( 'Provides support for <a href="http://wordpress.org/extend/plugins/wordpress-mu-domain-mapping/">Domain Mapping</a> plugin to map multiple domains to a blog.', 'wp-super-cache' ) . '</p>';
 		if ( isset( $changed ) && $changed ) {
@@ -94,7 +94,7 @@ add_cacheaction( 'cache_admin_page', 'wp_supercache_domain_mapping_admin' );
 
 function wp_supercache_domain_mapping_notice() {
 	global $cache_enabled;
-	if( $cache_enabled )
+	if ( $cache_enabled )
 		echo '<div class="error"><p><strong>' . __('Domain Mapping plugin detected! Please go to the Supercache plugins page and enable the domain mapping helper plugin.', 'wp-super-cache' ) . '</strong></p></div>';
 }
 function wp_supercache_domain_mapping_exists() {

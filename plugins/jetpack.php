@@ -5,7 +5,7 @@ function wp_super_cache_jetpack_admin() {
 
 	$cache_jetpack = $cache_jetpack == '' ? '0' : $cache_jetpack;
 
-	if(isset($_POST['cache_jetpack']) && $valid_nonce) {
+	if (isset($_POST['cache_jetpack']) && $valid_nonce) {
 		if ( $cache_jetpack == (int)$_POST['cache_jetpack'] ) {
 			$changed = false;
 		} else {
@@ -28,8 +28,8 @@ function wp_super_cache_jetpack_admin() {
 		echo "<strong>" . sprintf( __( "Jetpack not found in %s. Install it and enable the mobile theme and this helper plugin to cache visits by mobile visitors.", 'wp-super-cache' ), dirname( WPCACHEHOME ) ) . "</strong>";
 	} else { ?>
 		<form name="wp_manager" action="" method="post">
-		<label><input type="radio" name="cache_jetpack" value="1" <?php if( $cache_jetpack ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Enabled', 'wp-super-cache' ); ?></label>
-		<label><input type="radio" name="cache_jetpack" value="0" <?php if( !$cache_jetpack ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Disabled', 'wp-super-cache' ); ?></label>
+		<label><input type="radio" name="cache_jetpack" value="1" <?php if ( $cache_jetpack ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Enabled', 'wp-super-cache' ); ?></label>
+		<label><input type="radio" name="cache_jetpack" value="0" <?php if ( !$cache_jetpack ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Disabled', 'wp-super-cache' ); ?></label>
 		<?php
 		echo '<p>' . __( 'Provides support for the <a href="http://wordpress.org/extend/plugins/jetpack/">Jetpack</a> mobile theme and plugin. PHP caching mode and mobile support will be enabled too.', 'wp-super-cache' ) . '</p>';
 		if ( isset( $changed ) && $changed ) {

@@ -1,13 +1,13 @@
 <?php
 //error_reporting(E_ERROR | E_PARSE); // uncomment to debug this file!
 // Pre-2.6 compatibility
-if( !defined('WP_CONTENT_DIR') )
+if ( !defined('WP_CONTENT_DIR') )
 	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
 
-if( !@include( WP_CONTENT_DIR . '/wp-cache-config.php' ) )
+if ( !@include( WP_CONTENT_DIR . '/wp-cache-config.php' ) )
 	return false;
 
-if( !defined( 'WPCACHEHOME' ) )
+if ( !defined( 'WPCACHEHOME' ) )
 	define('WPCACHEHOME', dirname(__FILE__).'/');
 
 if ( defined( 'DISABLE_SUPERCACHE' ) ) {
@@ -17,7 +17,7 @@ if ( defined( 'DISABLE_SUPERCACHE' ) ) {
 
 include( WPCACHEHOME . 'wp-cache-base.php');
 
-if( $blogcacheid != '' ) {
+if ( $blogcacheid != '' ) {
 	$blog_cache_dir = str_replace( '//', '/', $cache_path . "blogs/" . $blogcacheid . '/' );
 } else {
 	$blog_cache_dir = $cache_path;
@@ -28,7 +28,7 @@ $wp_cache_phase1_loaded = true;
 $mutex_filename  = 'wp_cache_mutex.lock';
 $new_cache = false;
 
-if( !isset( $wp_cache_plugins_dir ) )
+if ( !isset( $wp_cache_plugins_dir ) )
 	$wp_cache_plugins_dir = WPCACHEHOME . 'plugins';
 
 require_once( WPCACHEHOME . 'wp-cache-phase2.php');
@@ -39,9 +39,9 @@ if ( isset( $_GET[ 'donotcachepage' ] ) && isset( $cache_page_secret ) && $_GET[
 }
 
 $plugins = glob( $wp_cache_plugins_dir . '/*.php' );
-if( is_array( $plugins ) ) {
+if ( is_array( $plugins ) ) {
 	foreach ( $plugins as $plugin ) {
-	if( is_file( $plugin ) )
+	if ( is_file( $plugin ) )
 		require_once( $plugin );
 	}
 }
@@ -101,12 +101,12 @@ if ( $wp_cache_object_cache ) {
 
 function setup_blog_cache_dir() {
 	global $blog_cache_dir, $cache_path;
-	if( false == @is_dir( $blog_cache_dir ) ) {
+	if ( false == @is_dir( $blog_cache_dir ) ) {
 		@mkdir( $cache_path . "blogs" );
 		@mkdir( $blog_cache_dir );
 	}
 
-	if( false == @is_dir( $blog_cache_dir . 'meta' ) )
+	if ( false == @is_dir( $blog_cache_dir . 'meta' ) )
 		@mkdir( $blog_cache_dir . 'meta' );
 }
 
@@ -307,7 +307,7 @@ function wp_cache_serve_cache_file() {
 	}
 	foreach ($meta[ 'headers' ] as $t => $header) {
 		// godaddy fix, via http://blog.gneu.org/2008/05/wp-supercache-on-godaddy/ and http://www.littleredrails.com/blog/2007/09/08/using-wp-cache-on-godaddy-500-error/
-		if( strpos( $header, 'Last-Modified:' ) === false )
+		if ( strpos( $header, 'Last-Modified:' ) === false )
 			header($header);
 	}
 	if ( isset( $wpsc_served_header ) && $wpsc_served_header ) {
@@ -375,7 +375,7 @@ function wp_cache_get_legacy_cache( $cache_file ) {
 	return substr( @file_get_contents( $cache_file ), 15 );
 }
 
-if(defined('DOING_CRON')) {
+if (defined('DOING_CRON')) {
 	extract( wp_super_cache_init() );
 	return true;
 }
@@ -452,7 +452,7 @@ function do_cacheaction( $action, $value = '' ) {
 	if ( !isset( $wp_supercache_actions ) || !is_array( $wp_supercache_actions ) )
 		return $value;
 
-	if( array_key_exists($action, $wp_supercache_actions) && is_array( $wp_supercache_actions[ $action ] ) ) {
+	if ( array_key_exists($action, $wp_supercache_actions) && is_array( $wp_supercache_actions[ $action ] ) ) {
 		$actions = $wp_supercache_actions[ $action ];
 		foreach( $actions as $func ) {
 			if ( is_array( $func ) ) {
@@ -650,7 +650,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$dir = do_cacheaction( 'supercache_dir', $dir );
 	}
 	$dir = $cache_path . 'supercache/' . $dir . '/';
-	if( is_array( $cached_direct_pages ) && in_array( $_SERVER[ 'REQUEST_URI' ], $cached_direct_pages ) ) {
+	if ( is_array( $cached_direct_pages ) && in_array( $_SERVER[ 'REQUEST_URI' ], $cached_direct_pages ) ) {
 		$dir = ABSPATH . $uri . '/';
 	}
 	$dir = str_replace( '..', '', str_replace( '//', '/', $dir ) );
