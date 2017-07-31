@@ -58,7 +58,7 @@ function wp_supercache_domain_mapping_admin() {
 
 	$cache_domain_mapping = $cache_domain_mapping == '' ? '0' : $cache_domain_mapping;
 
-	if (isset($_POST['cache_domain_mapping']) && $valid_nonce) {
+	if ( isset($_POST['cache_domain_mapping']) && $valid_nonce ) {
 		if ( $cache_domain_mapping == (int)$_POST['cache_domain_mapping'] ) {
 			$changed = false;
 		} else {

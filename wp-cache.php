@@ -96,17 +96,17 @@ function is_writeable_ACLSafe($path) {
 
 	// PHP's is_writable does not work with Win32 NTFS
 
-	if ($path{strlen($path)-1}=='/') // recursively return a temporary file path
+	if ( $path{strlen($path)-1}=='/' ) // recursively return a temporary file path
 		return is_writeable_ACLSafe($path.uniqid(mt_rand()).'.tmp');
-	else if (is_dir($path))
+	else if ( is_dir($path) )
 		return is_writeable_ACLSafe($path.'/'.uniqid(mt_rand()).'.tmp');
 	// check tmp file for read/write capabilities
 	$rm = file_exists($path);
 	$f = @fopen($path, 'a');
-	if ($f===false)
+	if ( $f===false )
 		return false;
 	fclose($f);
-	if (!$rm)
+	if ( !$rm )
 		unlink($path);
 	return true;
 }
@@ -293,7 +293,7 @@ function wp_cache_manager_error_checks() {
 		return false;
 	}
 
-	if (!wp_cache_check_global_config()) {
+	if ( !wp_cache_check_global_config() ) {
 		return false;
 	}
 
@@ -778,7 +778,7 @@ function toggleLayer( whichLayer ) {
     elem = document.layers[whichLayer];
   vis = elem.style;
   // if the style.display value is blank we try to figure it out here
-  if (vis.display==''&&elem.offsetWidth!=undefined&&elem.offsetHeight!=undefined)
+  if ( vis.display==''&&elem.offsetWidth!=undefined&&elem.offsetHeight!=undefined )
     vis.display = (elem.offsetWidth!=0&&elem.offsetHeight!=0)?'block':'none';
   vis.display = (vis.display==''||vis.display=='block')?'none':'block';
 }
@@ -828,7 +828,7 @@ table.wpsc-settings-table {
 		wp_cache_debug( 'scheduled wp_cache_check_site_hook for 360 seconds time.', 2 );
 	}
 
-	if (isset($_REQUEST['wp_restore_config']) && $valid_nonce) {
+	if ( isset($_REQUEST['wp_restore_config']) && $valid_nonce ) {
 		unlink($wp_cache_config_file);
 		echo '<strong>' . __( 'Configuration file changed, some values might be wrong. Load the page again from the "Settings" menu to reset them.', 'wp-super-cache' ) . '</strong>';
 	}
@@ -840,7 +840,7 @@ table.wpsc-settings-table {
 	}
 	$home_path = parse_url( site_url() );
 	$home_path = trailingslashit( array_key_exists( 'path', $home_path ) ? $home_path[ 'path' ] : '' );
-	if (! isset( $wp_cache_home_path ) ) {
+	if ( ! isset( $wp_cache_home_path ) ) {
 		$wp_cache_home_path = '/';
 		wp_cache_setting( 'wp_cache_home_path', '/' );
 	}
@@ -1788,7 +1788,7 @@ if ( !function_exists('apache_request_headers') ) {
 	function apache_request_headers() {
 		$headers = array();
 		foreach(array_keys($_SERVER) as $skey) {
-			if (substr($skey, 0, 5) == "HTTP_") {
+			if ( substr($skey, 0, 5) == "HTTP_" ) {
 				$headername = str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", substr($skey, 5)))));
 				$headers[$headername] = $_SERVER[$skey];
 			}
@@ -2119,7 +2119,7 @@ function wp_cache_disable() {
 	wp_clear_scheduled_hook( 'wp_cache_check_site_hook' );
 	wp_clear_scheduled_hook( 'wp_cache_gc' );
 	wp_clear_scheduled_hook( 'wp_cache_gc_watcher' );
-	if (wp_cache_replace_line('^ *\$cache_enabled', '$cache_enabled = false;', $wp_cache_config_file)) {
+	if ( wp_cache_replace_line( '^ *\$cache_enabled', '$cache_enabled = false;', $wp_cache_config_file ) ) {
 		$cache_enabled = false;
 	}
 }
@@ -2145,7 +2145,7 @@ function wp_super_cache_disable() {
 		@rename( $supercachedir, $supercachedir . ".disabled" );
 	$super_cache_enabled = false;
 	sleep( 1 ); // allow existing processes to write to the supercachedir and then delete it
-	if (function_exists ('prune_super_cache') && is_dir( $supercachedir ) ) {
+	if ( function_exists ('prune_super_cache') && is_dir( $supercachedir ) ) {
 		prune_super_cache( $cache_path, true );
 	}
 }
@@ -2153,13 +2153,13 @@ function wp_super_cache_disable() {
 function wp_cache_is_enabled() {
 	global $wp_cache_config_file;
 
-	if (get_option('gzipcompression')) {
+	if ( get_option('gzipcompression') ) {
 		echo "<strong>" . __( 'Warning', 'wp-super-cache' ) . "</strong>: " . __( "GZIP compression is enabled in WordPress, wp-cache will be bypassed until you disable gzip compression.", 'wp-super-cache' );
 		return false;
 	}
 	$lines = file($wp_cache_config_file);
 	foreach($lines as $line) {
-	 	if (preg_match('/^ *\$cache_enabled *= *true *;/', $line))
+	 	if ( preg_match('/^ *\$cache_enabled *= *true *;/', $line) )
 			return true;
 	}
 	return false;
@@ -2184,7 +2184,7 @@ function wp_cache_replace_line($old, $new, $my_file) {
 	if ( @is_file( $my_file ) == false ) {
 		return false;
 	}
-	if (!is_writeable_ACLSafe($my_file)) {
+	if ( !is_writeable_ACLSafe($my_file) ) {
 		echo "Error: file $my_file is not writable.\n";
 		return false;
 	}
@@ -2197,7 +2197,7 @@ function wp_cache_replace_line($old, $new, $my_file) {
 			break;
 		}
 	}
-	if ($found) {
+	if ( $found ) {
 		$fd = fopen($my_file, 'w');
 		foreach( (array)$lines as $line ) {
 			if ( !preg_match( "/$old/", $line ) ) {
@@ -2396,12 +2396,12 @@ function wp_cache_verify_cache_dir() {
 				return false;
 		}
 	}
-	if ( !is_writeable_ACLSafe($cache_path)) {
+	if ( !is_writeable_ACLSafe($cache_path) ) {
 		echo "<strong>" . __( 'Error', 'wp-super-cache' ) . ":</strong> " . sprintf( __( 'Your cache directory (<strong>%1$s</strong>) or <strong>%2$s</strong> need to be writable for this plugin to work. Double-check it.', 'wp-super-cache' ), $cache_path, $dir );
 		return false;
 	}
 
-	if ( '/' != substr($cache_path, -1)) {
+	if ( '/' != substr($cache_path, -1) ) {
 		$cache_path .= '/';
 	}
 
@@ -2435,7 +2435,7 @@ function wp_cache_verify_config_file() {
 				return false;
 			}
 		}
-	} elseif ( !is_writeable_ACLSafe($dir)) {
+	} elseif ( !is_writeable_ACLSafe($dir) ) {
 		echo "<strong>" . __( 'Error', 'wp-super-cache' ) . ":</strong> " . sprintf( __( 'Configuration file missing and %1$s  directory (<strong>%2$s</strong>) is not writable by the web server. Check its permissions.', 'wp-super-cache' ), WP_CONTENT_DIR, $dir );
 		return false;
 	}
@@ -2537,7 +2537,7 @@ function wp_cache_check_global_config() {
 	}
 
 	$line = 'define(\'WP_CACHE\', true);';
-	if (!is_writeable_ACLSafe($global) || !wp_cache_replace_line('define *\( *\'WP_CACHE\'', $line, $global) ) {
+	if ( !is_writeable_ACLSafe($global) || !wp_cache_replace_line('define *\( *\'WP_CACHE\'', $line, $global) ) {
 		if ( defined( 'WP_CACHE' ) && constant( 'WP_CACHE' ) == false ) {
 			echo '<div class="notice notice-error">' . __( "<h3>WP_CACHE constant set to false</h3><p>The WP_CACHE constant is used by WordPress to load the code that serves cached pages. Unfortunately, it is set to false. Please edit your wp-config.php and add or edit the following line above the final require_once command:<br /><br /><code>define('WP_CACHE', true);</code></p>", 'wp-super-cache' ) . "</div>";
 		} else {
@@ -2586,7 +2586,7 @@ function wp_cache_regenerate_cache_file_stats() {
 
 	$sizes = wpsc_generate_sizes_array();
 	$now = time();
-	if (is_dir( $supercachedir ) ) {
+	if ( is_dir( $supercachedir ) ) {
 		if ( $dh = opendir( $supercachedir ) ) {
 			while ( ( $entry = readdir( $dh ) ) !== false ) {
 				if ( $entry != '.' && $entry != '..' ) {
@@ -2622,7 +2622,7 @@ function wp_cache_files() {
 	}
 
 	if ( $valid_nonce ) {
-		if (isset($_REQUEST['wp_delete_cache'])) {
+		if ( isset($_REQUEST['wp_delete_cache']) ) {
 			wp_cache_clean_cache($file_prefix);
 			$_GET[ 'action' ] = 'regenerate_cache_stats';
 		}
@@ -2630,7 +2630,7 @@ function wp_cache_files() {
 			wp_cache_clean_cache( $file_prefix, true );
 			$_GET[ 'action' ] = 'regenerate_cache_stats';
 		}
-		if (isset($_REQUEST['wp_delete_expired'])) {
+		if ( isset($_REQUEST['wp_delete_expired']) ) {
 			wp_cache_clean_expired($file_prefix);
 			$_GET[ 'action' ] = 'regenerate_cache_stats';
 		}
@@ -2833,10 +2833,10 @@ function wpsc_dirsize($directory, $sizes) {
 	global $cache_max_time, $cache_path, $valid_nonce, $wp_cache_preload_on, $file_prefix;
 	$now = time();
 
-	if (is_dir($directory)) {
+	if ( is_dir($directory) ) {
 		if ( $dh = opendir( $directory ) ) {
 			while( ( $entry = readdir( $dh ) ) !== false ) {
-				if ($entry != '.' && $entry != '..') {
+				if ( $entry != '.' && $entry != '..' ) {
 					$sizes = wpsc_dirsize( trailingslashit( $directory ) . $entry, $sizes );
 				}
 			}
@@ -2903,7 +2903,7 @@ function wp_cache_clean_cache( $file_prefix, $all = false ) {
 	if ( $supercachedir == '' )
 		$supercachedir = get_supercache_dir();
 
-	if (function_exists ('prune_super_cache')) {
+	if ( function_exists ('prune_super_cache') ) {
 		if ( is_dir( $supercachedir ) ) {
 			prune_super_cache( $supercachedir, true );
 		} elseif ( is_dir( $supercachedir . '.disabled' ) ) {
@@ -2982,7 +2982,7 @@ function wp_cache_clean_expired($file_prefix) {
 	}
 
 	// If phase2 was compiled, use its function to avoid race-conditions
-	if (function_exists('wp_cache_phase2_clean_expired')) {
+	if ( function_exists('wp_cache_phase2_clean_expired') ) {
 		if ( $wp_cache_preload_on != 1 && function_exists ('prune_super_cache')) {
 			$dir = get_supercache_dir();
 			if ( is_dir( $dir ) ) {
@@ -3013,8 +3013,8 @@ function wp_cache_clean_expired($file_prefix) {
 }
 
 function wpsc_remove_marker( $filename, $marker ) {
-	if (!file_exists( $filename ) || is_writeable_ACLSafe( $filename ) ) {
-		if (!file_exists( $filename ) ) {
+	if ( !file_exists( $filename ) || is_writeable_ACLSafe( $filename ) ) {
+		if ( !file_exists( $filename ) ) {
 			return '';
 		} else {
 			$markerdata = explode( "\n", implode( '', file( $filename ) ) );
@@ -3032,7 +3032,7 @@ function wpsc_remove_marker( $filename, $marker ) {
 					else
 						fwrite( $f, "{$markerline}" );
 				}
-				if (strpos($markerline, '# END ' . $marker) !== false) {
+				if ( strpos($markerline, '# END ' . $marker) !== false ) {
 					$state = true;
 				}
 			}
@@ -3690,8 +3690,8 @@ function wpsc_preload_settings( $min_refresh_interval = 'NA' ) {
 	} elseif ( isset( $_POST[ 'preload_now' ] ) ) {
 		wpsc_enable_preload();
 		return $return;
-	} 
-	
+	}
+
 	if ( $min_refresh_interval == 'NA' ) {
 		$posts_count = wp_count_posts();
 		$count = $posts_count->publish;
@@ -3759,7 +3759,7 @@ function wpsc_preload_settings( $min_refresh_interval = 'NA' ) {
 }
 
 function wpsc_is_preloading() {
-	if ( wp_next_scheduled( 'wp_cache_preload_hook' ) || wp_next_scheduled( 'wp_cache_full_preload_hook' ) ) { 
+	if ( wp_next_scheduled( 'wp_cache_preload_hook' ) || wp_next_scheduled( 'wp_cache_full_preload_hook' ) ) {
 		return true;
 	} else {
 		return false;

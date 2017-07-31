@@ -5,7 +5,7 @@ function wp_super_cache_wptouch_admin() {
 
 	$cache_wptouch = $cache_wptouch == '' ? '0' : $cache_wptouch;
 
-	if (isset($_POST['cache_wptouch']) && $valid_nonce) {
+	if ( isset($_POST['cache_wptouch']) && $valid_nonce ) {
 		if ( $cache_wptouch == (int)$_POST['cache_wptouch'] ) {
 			$changed = false;
 		} else {

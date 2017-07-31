@@ -78,7 +78,7 @@ function gzip_accepted(){
 	return 'gzip';
 }
 
-if ($cache_compression) {
+if ( $cache_compression ) {
 	$wp_cache_gzip_encoding = gzip_accepted();
 }
 
@@ -375,7 +375,7 @@ function wp_cache_get_legacy_cache( $cache_file ) {
 	return substr( @file_get_contents( $cache_file ), 15 );
 }
 
-if (defined('DOING_CRON')) {
+if ( defined('DOING_CRON') ) {
 	extract( wp_super_cache_init() );
 	return true;
 }
@@ -516,9 +516,9 @@ function wp_cache_check_mobile( $cache_key ) {
 			return $cache_key . '-' . wp_cache_mobile_group( $user_agent );
 		}
 	}
-	if (isset($_SERVER['HTTP_X_WAP_PROFILE']) )
+	if ( isset($_SERVER['HTTP_X_WAP_PROFILE']) )
 		return $cache_key . '-' . $_SERVER['HTTP_X_WAP_PROFILE'];
-	if (isset($_SERVER['HTTP_PROFILE']) )
+	if ( isset($_SERVER['HTTP_PROFILE']) )
 		return $cache_key . '-' . $_SERVER['HTTP_PROFILE'];
 
 	if ( isset( $wp_cache_mobile_prefixes ) ) {
@@ -531,11 +531,11 @@ function wp_cache_check_mobile( $cache_key ) {
 		}
 	}
 	$accept = isset( $_SERVER[ 'HTTP_ACCEPT' ] ) ? strtolower( $_SERVER[ 'HTTP_ACCEPT' ] ) : '';
-	if (strpos($accept, 'wap') !== false) {
+	if ( strpos($accept, 'wap') !== false ) {
 		return $cache_key . '-' . 'wap';
 	}
 
-	if (isset($_SERVER['ALL_HTTP']) && strpos(strtolower($_SERVER['ALL_HTTP']), 'operamini') !== false) {
+	if ( isset($_SERVER['ALL_HTTP']) && strpos(strtolower($_SERVER['ALL_HTTP']), 'operamini') !== false ) {
 		return $cache_key . '-' . 'operamini';
 	}
 
@@ -579,13 +579,13 @@ function wp_cache_debug( $message, $level = 1 ) {
 function wp_cache_user_agent_is_rejected() {
 	global $cache_rejected_user_agent;
 
-	if (!function_exists('apache_request_headers')) return false;
+	if ( !function_exists('apache_request_headers') ) return false;
 	$headers = apache_request_headers();
-	if (!isset($headers["User-Agent"])) return false;
+	if ( !isset($headers["User-Agent"]) ) return false;
 	if ( false == is_array( $cache_rejected_user_agent ) )
 		return false;
 	foreach ($cache_rejected_user_agent as $expr) {
-		if (strlen($expr) > 0 && stristr($headers["User-Agent"], $expr))
+		if ( strlen($expr) > 0 && stristr($headers["User-Agent"], $expr) )
 			return true;
 	}
 	return false;
@@ -858,7 +858,7 @@ function wp_cache_confirm_delete( $dir ) {
 	}
 
 
-	if ( 
+	if (
 		$dir == $rp_cache_path ||
 		$dir == wpsc_get_realpath( $blog_cache_dir ) ||
 		$dir == wpsc_get_realpath( $blog_cache_dir . "meta/" ) ||

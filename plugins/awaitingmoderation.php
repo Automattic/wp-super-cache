@@ -19,7 +19,7 @@ function wp_supercache_awaitingmoderation_admin() {
 
 	$cache_awaitingmoderation = $cache_awaitingmoderation == '' ? '0' : $cache_awaitingmoderation;
 
-	if (isset($_POST['cache_awaitingmoderation']) && $valid_nonce) {
+	if ( isset($_POST['cache_awaitingmoderation']) && $valid_nonce ) {
 		$cache_awaitingmoderation = (int)$_POST['cache_awaitingmoderation'];
 		wp_cache_replace_line('^ *\$cache_awaitingmoderation', "\$cache_awaitingmoderation = '$cache_awaitingmoderation';", $wp_cache_config_file);
 		$changed = true;
@@ -35,7 +35,7 @@ function wp_supercache_awaitingmoderation_admin() {
 		<label><input type="radio" name="cache_awaitingmoderation" value="0" <?php if ( !$cache_awaitingmoderation ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Disabled', 'wp-super-cache' ); ?></label>
 		<p><?php _e( 'Enables or disables plugin to Remove the text "Your comment is awaiting moderation." when someone leaves a moderated comment.', 'wp-super-cache' ); ?></p>
 		<?php
-		if ($changed) {
+		if ( $changed ) {
 			if ( $cache_awaitingmoderation )
 				$status = __( "enabled", 'wp-super-cache' );
 			else

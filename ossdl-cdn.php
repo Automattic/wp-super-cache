@@ -22,7 +22,7 @@ if ( get_option( 'ossdl_cname' ) == false )
 $ossdl_cname = trim(get_option('ossdl_cname'));
 $ossdl_https = intval(get_option('ossdl_https'));
 $arr_of_cnames = array_map('trim', explode(',', $ossdl_cname));
-if ($arr_of_cnames[0] == '') $arr_of_cnames = array();
+if ( $arr_of_cnames[0] == '' ) $arr_of_cnames = array();
 
 /**
  * Determines whether to exclude a match.
@@ -88,7 +88,7 @@ function scossdl_off_rewriter($match) {
 function scossdl_off_additional_directories() {
 	global $ossdl_off_include_dirs;
 	$input = explode(',', $ossdl_off_include_dirs);
-	if ($ossdl_off_include_dirs == '' || count($input) < 1) {
+	if ( $ossdl_off_include_dirs == '' || count($input) < 1 ) {
 		return 'wp\-content|wp\-includes';
 	} else {
 		return implode('|', array_map('quotemeta', array_map('trim', $input)));
@@ -100,7 +100,7 @@ function scossdl_off_additional_directories() {
  */
 function scossdl_off_filter($content) {
 	global $ossdl_off_blog_url, $ossdl_off_cdn_url;
-	if ($ossdl_off_blog_url == $ossdl_off_cdn_url) { // no rewrite needed
+	if ( $ossdl_off_blog_url == $ossdl_off_cdn_url ) { // no rewrite needed
 		return $content;
 	} else {
 		$dirs = scossdl_off_additional_directories();
@@ -114,7 +114,7 @@ function scossdl_off_filter($content) {
  */
 function do_scossdl_off_ob_start() {
 	global $ossdl_off_blog_url, $ossdl_off_cdn_url;
-	if ($ossdl_off_blog_url != $ossdl_off_cdn_url) {
+	if ( $ossdl_off_blog_url != $ossdl_off_cdn_url ) {
 		add_filter( 'wp_cache_ob_callback_filter', 'scossdl_off_filter' );
 	}
 }
@@ -166,7 +166,7 @@ function scossdl_off_options() {
 
 	<?php if ( $ossdl_off_blog_url != get_home_url() ) { ?>
 		<p><?php printf( __( '<strong style="color: red">WARNING:</strong> Your siteurl and homeurl are different. The plugin is using %s as the homepage URL of your site but if that is wrong please use the filter "ossdl_off_blog_url" to fix it.', 'wp-super-cache' ), '<code>' . $ossdl_off_blog_url . '</code>' ); ?></p>
-	<?php } ?> 
+	<?php } ?>
 
 		<p><?php _e( 'You can define different CDN URLs for each site on a multsite network.', 'wp-super-cache' ); ?></p>
 		<p><form method="post" action="">

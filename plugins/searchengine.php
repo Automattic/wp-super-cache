@@ -56,7 +56,7 @@ function wp_supercache_searchengine_admin() {
 
 	$cache_no_adverts_for_friends = $cache_no_adverts_for_friends == '' ? 'no' : $cache_no_adverts_for_friends;
 
-	if (isset($_POST['cache_no_adverts_for_friends']) && $valid_nonce) {
+	if ( isset($_POST['cache_no_adverts_for_friends']) && $valid_nonce ) {
 		$cache_no_adverts_for_friends = $_POST['cache_no_adverts_for_friends'] == __( 'Disable', 'wp-super-cache' ) ? 'no' : 'yes';
 		wp_cache_replace_line('^ *\$cache_no_adverts_for_friends', "\$cache_no_adverts_for_friends = '$cache_no_adverts_for_friends';", $wp_cache_config_file);
 	}

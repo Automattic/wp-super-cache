@@ -14,7 +14,7 @@ function wp_cache_phase2() {
 	$wp_cache_blog_charset = get_option( 'blog_charset' );
 
 	wp_cache_mutex_init();
-	if (function_exists('add_action') && ( !defined( 'WPLOCKDOWN' ) || ( defined( 'WPLOCKDOWN' ) && constant( 'WPLOCKDOWN' ) == '0' ) ) ) {
+	if ( function_exists('add_action') && ( !defined( 'WPLOCKDOWN' ) || ( defined( 'WPLOCKDOWN' ) && constant( 'WPLOCKDOWN' ) == '0' ) ) ) {
 		wp_cache_debug( 'Setting up WordPress actions', 5 );
 
 		add_action( 'template_redirect', 'wp_super_cache_query_vars' );
@@ -32,8 +32,8 @@ function wp_cache_phase2() {
 		add_action('edit_comment', 'wp_cache_get_postid_from_comment', 99);
 		add_action('wp_set_comment_status', 'wp_cache_get_postid_from_comment', 99, 2);
 		// No post_id is available
-		add_action('switch_theme', 'wp_cache_no_postid', 99); 
-		add_action('edit_user_profile_update', 'wp_cache_no_postid', 99); 
+		add_action('switch_theme', 'wp_cache_no_postid', 99);
+		add_action('edit_user_profile_update', 'wp_cache_no_postid', 99);
 		add_action( 'wp_update_nav_menu', 'wp_cache_clear_cache_on_menu' );
 		add_action('wp_cache_gc','wp_cache_gc_cron');
 		add_action( 'clean_post_cache', 'wp_cache_post_edit' );
@@ -54,11 +54,11 @@ function wp_cache_phase2() {
 		$super_cache_enabled = false;
 	}
 
-	if ($wp_cache_gzip_encoding)
+	if ( $wp_cache_gzip_encoding )
 		header('Vary: Accept-Encoding, Cookie');
 	else
 		header('Vary: Cookie');
-	ob_start( 'wp_cache_ob_callback' ); 
+	ob_start( 'wp_cache_ob_callback' );
 	wp_cache_debug( 'Created output buffer', 4 );
 
 	// restore old supercache file temporarily
@@ -167,13 +167,13 @@ if ( !function_exists( 'wp_cache_user_agent_is_rejected' ) ) {
 	function wp_cache_user_agent_is_rejected() {
 		global $cache_rejected_user_agent;
 
-		if (!function_exists('apache_request_headers')) return false;
+		if ( !function_exists('apache_request_headers') ) return false;
 		$headers = apache_request_headers();
-		if (!isset($headers["User-Agent"])) return false;
+		if ( !isset($headers["User-Agent"]) ) return false;
 		if ( false == is_array( $cache_rejected_user_agent ) )
 			return false;
 		foreach ($cache_rejected_user_agent as $expr) {
-			if (strlen($expr) > 0 && stristr($headers["User-Agent"], $expr))
+			if ( strlen($expr) > 0 && stristr($headers["User-Agent"], $expr) )
 				return true;
 		}
 		return false;
@@ -284,14 +284,14 @@ function wp_cache_mutex_init() {
 		return true;
 
 	if ( !is_bool( $use_flock ) ) {
-		if (function_exists('sem_get')) 
+		if ( function_exists('sem_get') )
 			$use_flock = false;
 		else
 			$use_flock = true;
 	}
 
 	$mutex = false;
-	if ($use_flock )  {
+	if ( $use_flock ) {
 		setup_blog_cache_dir();
 		wp_cache_debug( "Created mutex lock on filename: {$blog_cache_dir}{$mutex_filename}", 5 );
 		$mutex = @fopen( $blog_cache_dir . $mutex_filename, 'w' );
@@ -515,7 +515,7 @@ function wp_cache_add_to_buffer( &$buffer, $text ) {
 	$buffer .= "\n<!-- $text -->";
 }
 
-/* 
+/*
  * If dynamic caching is enabled then run buffer through wpsc_cachedata filter before returning it.
  * or we'll return template tags to visitors.
  */
@@ -545,7 +545,7 @@ function wp_cache_get_ob(&$buffer) {
 	$new_cache = true;
 	$wp_cache_meta = array();
 
-	/* Mode paranoic, check for closing tags 
+	/* Mode paranoic, check for closing tags
 	 * we avoid caching incomplete files */
 	if ( $buffer == '' ) {
 		$new_cache = false;
@@ -574,7 +574,7 @@ function wp_cache_get_ob(&$buffer) {
 			wp_cache_debug( "robots.txt detected. Not caching.", 2 );
 		}
 	}
-	
+
 	if ( !$new_cache )
 		return wp_cache_maybe_dynamic( $buffer );
 
@@ -656,7 +656,7 @@ function wp_cache_get_ob(&$buffer) {
 	if ( false == $wp_cache_object_cache ) {
 		if ( !$supercacheonly ) {
 			$fr = @fopen($tmp_wpcache_filename, 'w');
-			if (!$fr) {
+			if ( !$fr ) {
 				wp_cache_debug( "Error. Supercache could not write to " . str_replace( ABSPATH, '', $cache_path ) . $cache_filename, 1 );
 				wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $cache_path ) . $cache_filename );
 				wp_cache_writers_exit();
@@ -679,7 +679,7 @@ function wp_cache_get_ob(&$buffer) {
 					return wp_cache_maybe_dynamic( $buffer );
 				} elseif ( ( !isset( $wp_cache_mfunc_enabled ) || $wp_cache_mfunc_enabled == 0 ) && $cache_compression ) { // don't want to store compressed files if using dynamic content
 					$gz = @fopen( $tmp_cache_filename . ".gz", 'w');
-					if (!$gz) {
+					if ( !$gz ) {
 						wp_cache_debug( "Error. Supercache could not write to " . str_replace( ABSPATH, '', $tmp_cache_filename ) . ".gz", 1 );
 						wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) . ".gz" );
 						@fclose( $fr );
@@ -748,13 +748,13 @@ function wp_cache_get_ob(&$buffer) {
 				wp_cache_debug( "Writing gzipped buffer to wp-cache cache file.", 5 );
 				fputs($fr, '<?php die(); ?>' . $gzdata);
 			} elseif ( $cache_enabled && $wp_cache_object_cache ) {
-				wp_cache_set( $oc_key . ".gz", $gzdata, 'supercache', $cache_max_time ); 
+				wp_cache_set( $oc_key . ".gz", $gzdata, 'supercache', $cache_max_time );
 				$added_cache = 1;
 			}
 		} else { // no compression
 			$wp_cache_meta[ 'headers' ][ 'Vary' ] = 'Vary: Cookie';
 			if ( $cache_enabled && $wp_cache_object_cache ) {
-				wp_cache_set( $oc_key, $buffer, 'supercache', $cache_max_time ); 
+				wp_cache_set( $oc_key, $buffer, 'supercache', $cache_max_time );
 				$added_cache = 1;
 			} elseif ( $fr ) {
 				wp_cache_debug( "Writing non-gzipped buffer to wp-cache cache file." );
@@ -765,7 +765,7 @@ function wp_cache_get_ob(&$buffer) {
 			wp_cache_debug( "Writing non-gzipped buffer to supercache file." );
 			wp_cache_add_to_buffer( $buffer, "super cache" );
 			fputs($fr2, $buffer );
-		} 
+		}
 		if ( isset( $gzdata ) && $gz ) {
 			wp_cache_debug( "Writing gzipped buffer to supercache file." );
 			fwrite($gz, $gzdata );
@@ -851,7 +851,7 @@ function wp_cache_phase2_clean_cache($file_prefix) {
 	if ( !wp_cache_writers_entry() )
 		return false;
 	wp_cache_debug( "wp_cache_phase2_clean_cache: Cleaning cache in $blog_cache_dir" );
-	if ( $handle = @opendir( $blog_cache_dir ) ) { 
+	if ( $handle = @opendir( $blog_cache_dir ) ) {
 		while ( false !== ($file = @readdir($handle))) {
 			if ( strpos( $file, $file_prefix ) !== false ) {
 				if ( strpos( $file, '.html' ) ) {
@@ -908,21 +908,21 @@ function prune_super_cache( $directory, $force = false, $rename = false ) {
 		$protected_directories = wpsc_get_protected_directories();
 	}
 
-	if (is_dir($directory)) {
+	if ( is_dir($directory) ) {
 		if ( $dh = @opendir( $directory ) ) {
 			$directory = trailingslashit( $directory );
 			while( ( $entry = @readdir( $dh ) ) !== false ) {
-				if ($entry == '.' || $entry == '..')
+				if ( $entry == '.' || $entry == '..' )
 					continue;
 				$entry = $directory . $entry;
 				prune_super_cache( $entry, $force, $rename );
-				// If entry is a directory, AND it's not a protected one, AND we're either forcing the delete, OR the file is out of date, 
+				// If entry is a directory, AND it's not a protected one, AND we're either forcing the delete, OR the file is out of date,
 				if ( is_dir( $entry ) && !in_array( $entry, $protected_directories ) && ( $force || @filemtime( $entry ) + $cache_max_time <= $now ) ) {
 					// if the directory isn't empty can't delete it
 					if ( $handle = @opendir( $entry ) ) {
 						$donotdelete = false;
 						while( !$donotdelete && ( $file = @readdir( $handle ) ) !== false ) {
-							if ($file == '.' || $file == '..')
+							if ( $file == '.' || $file == '..' )
 								continue;
 							$donotdelete = true;
 							wp_cache_debug( "gc: could not delete $entry as it's not empty: $file", 2 );
@@ -1035,16 +1035,16 @@ function wp_cache_phase2_clean_expired( $file_prefix, $force = false ) {
 	$now = time();
 	wp_cache_debug( "Cleaning expired cache files in $blog_cache_dir", 2 );
 	$deleted = 0;
-	if ( ( $handle = @opendir( $blog_cache_dir ) ) ) { 
+	if ( ( $handle = @opendir( $blog_cache_dir ) ) ) {
 		while ( false !== ($file = readdir($handle))) {
-			if ( preg_match("/^$file_prefix/", $file) && 
+			if ( preg_match("/^$file_prefix/", $file) &&
 				(@filemtime( $blog_cache_dir . $file) + $cache_max_time) <= $now  ) {
 				@unlink( $blog_cache_dir . $file );
 				@unlink( $blog_cache_dir . 'meta/' . str_replace( '.html', '.meta', $file ) );
 				wp_cache_debug( "wp_cache_phase2_clean_expired: Deleting obsolete wpcache cache+meta files: $file" );
 				continue;
 			}
-			if ($file != '.' && $file != '..') {
+			if ( $file != '.' && $file != '..' ) {
 				if ( is_dir( $blog_cache_dir . $file ) == false && (@filemtime($blog_cache_dir . $file) + $cache_max_time) <= $now  ) {
 					if ( substr( $file, -9 ) != '.htaccess' && $file != 'index.html' ) {
 						@unlink($blog_cache_dir . $file);
@@ -1087,7 +1087,7 @@ function wp_cache_shutdown_callback() {
 
 	wp_cache_debug( "wp_cache_shutdown_callback: collecting meta data.", 2 );
 
-	if (!isset( $response['Last-Modified'] )) {
+	if ( !isset( $response['Last-Modified'] ) ) {
 		$value = gmdate('D, d M Y H:i:s') . ' GMT';
 		/* Dont send this the first time */
 		/* @header('Last-Modified: ' . $value); */
@@ -1098,7 +1098,7 @@ function wp_cache_shutdown_callback() {
 		// the output buffer. This is a last ditch effort to set the
 		// correct Content-Type header for feeds, if we didn't see
 		// it in the response headers already. -- dougal
-		if (is_feed()) {
+		if ( is_feed() ) {
 			$type = get_query_var('feed');
 			$type = str_replace('/','',$type);
 			switch ($type) {
@@ -1218,9 +1218,9 @@ function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 		}
 	}
 	// We must check it up again due to WP bugs calling two different actions
-	// for delete, for example both wp_set_comment_status and delete_comment 
+	// for delete, for example both wp_set_comment_status and delete_comment
 	// are called when deleting a comment
-	if ($postid > 0)  {
+	if ( $postid > 0 ) {
 		wp_cache_debug( "Post $postid changed. Update cache.", 4 );
 		return wp_cache_post_change( $postid );
 	} elseif ( $_GET[ 'delete_all' ] != 'Empty Trash' && $_GET[ 'delete_all2' ] != 'Empty Spam' ) {
@@ -1305,7 +1305,7 @@ function wp_cache_post_edit($post_id) {
 	if ( is_object( $post ) == false )
 		return $post_id;
 
-	// Some users are inexplicibly seeing this error on scheduled posts. 
+	// Some users are inexplicibly seeing this error on scheduled posts.
 	// define this constant to disable the post status check.
 	if ( false == defined( 'WPSCFORCEUPDATE' ) && !in_array($post->post_status, array( 'publish', 'private' ) ) ) {
 		wp_cache_debug( "wp_cache_post_edit: draft post, not deleting any cache files. status: " . $post->post_status, 4 );
@@ -1330,7 +1330,7 @@ function wp_cache_post_edit($post_id) {
 
 function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 	global $wp_cache_object_cache;
-	
+
 	if ( $wp_cache_object_cache )
 		reset_oc_version();
 
@@ -1351,7 +1351,7 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 		do_action( 'gc_cache', 'prune', 'page/' );
 	} else {
 		wp_cache_debug( "wp_cache_post_id_gc clearing cached index files in $dir.", 4 );
-		prune_super_cache( $dir, true, true ); 
+		prune_super_cache( $dir, true, true );
 		do_action( 'gc_cache', 'prune', $permalink );
 	}
 }
@@ -1365,7 +1365,7 @@ function wp_cache_post_change( $post_id ) {
 		return $post_id;
 	}
 	$post = get_post( $post_id );
-	// Some users are inexplicibly seeing this error on scheduled posts. 
+	// Some users are inexplicibly seeing this error on scheduled posts.
 	// define this constant to disable the post status check.
 	if ( false == defined( 'WPSCFORCEUPDATE' ) && is_object( $post ) && !in_array($post->post_status, array( 'publish', 'private' ) ) ) {
 		wp_cache_debug( "wp_cache_post_change: draft post, not deleting any cache files.", 4 );
@@ -1420,7 +1420,7 @@ function wp_cache_post_change( $post_id ) {
 
 	wp_cache_debug( "wp_cache_post_change: checking {$blog_cache_dir}meta/", 4 );
 	$supercache_files_deleted = false;
-	if ( $handle = @opendir( $blog_cache_dir ) ) { 
+	if ( $handle = @opendir( $blog_cache_dir ) ) {
 		while ( false !== ($file = readdir($handle))) {
 			if ( strpos( $file, $file_prefix ) !== false ) {
 				if ( strpos( $file, '.html' ) ) {
@@ -1478,11 +1478,11 @@ function wp_cache_microtime_diff($a, $b) {
 function wp_cache_post_id() {
 	global $posts, $comment_post_ID, $post_ID;
 	// We try hard all options. More frequent first.
-	if ($post_ID > 0 ) return $post_ID;
-	if ($comment_post_ID > 0 )  return $comment_post_ID;
-	if (is_single() || is_page()) return $posts[0]->ID;
-	if (isset( $_GET[ 'p' ] ) && $_GET['p'] > 0) return $_GET['p'];
-	if (isset( $_POST[ 'p' ] ) && $_POST['p'] > 0) return $_POST['p'];
+	if ( $post_ID > 0 ) return $post_ID;
+	if ( $comment_post_ID > 0 )  return $comment_post_ID;
+	if ( is_single() || is_page() ) return $posts[0]->ID;
+	if ( isset( $_GET[ 'p' ] ) && $_GET['p'] > 0 ) return $_GET['p'];
+	if ( isset( $_POST[ 'p' ] ) && $_POST['p'] > 0 ) return $_POST['p'];
 	return 0;
 }
 
@@ -1522,7 +1522,7 @@ function wp_cache_gc_cron() {
 		return false;
 	}
 
-	update_option( 'wpsupercache_gc_time', time() ); 
+	update_option( 'wpsupercache_gc_time', time() );
 	wp_cache_debug( "wp_cache_gc_cron: Set GC Flag. ($gc_flag)", 5 );
 	$fp = @fopen( $gc_flag, 'w' );
 	@fclose( $fp );
