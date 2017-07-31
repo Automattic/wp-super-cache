@@ -10,7 +10,7 @@ function domain_mapping_gc_cache( $function, $directory ) {
 	if ( ! $siteurl )
 		return false;
 
-	$protocol = ( isset( $_SERVER['HTTPS' ] ) && 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
+	$protocol = ( isset( $_SERVER['HTTPS'] ) && 'on' == strtolower( $_SERVER['HTTPS'] ) ) ? 'https://' : 'http://';
 	$siteurl = trailingslashit( str_replace( $protocol, '', $siteurl ) );
 
 	if ( $directory == 'homepage' )
@@ -39,7 +39,7 @@ function domain_mapping_supercachedir( $dir ) {
 	if ( ! $siteurl )
 		return $dir;
 
-	$protocol = ( isset( $_SERVER['HTTPS' ] ) && 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
+	$protocol = ( isset( $_SERVER['HTTPS'] ) && 'on' == strtolower( $_SERVER['HTTPS'] ) ) ? 'https://' : 'http://';
 	$siteurl = str_replace( $protocol, '', $siteurl );
 	return trailingslashit( $cache_path . 'supercache/' . $siteurl );
 }
@@ -106,7 +106,7 @@ function wp_supercache_domain_mapping_exists() {
 		add_action( 'admin_notices', 'wp_supercache_domain_mapping_notice' );
 }
 
-if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'wpsupercache' ) {
+if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpsupercache' ) {
 	add_cacheaction( 'add_cacheaction', 'wp_supercache_domain_mapping_exists' );
 }
 ?>

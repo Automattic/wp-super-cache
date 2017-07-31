@@ -21,7 +21,7 @@ class WP_Super_Cache_Rest_Delete_Cache extends WP_REST_Controller {
 		} elseif ( isset( $params['url'] ) ) {
 			global $cache_path;
 
-			$directory = $cache_path . 'supercache/' . $params[ 'url' ];
+			$directory = $cache_path . 'supercache/' . $params['url'];
 			wpsc_delete_files( $directory );
 			prune_super_cache( $directory . '/page', true );
 

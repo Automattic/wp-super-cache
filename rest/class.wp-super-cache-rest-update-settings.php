@@ -28,7 +28,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 		if ( isset( $parameters['easy'] ) ) {
 			$errors = $this->toggle_easy_caching( $parameters['easy'] );
 
-		} elseif ( isset( $parameters[ 'reset' ] ) ) {
+		} elseif ( isset( $parameters['reset'] ) ) {
 			$errors = $this->restore_default_settings( $parameters );
 
 		} else {
@@ -190,7 +190,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @param mixed $value
 	 */
 	protected function set_lock_down( $value ) {
-		$_POST[ 'wp_lock_down' ] = (int)$value;
+		$_POST['wp_lock_down'] = (int)$value;
 		wp_update_lock_down();
 	}
 
@@ -531,7 +531,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 		if ( isset( $parameters['cache_gc_email_me'] ) && $parameters['cache_gc_email_me'] == 0 ) {
 			unset( $_POST['cache_gc_email_me'] );
 		}
-		$_POST[ 'wp_max_time' ] = $_POST[ 'cache_max_time' ];
+		$_POST['wp_max_time'] = $_POST['cache_max_time'];
 
 		wp_cache_time_update();
 	}
@@ -545,7 +545,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			return false;
 		}
 
-		$_POST[ 'direct_pages' ] = $list;
+		$_POST['direct_pages'] = $list;
 		wpsc_update_direct_pages();
 	}
 
@@ -555,11 +555,11 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	protected function new_direct_page( $value ) {
 		global $cached_direct_pages;
 
-		if ( isset( $_POST[ 'direct_pages' ] ) == false ) {
-			$_POST[ 'direct_pages' ] = $cached_direct_pages;
+		if ( isset( $_POST['direct_pages'] ) == false ) {
+			$_POST['direct_pages'] = $cached_direct_pages;
 		}
 
-		$_POST[ 'new_direct_page' ] = $value;
+		$_POST['new_direct_page'] = $value;
 		wpsc_update_direct_pages();
 	}
 
@@ -640,7 +640,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 				if ( $parameters[ $setting ] != false ) {
 					$_POST[ $setting ] = $parameters[ $setting ];
 				}
-				$_POST[ 'wp_cache_debug' ] = 1;
+				$_POST['wp_cache_debug'] = 1;
 			} else {
 				global $$setting;
 				$_POST[ $setting ] = $$setting;

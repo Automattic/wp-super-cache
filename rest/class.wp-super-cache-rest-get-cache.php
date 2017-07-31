@@ -12,7 +12,7 @@ class WP_Super_Cache_Rest_Get_Cache extends WP_REST_Controller {
 		global $valid_nonce;
 
 		$valid_nonce = true;
-		$_GET[ 'listfiles' ] = 1;
+		$_GET['listfiles'] = 1;
 		$sizes = wpsc_generate_sizes_array();
 		$supercachedir = get_supercache_dir();
 		$list = wpsc_dirsize( $supercachedir, $sizes );

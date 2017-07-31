@@ -43,7 +43,7 @@ function wp_supercache_badbehaviour_admin() {
 	if ( isset( $_POST['cache_badbehaviour'] ) && $valid_nonce ) {
 		$bbfile = get_bb_file_loc();
 		if ( ! $bbfile ) {
-			$_POST[ 'cache_badbehaviour' ] = 0;
+			$_POST['cache_badbehaviour'] = 0;
 			$err = __( 'Bad Behaviour not found. Please check your install.', 'wp-super-cache' );
 		}
 		if ( $cache_badbehaviour == (int)$_POST['cache_badbehaviour'] ) {

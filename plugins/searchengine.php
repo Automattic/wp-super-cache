@@ -8,18 +8,18 @@ function wp_supercache_searchengine( $string ) {
 	if ( $string != '' )
 		return $string;
 
-	if ( isset( $_COOKIE[ '7a1254cba80da02d5478d91cfd0a873a' ] ) && $_COOKIE[ '7a1254cba80da02d5478d91cfd0a873a' ] == 1 ) {
+	if ( isset( $_COOKIE['7a1254cba80da02d5478d91cfd0a873a'] ) && $_COOKIE['7a1254cba80da02d5478d91cfd0a873a'] == 1 ) {
 		$string = 'searchengine';
-	} elseif ( isset( $_SERVER[ 'HTTP_REFERER' ] ) && $_SERVER[ 'HTTP_REFERER' ] != '' ) {
+	} elseif ( isset( $_SERVER['HTTP_REFERER'] ) && $_SERVER['HTTP_REFERER'] != '' ) {
 		if ( is_array( $passingthrough ) == false )
 			return $string;
 
 		foreach( $passingthrough as $url ) {
-			if ( strpos( $_SERVER[ 'HTTP_REFERER' ], $url ) ) {
+			if ( strpos( $_SERVER['HTTP_REFERER'], $url ) ) {
 				reset( $nevershowads );
 				$se = false;
 				foreach( $nevershowads as $whitesite ) {
-					if ( false == strpos( $_SERVER[ 'HTTP_REFERER' ], $whitesite ) ) {
+					if ( false == strpos( $_SERVER['HTTP_REFERER'], $whitesite ) ) {
 						$se = true;
 					}
 				}

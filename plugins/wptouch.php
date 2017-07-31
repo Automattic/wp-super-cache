@@ -53,7 +53,7 @@ function wp_super_cache_wptouch_exists() {
 		add_action( 'admin_notices', 'wp_super_cache_wptouch_notice' );
 }
 
-if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'wpsupercache' ) {
+if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpsupercache' ) {
 	add_cacheaction( 'add_cacheaction', 'wp_super_cache_wptouch_exists' );
 }
 
@@ -63,13 +63,13 @@ function wp_super_cache_maybe_disable_wptouch( $t ) {
 	if ( $cache_wptouch != 1 )
 		return false;
 
-	if ( ( isset( $_COOKIE[ 'wptouch_switch_toggle' ] ) && $_COOKIE[ 'wptouch_switch_toggle' ] == 'normal' ) ||
-		( isset( $_COOKIE[ 'wptouch-pro-view' ] ) && $_COOKIE[ 'wptouch-pro-view' ] == 'desktop' ) )
+	if ( ( isset( $_COOKIE['wptouch_switch_toggle'] ) && $_COOKIE['wptouch_switch_toggle'] == 'normal' ) ||
+		( isset( $_COOKIE['wptouch-pro-view'] ) && $_COOKIE['wptouch-pro-view'] == 'desktop' ) )
 		return true;
 
 	$ua = explode( ",", $wptouch_exclude_ua );
 	foreach( $ua as $agent ) {
-		if ( preg_match( "#$agent#i", $_SERVER[ 'HTTP_HOST' ] ) )
+		if ( preg_match( "#$agent#i", $_SERVER['HTTP_HOST'] ) )
 			return true; // disable mobile ua check if matches the exclude list in wptouch
 	}
 
@@ -99,16 +99,16 @@ function wp_super_cache_wptouch_prefixes( $prefixes ) {
 }
 
 function wp_super_cache_wptouch_cookie_check( $cache_key ) {
-	if ( false == isset( $_COOKIE[ 'wptouch_switch_toggle' ] ) )
+	if ( false == isset( $_COOKIE['wptouch_switch_toggle'] ) )
 		return $cache_key;
-	if ( $_COOKIE[ 'wptouch_switch_toggle' ] == 'normal' || $_COOKIE[ 'wptouch_switch_toggle' ] == 'mobile' )
-		return $_COOKIE[ 'wptouch_switch_toggle' ];
+	if ( $_COOKIE['wptouch_switch_toggle'] == 'normal' || $_COOKIE['wptouch_switch_toggle'] == 'mobile' )
+		return $_COOKIE['wptouch_switch_toggle'];
 
-	if ( isset( $_COOKIE[ 'wptouch-pro-view' ] ) ) {
-		if ( $_COOKIE[ 'wptouch-pro-view' ] == 'desktop' )
+	if ( isset( $_COOKIE['wptouch-pro-view'] ) ) {
+		if ( $_COOKIE['wptouch-pro-view'] == 'desktop' )
 			return 'normal';
 		else
-			return $_COOKIE[ 'wptouch-pro-view' ];
+			return $_COOKIE['wptouch-pro-view'];
 	}
 
 	return $cache_key;

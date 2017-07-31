@@ -1,9 +1,9 @@
 <?php
-if ( false == isset( $_SERVER[ 'HTTP_HOST' ] ) ) {
+if ( false == isset( $_SERVER['HTTP_HOST'] ) ) {
 	$cache_enabled = false;
 	$WPSC_HTTP_HOST = '';
 } else {
-	$WPSC_HTTP_HOST = htmlentities( $_SERVER[ 'HTTP_HOST' ] );
+	$WPSC_HTTP_HOST = htmlentities( $_SERVER['HTTP_HOST'] );
 }
 
 // We want to be able to identify each blog in a WordPress MU install
