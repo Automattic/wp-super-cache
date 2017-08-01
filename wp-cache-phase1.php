@@ -674,10 +674,15 @@ function wpsc_rebuild_files( $dir ) {
 
 // realpath() doesn't always remove the trailing slash
 function wpsc_get_realpath( $directory ) {
+	if ( $directory == '/' ) {
+		return false;
+	}
+
+	$original_dir = $directory;
 	$directory = realpath( $directory );
 
 	if ( ! $directory ) {
-		wp_cache_debug( "wpsc_get_realpath: directory does not exist - $directory" );
+		wp_cache_debug( "wpsc_get_realpath: directory does not exist - $original_dir" );
 		return false;
 	}
 
@@ -694,17 +699,22 @@ function wpsc_is_in_cache_directory( $directory ) {
 	static $rp_cache_path = '';
 
 	if ( $directory == '' ) {
-		wp_cache_debug( "wpsc_is_in_cache_directory: directory is blank" );
+		wp_cache_debug( "wpsc_is_in_cache_directory: exiting as directory is blank" );
 		return false;
 	}
 
 	if ( $cache_path == '' ) {
-		wp_cache_debug( "wpsc_is_in_cache_directory: cache_path is blank" );
+		wp_cache_debug( "wpsc_is_in_cache_directory: exiting as cache_path is blank" );
 		return false;
 	}
 
 	if ( $rp_cache_path == '' ) {
 		$rp_cache_path = wpsc_get_realpath( $cache_path );
+	}
+
+	if ( ! $rp_cache_path ) {
+		wp_cache_debug( "wpsc_is_in_cache_directory: exiting as cache_path directory does not exist" );
+		return false;
 	}
 
 	$directory = wpsc_get_realpath( $directory );
@@ -774,6 +784,7 @@ function get_all_supercache_filenames( $dir = '' ) {
 
 	$dir = wpsc_get_realpath( $dir );
 	if ( ! $dir ) {
+		wp_cache_debug( "get_all_supercache_filenames: directory does not exist" );
 		return array();
 	}
 
@@ -898,6 +909,11 @@ function wp_cache_confirm_delete( $dir ) {
 	}
 
 	$rp_cache_path = wpsc_get_realpath( $cache_path );
+
+	if ( ! $rp_cache_path ) {
+		wp_cache_debug( "wp_cache_confirm_delete: cache_path does not exist: $cache_path" );
+		return false;
+	}
 
 	if (
 		$dir == '' ||

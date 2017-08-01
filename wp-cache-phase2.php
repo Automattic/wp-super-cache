@@ -82,9 +82,8 @@ function wpcache_do_rebuild( $dir ) {
 	}
 
 	$dir = wpsc_get_realpath( $dir );
-
 	if ( ! $dir ) {
-		wp_cache_debug( "wpcache_do_rebuild: directory does not exist $dir" );
+		wp_cache_debug( "wpcache_do_rebuild: exiting as directory does not exist." );
 		return false;
 	}
 
@@ -650,7 +649,15 @@ function wp_cache_get_ob(&$buffer) {
 
 	if( @is_dir( $dir ) == false )
 		@wp_mkdir_p( $dir );
-	$dir = trailingslashit( wpsc_get_realpath( $dir ) );
+	$dir = wpsc_get_realpath( $dir );
+
+	if ( ! $dir ) {
+		wp_cache_debug( "wp_cache_get_ob: not caching as directory does not exist." );
+		return $buffer;
+	}
+
+	$dir = trailingslashit( $dir );
+
 	if ( ! wpsc_is_in_cache_directory( $dir ) ) {
 		wp_cache_debug( "wp_cache_get_ob: not caching as directory is not in cache_path: $dir" );
 		return $buffer;
