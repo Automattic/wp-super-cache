@@ -18,11 +18,11 @@ class WP_Super_Cache_Rest_Get_Settings extends WP_REST_Controller {
 		if ( defined( 'WPLOCKDOWN' ) ) {
 			$config_file = file_get_contents( $wp_cache_config_file );
 			if ( false === strpos( $config_file, "defined( 'WPLOCKDOWN' )" ) ) {
-				wp_cache_replace_line( '^.*WPLOCKDOWN', "if ( ! defined( 'WPLOCKDOWN' ) ) define( 'WPLOCKDOWN', " . $this->get_is_lock_down_enabled() . " );", $wp_cache_config_file );
+				wp_cache_replace_line( '^.*WPLOCKDOWN', "if ( ! defined( 'WPLOCKDOWN' ) ) { define( 'WPLOCKDOWN', " . $this->get_is_lock_down_enabled() . ' ); }', $wp_cache_config_file );
 			}
 		}
 
-		if ( function_exists( "opcache_invalidate" ) ) {
+		if ( function_exists( 'opcache_invalidate' ) ) {
 			opcache_invalidate( $wp_cache_config_file );
 		}
 		include( $wp_cache_config_file );
@@ -64,7 +64,7 @@ class WP_Super_Cache_Rest_Get_Settings extends WP_REST_Controller {
 	 */
 	public function get_cache_type() {
 		global $wp_cache_config_file;
-		if ( function_exists( "opcache_invalidate" ) ) {
+		if ( function_exists( 'opcache_invalidate' ) ) {
 			opcache_invalidate( $wp_cache_config_file );
 		}
 		include( $wp_cache_config_file );
@@ -83,7 +83,7 @@ class WP_Super_Cache_Rest_Get_Settings extends WP_REST_Controller {
 	/**
 	 * Prepare the item for the REST response
 	 *
-	 * @param mixed $item WordPress representation of the item.
+	 * @param mixed           $item WordPress representation of the item.
 	 * @param WP_REST_Request $request Request object.
 	 * @return mixed
 	 */
@@ -150,7 +150,7 @@ class WP_Super_Cache_Rest_Get_Settings extends WP_REST_Controller {
 	 * @return int
 	 */
 	protected function get_is_preload_active() {
-		if ( wp_next_scheduled( 'wp_cache_preload_hook' ) || wp_next_scheduled( 'wp_cache_full_preload_hook' ) ) { 
+		if ( wp_next_scheduled( 'wp_cache_preload_hook' ) || wp_next_scheduled( 'wp_cache_full_preload_hook' ) ) {
 			return true;
 		} else {
 			return false;

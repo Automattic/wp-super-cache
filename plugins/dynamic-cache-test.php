@@ -63,7 +63,7 @@
  * 4. The wp_footer action fires and the TAG is printed to the page.
  * 5. Processing continues and the page is created.
  * 6. The output buffer finishes. A WP Super Cache callback function runs
- *    and saves the output buffer to a cache file. The wpsc_cachedata 
+ *    and saves the output buffer to a cache file. The wpsc_cachedata
  *    filter is called.
  * 7. The function dynamic_cache_test_filter() runs and replaces the TAG in
  *    the buffer with the "Hello world" string.
@@ -149,8 +149,9 @@ define( 'DYNAMIC_OUTPUT_BUFFER_TAG', '' ); // Change this to a secret placeholde
 
 if ( DYNAMIC_OUTPUT_BUFFER_TAG != '' ) {
 	function dynamic_output_buffer_test( &$cachedata = 0 ) {
-		if ( defined( 'DYNAMIC_OB_TEXT' ) )
+		if ( defined( 'DYNAMIC_OB_TEXT' ) ) {
 			return str_replace( DYNAMIC_OUTPUT_BUFFER_TAG, DYNAMIC_OB_TEXT, $cachedata );
+		}
 
 		ob_start();
 		// call the sidebar function, do something dynamic
@@ -172,10 +173,11 @@ if ( DYNAMIC_OUTPUT_BUFFER_TAG != '' ) {
 	add_cacheaction( 'add_cacheaction', 'dynamic_output_buffer_init' );
 
 	function dynamic_output_buffer_test_safety( $safety ) {
-		if ( defined( 'DYNAMIC_OB_TEXT' ) ) // this is set when you call dynamic_output_buffer_test() from the theme
+		if ( defined( 'DYNAMIC_OB_TEXT' ) ) { // this is set when you call dynamic_output_buffer_test() from the theme
 			return 1; // ready to replace tag with dynamic content.
-		else
+		} else {
 			return 0; // tag cannot be replaced.
+		}
 	}
 	add_cacheaction( 'wpsc_cachedata_safety', 'dynamic_output_buffer_test_safety' );
 }

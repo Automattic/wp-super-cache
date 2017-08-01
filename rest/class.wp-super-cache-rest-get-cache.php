@@ -12,7 +12,7 @@ class WP_Super_Cache_Rest_Get_Cache extends WP_REST_Controller {
 		global $valid_nonce;
 
 		$valid_nonce = true;
-		$_GET[ 'listfiles' ] = 1;
+		$_GET['listfiles'] = 1;
 		$sizes = wpsc_generate_sizes_array();
 		$supercachedir = get_supercache_dir();
 		$list = wpsc_dirsize( $supercachedir, $sizes );
@@ -26,14 +26,15 @@ class WP_Super_Cache_Rest_Get_Cache extends WP_REST_Controller {
 							if ( $type == 'wpcache' ) {
 								$filename = dirname( $filename );
 							}
-							if ( false == isset( $return_list[ $type ][ $state ] ) || false == in_array( $filename, $return_list[ $type ][ $state ] ) )
+							if ( false == isset( $return_list[ $type ][ $state ] ) || false == in_array( $filename, $return_list[ $type ][ $state ] ) ) {
 								$return_list[ $type ][ $state ][] = $filename;
+							}
 						}
 					}
 				}
 			}
 
-			if ( isset ( $return_list[ $type ] ) ) {
+			if ( isset( $return_list[ $type ] ) ) {
 				$list[ $type ] = $return_list[ $type ];
 			}
 

@@ -181,7 +181,7 @@ Emergency fix of a critical bug that caused wp-super-cache to delete the wp-admi
 * And more bug fixes and translation updates.
 
 = 1.1 =
-* Use $_SERVER[ 'SERVER_NAME' ] to create cache directories.
+* Use $_SERVER['SERVER_NAME'] to create cache directories.
 * Only create blogs cached directories if valid requests and blogs exist.
 * Only clear current blog's cache files if navigation menu is modified
 * Added clean_post_cache action to clear cache on post actions

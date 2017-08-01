@@ -35,13 +35,13 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 		include( $wp_cache_config_file );
 
 		if ( false == $cache_enabled ) {
-			$status[ 'preload_disabled_cache_off' ] = true;
+			$status['preload_disabled_cache_off'] = true;
 		}
 		if ( false == $super_cache_enabled ) {
-			$status[ 'preload_disabled_supercache_off' ] = true;
+			$status['preload_disabled_supercache_off'] = true;
 		}
 		if ( true === defined( 'DISABLESUPERCACHEPRELOADING' ) ) {
-			$status[ 'preload_disabled_by_admin' ] = true;
+			$status['preload_disabled_by_admin'] = true;
 		}
 	}
 
@@ -53,10 +53,10 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 
 		include( $wp_cache_config_file );
 
-		if ( $cache_enabled && !$wp_cache_mod_rewrite ) {
+		if ( $cache_enabled && ! $wp_cache_mod_rewrite ) {
 			$scrules = trim( implode( "\n", extract_from_markers( trailingslashit( get_home_path() ) . '.htaccess', 'WPSuperCache' ) ) );
 			if ( $scrules != '' ) {
-				$status[ 'php_mod_rewrite' ] = true;
+				$status['php_mod_rewrite'] = true;
 			}
 		}
 	}
@@ -100,15 +100,15 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 		extract( wpsc_get_htaccess_info() );
 
 		if ( $scrules != $rules ) {
-			$status[ 'mod_rewrite_rules' ] = true;
+			$status['mod_rewrite_rules'] = true;
 		}
 		$got_rewrite = apache_mod_loaded( 'mod_rewrite', true );
 		if ( $wp_cache_mod_rewrite && false == apply_filters( 'got_rewrite', $got_rewrite ) ) {
-			$status[ 'mod_rewrite_missing' ] = true;
+			$status['mod_rewrite_missing'] = true;
 		}
 
-		if ( !is_writeable_ACLSafe( $home_path . ".htaccess" ) ) {
-			$status[ 'htaccess_ro' ] = true;
+		if ( ! is_writeable_ACLSafe( $home_path . ".htaccess" ) ) {
+			$status['htaccess_ro'] = true;
 		}
 	}
 }
