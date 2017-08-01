@@ -328,7 +328,7 @@ function wp_cache_writers_entry() {
 
 	if ( $use_flock ) {
 		wp_cache_debug( 'grabbing lock using flock()', 5 );
-		flock( $mutex,  LOCK_EX );
+		flock( $mutex, LOCK_EX );
 	} else {
 		wp_cache_debug( 'grabbing lock using sem_acquire()', 5 );
 		@sem_acquire( $mutex );
@@ -351,7 +351,7 @@ function wp_cache_writers_exit() {
 
 	if ( $use_flock ) {
 		wp_cache_debug( 'releasing lock using flock()', 5 );
-		flock( $mutex,  LOCK_UN );
+		flock( $mutex, LOCK_UN );
 	} else {
 		wp_cache_debug( 'releasing lock using sem_release() and sem_remove()', 5 );
 		@sem_release( $mutex );
@@ -629,7 +629,7 @@ function wp_cache_get_ob(&$buffer) {
 	$home_url = parse_url( trailingslashit( get_bloginfo( 'url' ) ) );
 
 	$dir = get_current_url_supercache_dir();
-	$supercachedir = $cache_path . 'supercache/' . preg_replace('/:.*$/', '',  $home_url['host']);
+	$supercachedir = $cache_path . 'supercache/' . preg_replace('/:.*$/', '', $home_url['host']);
 	if ( ! empty( $_GET ) || is_feed() || ( $super_cache_enabled == true && is_dir( substr( $supercachedir, 0, -1 ) . '.disabled' ) ) ) {
 		wp_cache_debug( "Supercache disabled: GET or feed detected or disabled by config.", 2 );
 		$super_cache_enabled = false;
@@ -1076,7 +1076,7 @@ function wp_cache_phase2_clean_expired( $file_prefix, $force = false ) {
 	if ( ( $handle = @opendir( $blog_cache_dir ) ) ) {
 		while ( false !== ($file = readdir($handle))) {
 			if ( preg_match("/^$file_prefix/", $file) &&
-				(@filemtime( $blog_cache_dir . $file) + $cache_max_time) <= $now  ) {
+				(@filemtime( $blog_cache_dir . $file) + $cache_max_time) <= $now ) {
 				@unlink( $blog_cache_dir . $file );
 				@unlink( $blog_cache_dir . 'meta/' . str_replace( '.html', '.meta', $file ) );
 				wp_cache_debug( "wp_cache_phase2_clean_expired: Deleting obsolete wpcache cache+meta files: $file" );
@@ -1160,7 +1160,7 @@ function wp_cache_shutdown_callback() {
 				$value = 'text/html';
 			}
 		}
-		$value .=  "; charset=\"" . $wp_cache_blog_charset . "\"";
+		$value .= "; charset=\"" . $wp_cache_blog_charset . "\"";
 
 		wp_cache_debug( "Sending 'Content-Type: $value' header.", 2 );
 		@header("Content-Type: $value");
@@ -1485,7 +1485,7 @@ function wp_cache_post_change( $post_id ) {
 					}
 					if ( $post_id > 0 && $meta ) {
 						$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
-						if ( $meta['blog_id'] == $blog_id  && ( ( $all == true && !$meta['post'] ) || $meta['post'] == $post_id) ) {
+						if ( $meta['blog_id'] == $blog_id && ( ( $all == true && !$meta['post'] ) || $meta['post'] == $post_id) ) {
 							wp_cache_debug( "Post change: deleting post wp-cache files for {$meta['uri']}: $file", 4 );
 							@unlink( $blog_cache_dir . 'meta/' . $file );
 							@unlink( $blog_cache_dir . $file );
@@ -1525,7 +1525,7 @@ function wp_cache_post_id() {
 	global $posts, $comment_post_ID, $post_ID;
 	// We try hard all options. More frequent first.
 	if ( $post_ID > 0 ) return $post_ID;
-	if ( $comment_post_ID > 0 )  return $comment_post_ID;
+	if ( $comment_post_ID > 0 ) return $comment_post_ID;
 	if ( is_single() || is_page() ) return $posts[0]->ID;
 	if ( isset( $_GET['p'] ) && $_GET['p'] > 0 ) return $_GET['p'];
 	if ( isset( $_POST['p'] ) && $_POST['p'] > 0 ) return $_POST['p'];

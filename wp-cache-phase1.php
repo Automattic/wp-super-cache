@@ -28,7 +28,7 @@ if ( $blogcacheid != '' ) {
 
 $wp_cache_phase1_loaded = true;
 
-$mutex_filename  = 'wp_cache_mutex.lock';
+$mutex_filename = 'wp_cache_mutex.lock';
 $new_cache = false;
 
 if ( ! isset( $wp_cache_plugins_dir ) ) {
@@ -677,7 +677,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$uri = strtolower( $wp_cache_request_uri );
 	}
 	$uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?$/", '', $uri ) ) );
-	$dir = preg_replace( '/:.*$/', '',  $WPSC_HTTP_HOST ) . $uri; // To avoid XSS attacks
+	$dir = preg_replace( '/:.*$/', '', $WPSC_HTTP_HOST ) . $uri; // To avoid XSS attacks
 	if ( function_exists( "apply_filters" ) ) {
 		$dir = apply_filters( 'supercache_dir', $dir );
 	} else {
@@ -816,7 +816,7 @@ function supercache_filename() {
 	global $cached_direct_pages;
 
 	//Add support for https and http caching
-	$is_https = ( ( isset( $_SERVER['HTTPS'] ) && 'on' ==  strtolower( $_SERVER['HTTPS'] ) ) || ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' == strtolower( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) ) ); //Also supports https requests coming from an nginx reverse proxy
+	$is_https = ( ( isset( $_SERVER['HTTPS'] ) && 'on' == strtolower( $_SERVER['HTTPS'] ) ) || ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' == strtolower( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) ) ); //Also supports https requests coming from an nginx reverse proxy
 	$extra_str = $is_https ? '-https' : '';
 
 	if ( function_exists( 'apply_filters' ) ) {
@@ -855,7 +855,7 @@ function get_oc_key( $url = false ) {
 	global $wp_cache_gzip_encoding, $WPSC_HTTP_HOST;
 
 	if ( $url ) {
-		$key = intval( $_SERVER['SERVER_PORT'] ) . strtolower( preg_replace( '/:.*$/', '',  $WPSC_HTTP_HOST ) ) . $url;
+		$key = intval( $_SERVER['SERVER_PORT'] ) . strtolower( preg_replace( '/:.*$/', '', $WPSC_HTTP_HOST ) ) . $url;
 	} else {
 		$key = get_current_url_supercache_dir();
 	}
