@@ -24,11 +24,12 @@ function wp_super_cache_wptouch_admin() {
 		<?php
 		echo '<p>' . __( 'Provides support for <a href="http://wordpress.org/extend/plugins/wptouch/">WPTouch</a> mobile theme and plugin.', 'wp-super-cache' ) . '</p>';
 		if ( isset( $changed ) && $changed ) {
-			if ( $cache_wptouch )
-				$status = __( "enabled", 'wp-super-cache' );
-			else
-				$status = __( "disabled", 'wp-super-cache' );
-			echo "<p><strong>" . sprintf( __( "WPTouch support is now %s", 'wp-super-cache' ), $status ) . "</strong></p>";
+			if ( $cache_wptouch ) {
+				$status = __( 'enabled', 'wp-super-cache' );
+			} else {
+				$status = __( 'disabled', 'wp-super-cache' );
+			}
+			echo '<p><strong>' . sprintf( __( 'WPTouch support is now %s', 'wp-super-cache' ), $status ) . '</strong></p>';
 		}
 	echo '<div class="submit"><input class="button-primary" ' . SUBMITDISABLED . 'type="submit" value="' . __( 'Update', 'wp-super-cache' ) . '" /></div>';
 	wp_nonce_field('wp-cache');
@@ -41,16 +42,19 @@ add_cacheaction( 'cache_admin_page', 'wp_super_cache_wptouch_admin' );
 
 function wp_super_cache_wptouch_notice() {
 	global $cache_enabled;
-	if ( $cache_enabled )
+	if ( $cache_enabled ) {
 		echo '<div class="error"><p><strong>' . __('WPTouch plugin detected! Please go to the Supercache plugins page and enable the WPTouch helper plugin.', 'wp-super-cache' ) . '</strong></p></div>';
+	}
 }
 function wp_super_cache_wptouch_exists() {
 	global $cache_wptouch;
-	if ( $cache_wptouch == 1 )
+	if ( $cache_wptouch == 1 ) {
 		return false;
+	}
 
-	if ( is_admin() && function_exists( 'wptouch_get_plugin_dir_name' ) )
+	if ( is_admin() && function_exists( 'wptouch_get_plugin_dir_name' ) ) {
 		add_action( 'admin_notices', 'wp_super_cache_wptouch_notice' );
+	}
 }
 
 if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpsupercache' ) {
@@ -60,17 +64,20 @@ if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpsupercache' ) {
 // disable mobile checking if
 function wp_super_cache_maybe_disable_wptouch( $t ) {
 	global $cache_wptouch, $wptouch_exclude_ua;
-	if ( $cache_wptouch != 1 )
+	if ( $cache_wptouch != 1 ) {
 		return false;
+	}
 
 	if ( ( isset( $_COOKIE['wptouch_switch_toggle'] ) && $_COOKIE['wptouch_switch_toggle'] == 'normal' ) ||
-		( isset( $_COOKIE['wptouch-pro-view'] ) && $_COOKIE['wptouch-pro-view'] == 'desktop' ) )
-		return true;
+		( isset( $_COOKIE['wptouch-pro-view'] ) && $_COOKIE['wptouch-pro-view'] == 'desktop' ) ) {
+			return true;
+	}
 
 	$ua = explode( ",", $wptouch_exclude_ua );
 	foreach( $ua as $agent ) {
-		if ( preg_match( "#$agent#i", $_SERVER['HTTP_HOST'] ) )
+		if ( preg_match( "#$agent#i", $_SERVER['HTTP_HOST'] ) ) {
 			return true; // disable mobile ua check if matches the exclude list in wptouch
+		}
 	}
 
 	return false;
@@ -82,8 +89,9 @@ add_cacheaction( 'disable_mobile_check', 'wp_super_cache_maybe_disable_wptouch' 
 function wp_super_cache_wptouch_browsers( $browsers ) {
 	global $wptouch_exclude_ua, $wp_cache_config_file;
 
-	if ( false == function_exists( 'bnc_wptouch_get_exclude_user_agents' ) || false == function_exists( 'bnc_wptouch_get_user_agents' ) )
+	if ( false == function_exists( 'bnc_wptouch_get_exclude_user_agents' ) || false == function_exists( 'bnc_wptouch_get_user_agents' ) ) {
 		return $browsers;
+	}
 
 	$browsers = implode( ',', bnc_wptouch_get_exclude_user_agents() ); // hack, support exclude agents too
 	if ( $browsers != $wptouch_exclude_ua ) {
@@ -99,16 +107,19 @@ function wp_super_cache_wptouch_prefixes( $prefixes ) {
 }
 
 function wp_super_cache_wptouch_cookie_check( $cache_key ) {
-	if ( false == isset( $_COOKIE['wptouch_switch_toggle'] ) )
+	if ( false == isset( $_COOKIE['wptouch_switch_toggle'] ) ) {
 		return $cache_key;
-	if ( $_COOKIE['wptouch_switch_toggle'] == 'normal' || $_COOKIE['wptouch_switch_toggle'] == 'mobile' )
+	}
+	if ( $_COOKIE['wptouch_switch_toggle'] == 'normal' || $_COOKIE['wptouch_switch_toggle'] == 'mobile' ) {
 		return $_COOKIE['wptouch_switch_toggle'];
+	}
 
 	if ( isset( $_COOKIE['wptouch-pro-view'] ) ) {
-		if ( $_COOKIE['wptouch-pro-view'] == 'desktop' )
+		if ( $_COOKIE['wptouch-pro-view'] == 'desktop' ) {
 			return 'normal';
-		else
+		} else {
 			return $_COOKIE['wptouch-pro-view'];
+		}
 	}
 
 	return $cache_key;

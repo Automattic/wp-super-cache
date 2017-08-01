@@ -3,8 +3,9 @@
 function wp_supercache_badbehaviour( $file ) {
 	global $cache_badbehaviour;
 
-	if ( $cache_badbehaviour != 1 )
+	if ( $cache_badbehaviour != 1 ) {
 		return $file;
+	}
 	wp_supercache_badbehaviour_include();
 	return $file;
 }
@@ -18,8 +19,9 @@ function wp_supercache_badbehaviour_include() {
 
 function get_bb_file_loc() {
 	global $cache_badbehaviour_file;
-	if ( $cache_badbehaviour_file )
+	if ( $cache_badbehaviour_file ) {
 		return $cache_badbehaviour_file;
+	}
 
 	if ( file_exists( WP_CONTENT_DIR . '/plugins/bad-behavior/bad-behavior-generic.php' ) ) {
 		$bbfile = WP_CONTENT_DIR . '/plugins/bad-behavior/bad-behavior-generic.php';
@@ -35,8 +37,9 @@ function wp_supercache_badbehaviour_admin() {
 	global $cache_badbehaviour, $wp_cache_config_file, $valid_nonce;
 
 	$cache_badbehaviour = $cache_badbehaviour == '' ? 0 : $cache_badbehaviour;
-	if ( $cache_badbehaviour == 'no' )
+	if ( $cache_badbehaviour == 'no' ) {
 		$cache_badbehaviour = 0;
+	}
 
 	$err = false;
 
@@ -67,10 +70,11 @@ function wp_supercache_badbehaviour_admin() {
 		<p><?php _e( '', 'wp-super-cache' ); ?></p><?php
 		echo '<p>' . sprintf( __( '(Only WPCache caching supported, disabled compression and requires <a href="http://www.bad-behavior.ioerror.us/">Bad Behavior</a> in "%s/plugins/bad-behavior/") ', 'wp-super-cache' ), WP_CONTENT_DIR ) . '</p>';
 		if ( isset( $changed ) && $changed ) {
-			if ( $cache_badbehaviour )
-				$status = __( "enabled", 'wp-super-cache' );
-			else
-				$status = __( "disabled", 'wp-super-cache' );
+			if ( $cache_badbehaviour ) {
+				$status = __( 'enabled', 'wp-super-cache' );
+			} else {
+				$status = __( 'disabled', 'wp-super-cache' );
+			}
 			echo "<p><strong>" . sprintf( __( "Bad Behavior support is now %s", 'wp-super-cache' ), $status ) . "</strong></p>";
 		}
 	echo '<div class="submit"><input class="button-primary" ' . SUBMITDISABLED . 'type="submit" value="' . __( 'Update', 'wp-super-cache' ) . '" /></div>';
@@ -79,8 +83,9 @@ function wp_supercache_badbehaviour_admin() {
 	</form>
 	</fieldset>
 	<?php
-	if ( $err )
-		echo "<p><strong>" . __( 'Warning!', 'wp-super-cache' ) . "</strong> $err</p>";
+	if ( $err ) {
+		echo '<p><strong>' . __( 'Warning!', 'wp-super-cache' ) . "</strong> $err</p>";
+	}
 
 }
 add_cacheaction( 'cache_admin_page', 'wp_supercache_badbehaviour_admin' );

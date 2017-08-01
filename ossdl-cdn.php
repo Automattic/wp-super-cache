@@ -3,26 +3,34 @@
 /* Taken from OSSDL CDN off-linker, a plugin by W-Mark Kubacki (http://mark.ossdl.de/) and used with permission */
 
 /* Set up some defaults */
-if ( get_option( 'ossdl_off_cdn_url' ) == false )
+if ( get_option( 'ossdl_off_cdn_url' ) == false ) {
 	add_option( 'ossdl_off_cdn_url', get_option( 'siteurl' ) );
+}
 $ossdl_off_blog_url = apply_filters( 'ossdl_off_blog_url', get_option( 'siteurl' ) );
 $ossdl_off_cdn_url = trim( get_option('ossdl_off_cdn_url') );
-if ( get_option( 'ossdl_off_include_dirs' ) == false )
+if ( get_option( 'ossdl_off_include_dirs' ) == false ) {
 	add_option('ossdl_off_include_dirs', 'wp-content,wp-includes');
+}
 $ossdl_off_include_dirs = trim(get_option('ossdl_off_include_dirs'));
-if ( get_option( 'ossdl_off_exclude' ) == false )
+if ( get_option( 'ossdl_off_exclude' ) == false ) {
 	add_option('ossdl_off_exclude', '.php');
+}
 $ossdl_off_exclude = trim(get_option('ossdl_off_exclude'));
 $arr_of_excludes = array_map('trim', explode(',', $ossdl_off_exclude));
-if ( ! is_array( $arr_of_excludes ) )
+if ( ! is_array( $arr_of_excludes ) ) {
 	$arr_of_excludes = array();
+}
 
-if ( get_option( 'ossdl_cname' ) == false )
+
+if ( get_option( 'ossdl_cname' ) == false ) {
 	add_option('ossdl_cname', '');
+}
 $ossdl_cname = trim(get_option('ossdl_cname'));
 $ossdl_https = intval(get_option('ossdl_https'));
 $arr_of_cnames = array_map('trim', explode(',', $ossdl_cname));
-if ( $arr_of_cnames[0] == '' ) $arr_of_cnames = array();
+if ( $arr_of_cnames[0] == '' ) {
+	$arr_of_cnames = array();
+}
 
 /**
  * Determines whether to exclude a match.
@@ -58,14 +66,17 @@ function scossdl_string_mod($s, $mod) {
 function scossdl_off_rewriter($match) {
 	global $ossdl_off_blog_url, $ossdl_off_cdn_url, $arr_of_excludes, $arr_of_cnames, $ossdl_https;
 
-	if ( $ossdl_off_cdn_url == '' )
+	if ( $ossdl_off_cdn_url == '' ) {
 		return $match[0];
+	}
 
-	if ( $ossdl_https && substr( $match[0], 0, 5 ) == 'https' )
+	if ( $ossdl_https && substr( $match[0], 0, 5 ) == 'https' ) {
 		return $match[0];
+	}
 
-	if ( false == in_array( $ossdl_off_cdn_url, $arr_of_cnames ) )
+	if ( false == in_array( $ossdl_off_cdn_url, $arr_of_cnames ) ) {
 		$arr_of_cnames[] = $ossdl_off_cdn_url;
+	}
 
 	if ( scossdl_off_exclude_match( $match[0], $arr_of_excludes ) ) {
 		return $match[0];
@@ -118,15 +129,18 @@ function do_scossdl_off_ob_start() {
 		add_filter( 'wp_cache_ob_callback_filter', 'scossdl_off_filter' );
 	}
 }
-if ( false == isset( $ossdlcdn ) )
+if ( false == isset( $ossdlcdn ) ) {
 	$ossdlcdn = 1; // have to default to on for existing users.
-if ( $ossdlcdn == 1 )
+}
+if ( $ossdlcdn == 1 ) {
 	add_action('init', 'do_scossdl_off_ob_start');
+}
 
-if ( function_exists( 'wp_verify_nonce' ) )
+if ( function_exists( 'wp_verify_nonce' ) ) {
 	$valid_nonce = isset($_REQUEST['_wpnonce']) ? wp_verify_nonce($_REQUEST['_wpnonce'], 'wp-cache') : false;
-else
+} else {
 	$valid_nonce = false;
+}
 
 function scossdl_off_update() {
 	global $ossdlcdn, $wp_cache_config_file, $valid_nonce;
@@ -174,7 +188,7 @@ function scossdl_off_options() {
 		<table class="form-table"><tbody>
 			<tr valign="top">
 				<td style='text-align: right'>
-					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" <?php if ( $ossdlcdn ) echo "checked=1"; ?> />
+					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" <?php if ( $ossdlcdn ) { echo 'checked=1'; } ?> />
 				</td>
 				<th scope="row"><label for="ossdlcdn"><?php _e( 'Enable CDN Support', 'wp-super-cache' ); ?></label></th>
 			</tr>

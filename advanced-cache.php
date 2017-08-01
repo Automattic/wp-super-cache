@@ -2,8 +2,9 @@
 # WP SUPER CACHE 1.2
 function wpcache_broken_message() {
 	global $wp_cache_config_file;
-	if ( isset( $wp_cache_config_file ) == false )
+	if ( isset( $wp_cache_config_file ) == false ) {
 		return '';
+	}
 
 	$doing_ajax =     defined( 'DOING_AJAX' ) && DOING_AJAX;
 	$xmlrpc_request = defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST;

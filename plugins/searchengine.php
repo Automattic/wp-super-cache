@@ -2,17 +2,20 @@
 function wp_supercache_searchengine( $string ) {
 	global $passingthrough, $nevershowads, $cache_no_adverts_for_friends;
 
-	if ( $cache_no_adverts_for_friends != 'yes' && $cache_no_adverts_for_friends != '1' )
+	if ( $cache_no_adverts_for_friends != 'yes' && $cache_no_adverts_for_friends != '1' ) {
 		return $string;
+	}
 
-	if ( $string != '' )
+	if ( $string != '' ) {
 		return $string;
+	}
 
 	if ( isset( $_COOKIE['7a1254cba80da02d5478d91cfd0a873a'] ) && $_COOKIE['7a1254cba80da02d5478d91cfd0a873a'] == 1 ) {
 		$string = 'searchengine';
 	} elseif ( isset( $_SERVER['HTTP_REFERER'] ) && $_SERVER['HTTP_REFERER'] != '' ) {
-		if ( is_array( $passingthrough ) == false )
+		if ( is_array( $passingthrough ) == false ) {
 			return $string;
+		}
 
 		foreach( $passingthrough as $url ) {
 			if ( strpos( $_SERVER['HTTP_REFERER'], $url ) ) {
