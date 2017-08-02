@@ -850,7 +850,14 @@ table.wpsc-settings-table {
 					$msg .="<p>" . sprintf( __( "<strong>Page last cached:</strong> %s", 'wp-super-cache' ), $url ) . "</p>";
 				}
 				if ( $msg != '' ) {
-					echo '<div class="notice notice-warning"><h3>' . __( 'Preload Active', 'wp-super-cache' ) . '</h3>' . $msg . '</div>';
+					echo '<div class="notice notice-warning"><h3>' . __( 'Preload Active', 'wp-super-cache' ) . '</h3>' . $msg;
+					echo '<form name="do_preload" action="" method="POST">';
+					echo '<input type="hidden" name="action" value="preload" />';
+					echo '<input type="hidden" name="page" value="wpsupercache" />';
+					echo '<p><input class="button-primary" type="submit" name="preload_off" value="' . __( 'Cancel Cache Preload', 'wp-super-cache' ) . '" /></p>';
+					wp_nonce_field('wp-cache');
+					echo '</form>';
+					echo '</div>';
 				}
 			}
 			next_preload_message( 'wp_cache_preload_hook', __( 'Refresh of cache in %d hours %d minutes and %d seconds.', 'wp-super-cache' ), 60 );
