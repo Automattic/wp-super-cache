@@ -960,8 +960,9 @@ function prune_super_cache( $directory, $force = false, $rename = false ) {
 					if ( $handle = @opendir( $entry ) ) {
 						$donotdelete = false;
 						while( ! $donotdelete && ( $file = @readdir( $handle ) ) !== false ) {
-							if ( $file == '.' || $file == '..' )
+							if ( $file == '.' || $file == '..' ) {
 								continue;
+							}
 							$donotdelete = true;
 							wp_cache_debug( "gc: could not delete $entry as it's not empty: $file", 2 );
 						}
