@@ -470,8 +470,9 @@ function add_cacheaction( $action, $func ) {
 function do_cacheaction( $action, $value = '' ) {
 	global $wp_supercache_actions;
 
-	if ( ! isset( $wp_supercache_actions ) || ! is_array( $wp_supercache_actions ) )
+	if ( ! isset( $wp_supercache_actions ) || ! is_array( $wp_supercache_actions ) ) {
 		return $value;
+	}
 
 	if ( array_key_exists($action, $wp_supercache_actions) && is_array( $wp_supercache_actions[ $action ] ) ) {
 		$actions = $wp_supercache_actions[ $action ];
@@ -834,11 +835,12 @@ function supercache_filename() {
 }
 
 function get_oc_version() {
-	$wp_cache_oc_key = wp_cache_get( "wp_cache_oc_key" );
+	$wp_cache_oc_key = wp_cache_get( 'wp_cache_oc_key' );
 	if ( ! $wp_cache_oc_key ) {
 		$wp_cache_oc_key['key'] = reset_oc_version();
-	} elseif ( $wp_cache_oc_key['ts'] < time() - 600 )
-		wp_cache_set( "wp_cache_oc_key", array( 'ts' => time(), 'key' => $wp_cache_oc_key['key'] ) );
+	} elseif ( $wp_cache_oc_key['ts'] < time() - 600 ) {
+		wp_cache_set( 'wp_cache_oc_key', array( 'ts' => time(), 'key' => $wp_cache_oc_key['key'] ) );
+	}
 	return $wp_cache_oc_key['key'];
 }
 
@@ -846,7 +848,7 @@ function reset_oc_version( $version = 1 ) {
 	if ( $version == 1 ) {
 		$version = mt_rand();
 	}
-	wp_cache_set( "wp_cache_oc_key", array( 'ts' => time(), 'key' => $version ) );
+	wp_cache_set( 'wp_cache_oc_key', array( 'ts' => time(), 'key' => $version ) );
 
 	return $version;
 }

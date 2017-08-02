@@ -676,8 +676,9 @@ function wp_cache_get_ob(&$buffer) {
 		return wp_cache_maybe_dynamic( $buffer );
 	}
 
-	if ( @is_dir( $dir ) == false )
+	if ( @is_dir( $dir ) == false ) {
 		@wp_mkdir_p( $dir );
+	}
 	$dir = trailingslashit( wpsc_get_realpath( $dir ) );
 	if ( ! wpsc_is_in_cache_directory( $dir ) ) {
 		wp_cache_debug( "wp_cache_get_ob: not caching as directory is not in cache_path: $dir" );
@@ -948,8 +949,9 @@ function prune_super_cache( $directory, $force = false, $rename = false ) {
 		if ( $dh = @opendir( $directory ) ) {
 			$directory = trailingslashit( $directory );
 			while( ( $entry = @readdir( $dh ) ) !== false ) {
-				if ( $entry == '.' || $entry == '..' )
+				if ( $entry == '.' || $entry == '..' ) {
 					continue;
+				}
 				$entry = $directory . $entry;
 				prune_super_cache( $entry, $force, $rename );
 				// If entry is a directory, AND it's not a protected one, AND we're either forcing the delete, OR the file is out of date,
@@ -965,8 +967,9 @@ function prune_super_cache( $directory, $force = false, $rename = false ) {
 						}
 						closedir($handle);
 					}
-					if ( $donotdelete )
+					if ( $donotdelete ) {
 						continue;
+					}
 					if ( ! $rename ) {
 						@rmdir( $entry );
 						$log++;

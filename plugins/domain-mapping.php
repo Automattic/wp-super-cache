@@ -79,21 +79,22 @@ function wp_supercache_domain_mapping_admin() {
 		<form name="wp_manager" action="" method="post">
 		<label><input type="radio" name="cache_domain_mapping" value="1" <?php if ( $cache_domain_mapping ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Enabled', 'wp-super-cache' ); ?></label>
 		<label><input type="radio" name="cache_domain_mapping" value="0" <?php if ( ! $cache_domain_mapping ) { echo 'checked="checked" '; } ?>/> <?php _e( 'Disabled', 'wp-super-cache' ); ?></label>
-		<p><?php _e( '', 'wp-super-cache' ); ?></p><?php
-		echo '<p>' . __( 'Provides support for <a href="http://wordpress.org/extend/plugins/wordpress-mu-domain-mapping/">Domain Mapping</a> plugin to map multiple domains to a blog.', 'wp-super-cache' ) . '</p>';
-		if ( isset( $changed ) && $changed ) {
-			if ( $cache_domain_mapping ) {
-				$status = __( 'enabled', 'wp-super-cache' );
-			} else {
-				$status = __( 'disabled', 'wp-super-cache' );
-			}
-			echo '<p><strong>' . sprintf( __( 'Domain Mapping support is now %s', 'wp-super-cache' ), $status ) . '</strong></p>';
+		<p><?php _e( '', 'wp-super-cache' ); ?></p>
+	<?php
+	echo '<p>' . __( 'Provides support for <a href="http://wordpress.org/extend/plugins/wordpress-mu-domain-mapping/">Domain Mapping</a> plugin to map multiple domains to a blog.', 'wp-super-cache' ) . '</p>';
+	if ( isset( $changed ) && $changed ) {
+		if ( $cache_domain_mapping ) {
+			$status = __( 'enabled', 'wp-super-cache' );
+		} else {
+			$status = __( 'disabled', 'wp-super-cache' );
 		}
-		echo '<div class="submit"><input class="button-primary" ' . SUBMITDISABLED . 'type="submit" value="' . __( 'Update', 'wp-super-cache' ) . '" /></div>';
-		wp_nonce_field('wp-cache');
+		echo '<p><strong>' . sprintf( __( 'Domain Mapping support is now %s', 'wp-super-cache' ), $status ) . '</strong></p>';
+	}
+	echo '<div class="submit"><input class="button-primary" ' . SUBMITDISABLED . 'type="submit" value="' . __( 'Update', 'wp-super-cache' ) . '" /></div>';
+	wp_nonce_field( 'wp-cache' );
 	?>
-	</form>
-	</fieldset>
+		</form>
+		</fieldset>
 	<?php
 }
 add_cacheaction( 'cache_admin_page', 'wp_supercache_domain_mapping_admin' );
