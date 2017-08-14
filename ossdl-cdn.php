@@ -126,7 +126,7 @@ if ( $ossdlcdn == 1 )
 	add_action('init', 'do_scossdl_off_ob_start');
 
 function scossdl_off_update() {
-	global $ossdlcdn, $wp_cache_config_file, $valid_nonce;
+	global $ossdlcdn, $wp_cache_config_file;
 
 	$valid_nonce = isset($_REQUEST['_wpnonce']) ? wp_verify_nonce($_REQUEST['_wpnonce'], 'wp-cache') : false;
 
