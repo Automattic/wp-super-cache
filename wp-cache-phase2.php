@@ -391,7 +391,7 @@ function wp_cache_ob_callback( $buffer ) {
 	if ( empty( $wp_super_cache_query ) ) {
 		$cache_this_page = false;
 		wp_cache_debug( 'wp_cache_ob_callback: wp_super_cache_query is empty. Not caching unknown page type.' );
-	if ( defined( 'DONOTCACHEPAGE' ) ) {
+	} elseif ( defined( 'DONOTCACHEPAGE' ) ) {
 		wp_cache_debug( 'DONOTCACHEPAGE defined. Caching disabled.', 2 );
 		$cache_this_page = false;
 	} elseif ( $wp_cache_no_cache_for_get && false == empty( $_GET ) && false == defined( 'DOING_CRON' ) ) {
