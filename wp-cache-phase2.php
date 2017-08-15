@@ -371,6 +371,8 @@ function wp_super_cache_query_vars() {
 		$wp_super_cache_query[ 'is_author' ] = 1;
 	if ( is_feed() )
 		$wp_super_cache_query[ 'is_feed' ] = 1;
+
+	return $wp_super_cache_query;
 }
 
 function wp_cache_ob_callback( $buffer ) {
@@ -381,6 +383,14 @@ function wp_cache_ob_callback( $buffer ) {
 
 	// All the things that can stop a page being cached
 	$cache_this_page = true;
+
+	if ( empty( $wp_super_cache_query ) ) {
+		$wp_super_cache_query = wp_super_cache_query_vars();
+	}
+
+	if ( empty( $wp_super_cache_query ) ) {
+		$cache_this_page = false;
+		wp_cache_debug( 'wp_cache_ob_callback: wp_super_cache_query is empty. Not caching unknown page type.' );
 	if ( defined( 'DONOTCACHEPAGE' ) ) {
 		wp_cache_debug( 'DONOTCACHEPAGE defined. Caching disabled.', 2 );
 		$cache_this_page = false;
