@@ -3457,7 +3457,7 @@ function wp_cron_preload_cache() {
 
 	if ( $wp_cache_preload_posts == 'all' || $c < $wp_cache_preload_posts ) {
 		$types = wpsc_get_post_types();
-		$posts = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE ( post_type IN ( '$types' ) ) AND post_status = 'publish' ORDER BY ID DESC LIMIT $c, 100" );
+		$posts = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE ( post_type IN ( $types ) ) AND post_status = 'publish' ORDER BY ID DESC LIMIT %d, 100", $c ) );
 		wp_cache_debug( "wp_cron_preload_cache: got 100 posts from position $c.", 5 );
 	} else {
 		wp_cache_debug( "wp_cron_preload_cache: no more posts to get. Limit ($wp_cache_preload_posts) reached.", 5 );
@@ -3688,14 +3688,14 @@ function wpsc_enable_preload() {
 
 function wpsc_get_post_types() {
 
-	$preload_type_args = apply_filters( 'wpsc_preload_type_args', array(
+	$preload_type_args = apply_filters( 'wpsc_preload_post_types_args', array(
 		'public'             => true,
 		'publicly_queryable' => true
 	) );
 
 	$post_types = (array) apply_filters( 'wpsc_preload_post_types', get_post_types( $preload_type_args, 'names', 'or' ));
 
-	return join( "', '", array_map( 'esc_sql', $post_types ) );
+	return "'" . join( "', '", array_map( 'esc_sql', $post_types ) ) . "'";
 }
 function wpsc_post_count() {
 	global $wpdb;
@@ -3706,7 +3706,7 @@ function wpsc_post_count() {
 	}
 
 	$post_type_list = wpsc_get_post_types();
-	$count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type IN ('$post_type_list') AND post_status = 'publish'", $wpdb->posts ) );
+	$count = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type IN ( $post_type_list ) AND post_status = 'publish'" );
 
 	return $count;
 }
