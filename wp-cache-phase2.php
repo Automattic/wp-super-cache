@@ -232,6 +232,7 @@ function wp_cache_get_response_headers() {
 						'X-Content-Type-Options',
 						'X-Powered-By',
 						'X-UA-Compatible',
+						'X-Robots-Tag',
 					);
 
 	$known_headers = apply_filters( 'wpsc_known_headers', $known_headers );
@@ -369,7 +370,7 @@ function wp_super_cache_query_vars() {
 		$wp_super_cache_query[ 'is_home' ] = 1;
 	if ( is_author() )
 		$wp_super_cache_query[ 'is_author' ] = 1;
-	if ( is_feed() )
+	if ( is_feed() || get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) )
 		$wp_super_cache_query[ 'is_feed' ] = 1;
 
 	return $wp_super_cache_query;
@@ -1108,8 +1109,8 @@ function wp_cache_shutdown_callback() {
 	$wp_cache_meta[ 'key' ] = $wp_cache_key;
 	$wp_cache_meta = apply_filters( 'wp_cache_meta', $wp_cache_meta );
 
-	$headers = wp_cache_get_response_headers();
-	foreach( $headers as $key => $value ) {
+	$response = wp_cache_get_response_headers();
+	foreach( $response as $key => $value ) {
 		$wp_cache_meta[ 'headers' ][ $key ] = "$key: $value";
 	}
 
@@ -1126,7 +1127,7 @@ function wp_cache_shutdown_callback() {
 		// the output buffer. This is a last ditch effort to set the
 		// correct Content-Type header for feeds, if we didn't see
 		// it in the response headers already. -- dougal
-		if (is_feed()) {
+		if ( is_feed() ) {
 			$type = get_query_var('feed');
 			$type = str_replace('/','',$type);
 			switch ($type) {
@@ -1144,6 +1145,10 @@ function wp_cache_shutdown_callback() {
 				default:
 					$value = "application/rss+xml";
 			}
+			wp_cache_debug( "wp_cache_shutdown_callback: feed is type: $type - $value" );
+		} elseif ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) {
+			wp_cache_debug( "wp_cache_shutdown_callback: sitemap detected: text/xml" );
+			$value = "text/xml";
 		} else { // not a feed
 			$value = get_option( 'html_type' );
 			if( $value == '' )
