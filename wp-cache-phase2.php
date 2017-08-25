@@ -351,10 +351,7 @@ function wp_cache_writers_exit() {
 }
 
 function wp_super_cache_query_vars() {
-	global $wp_super_cache_query, $wp_query;
-	if ( empty( $wp_query ) ) {
-		$wp_query = new WP_Query();
-	}
+	global $wp_super_cache_query;
 	if ( is_search() )
 		$wp_super_cache_query[ 'is_search' ] = 1;
 	if ( is_page() )
@@ -379,6 +376,21 @@ function wp_super_cache_query_vars() {
 	return $wp_super_cache_query;
 }
 
+function wpsc_is_fatal_error() {
+	global $wp_super_cache_query;
+
+	if ( null === ( $error = error_get_last() ) ) {
+		return false;
+	}
+
+	if ( $error['type'] & ( E_ERROR | E_CORE_ERROR | E_PARSE | E_COMPILE_ERROR | E_USER_ERROR ) ) {
+		$wp_super_cache_query[ 'is_fatal_error' ] = 1;
+		return true;
+	}
+
+	return false;
+}
+
 function wp_cache_ob_callback( $buffer ) {
 	global $wp_cache_pages, $wp_query, $wp_super_cache_query, $cache_acceptable_files, $wp_cache_no_cache_for_get, $wp_cache_object_cache, $wp_cache_request_uri, $do_rebuild_list, $wpsc_file_mtimes, $wpsc_save_headers, $super_cache_enabled;
 	$buffer = apply_filters( 'wp_cache_ob_callback_filter', $buffer );
@@ -388,13 +400,16 @@ function wp_cache_ob_callback( $buffer ) {
 	// All the things that can stop a page being cached
 	$cache_this_page = true;
 
-	if ( empty( $wp_super_cache_query ) ) {
+        if ( wpsc_is_fatal_error() ) {
+		$cache_this_page = false;
+		wp_cache_debug( 'wp_cache_ob_callback: PHP Fatal error occurred. Not caching incomplete page.', 4 );
+	} elseif ( empty( $wp_super_cache_query ) && is_object( $wp_query ) ) {
 		$wp_super_cache_query = wp_super_cache_query_vars();
 	}
 
 	if ( empty( $wp_super_cache_query ) ) {
 		$cache_this_page = false;
-		wp_cache_debug( 'wp_cache_ob_callback: wp_super_cache_query is empty. Not caching unknown page type.' );
+		wp_cache_debug( 'wp_cache_ob_callback: wp_super_cache_query is empty. Not caching unknown page type.', 4 );
 	} elseif ( defined( 'DONOTCACHEPAGE' ) ) {
 		wp_cache_debug( 'DONOTCACHEPAGE defined. Caching disabled.', 2 );
 		$cache_this_page = false;
@@ -456,9 +471,6 @@ function wp_cache_ob_callback( $buffer ) {
 
 	if ( isset( $wpsc_save_headers ) && $wpsc_save_headers )
 		$super_cache_enabled = false; // use standard caching to record headers
-
-	if ( !isset( $wp_query ) )
-		wp_cache_debug( 'wp_cache_ob_callback: WARNING! $query not defined but the plugin has worked around that problem.', 4 );
 
 	if ( $cache_this_page ) {
 
