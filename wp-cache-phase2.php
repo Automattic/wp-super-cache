@@ -32,8 +32,8 @@ function wp_cache_phase2() {
 		add_action('edit_comment', 'wp_cache_get_postid_from_comment', 99);
 		add_action('wp_set_comment_status', 'wp_cache_get_postid_from_comment', 99, 2);
 		// No post_id is available
-		add_action('switch_theme', 'wp_cache_no_postid', 99); 
-		add_action('edit_user_profile_update', 'wp_cache_no_postid', 99); 
+		add_action('switch_theme', 'wp_cache_no_postid', 99);
+		add_action('edit_user_profile_update', 'wp_cache_no_postid', 99);
 		add_action( 'wp_update_nav_menu', 'wp_cache_clear_cache_on_menu' );
 		add_action('wp_cache_gc','wp_cache_gc_cron');
 		add_action( 'clean_post_cache', 'wp_cache_post_edit' );
@@ -58,7 +58,7 @@ function wp_cache_phase2() {
 		header('Vary: Accept-Encoding, Cookie');
 	else
 		header('Vary: Cookie');
-	ob_start( 'wp_cache_ob_callback' ); 
+	ob_start( 'wp_cache_ob_callback' );
 	wp_cache_debug( 'Created output buffer', 4 );
 
 	// restore old supercache file temporarily
@@ -289,7 +289,7 @@ function wp_cache_mutex_init() {
 		return true;
 
 	if( !is_bool( $use_flock ) ) {
-		if(function_exists('sem_get')) 
+		if(function_exists('sem_get'))
 			$use_flock = false;
 		else
 			$use_flock = true;
@@ -400,7 +400,7 @@ function wp_cache_ob_callback( $buffer ) {
 	// All the things that can stop a page being cached
 	$cache_this_page = true;
 
-        if ( wpsc_is_fatal_error() ) {
+	if ( wpsc_is_fatal_error() ) {
 		$cache_this_page = false;
 		wp_cache_debug( 'wp_cache_ob_callback: PHP Fatal error occurred. Not caching incomplete page.', 4 );
 	} elseif ( empty( $wp_super_cache_query ) && is_object( $wp_query ) ) {
@@ -545,7 +545,7 @@ function wp_cache_add_to_buffer( &$buffer, $text ) {
 	$buffer .= "\n<!-- $text -->";
 }
 
-/* 
+/*
  * If dynamic caching is enabled then run buffer through wpsc_cachedata filter before returning it.
  * or we'll return template tags to visitors.
  */
@@ -575,7 +575,7 @@ function wp_cache_get_ob(&$buffer) {
 	$new_cache = true;
 	$wp_cache_meta = array();
 
-	/* Mode paranoic, check for closing tags 
+	/* Mode paranoic, check for closing tags
 	 * we avoid caching incomplete files */
 	if ( $buffer == '' ) {
 		$new_cache = false;
@@ -786,13 +786,13 @@ function wp_cache_get_ob(&$buffer) {
 				wp_cache_debug( "Writing gzipped buffer to wp-cache cache file.", 5 );
 				fputs($fr, '<?php die(); ?>' . $gzdata);
 			} elseif ( $cache_enabled && $wp_cache_object_cache ) {
-				wp_cache_set( $oc_key . ".gz", $gzdata, 'supercache', $cache_max_time ); 
+				wp_cache_set( $oc_key . ".gz", $gzdata, 'supercache', $cache_max_time );
 				$added_cache = 1;
 			}
 		} else { // no compression
 			$wp_cache_meta[ 'headers' ][ 'Vary' ] = 'Vary: Cookie';
 			if ( $cache_enabled && $wp_cache_object_cache ) {
-				wp_cache_set( $oc_key, $buffer, 'supercache', $cache_max_time ); 
+				wp_cache_set( $oc_key, $buffer, 'supercache', $cache_max_time );
 				$added_cache = 1;
 			} elseif ( $fr ) {
 				wp_cache_debug( "Writing non-gzipped buffer to wp-cache cache file." );
@@ -803,7 +803,7 @@ function wp_cache_get_ob(&$buffer) {
 			wp_cache_debug( "Writing non-gzipped buffer to supercache file." );
 			wp_cache_add_to_buffer( $buffer, "super cache" );
 			fputs($fr2, $buffer );
-		} 
+		}
 		if ( isset( $gzdata ) && $gz ) {
 			wp_cache_debug( "Writing gzipped buffer to supercache file." );
 			fwrite($gz, $gzdata );
@@ -889,7 +889,7 @@ function wp_cache_phase2_clean_cache($file_prefix) {
 	if( !wp_cache_writers_entry() )
 		return false;
 	wp_cache_debug( "wp_cache_phase2_clean_cache: Cleaning cache in $blog_cache_dir" );
-	if ( $handle = @opendir( $blog_cache_dir ) ) { 
+	if ( $handle = @opendir( $blog_cache_dir ) ) {
 		while ( false !== ($file = @readdir($handle))) {
 			if ( strpos( $file, $file_prefix ) !== false ) {
 				if ( strpos( $file, '.html' ) ) {
@@ -955,7 +955,7 @@ function prune_super_cache( $directory, $force = false, $rename = false ) {
 					continue;
 				$entry = $directory . $entry;
 				prune_super_cache( $entry, $force, $rename );
-				// If entry is a directory, AND it's not a protected one, AND we're either forcing the delete, OR the file is out of date, 
+				// If entry is a directory, AND it's not a protected one, AND we're either forcing the delete, OR the file is out of date,
 				if( is_dir( $entry ) && !in_array( $entry, $protected_directories ) && ( $force || @filemtime( $entry ) + $cache_max_time <= $now ) ) {
 					// if the directory isn't empty can't delete it
 					if( $handle = @opendir( $entry ) ) {
@@ -1079,9 +1079,9 @@ function wp_cache_phase2_clean_expired( $file_prefix, $force = false ) {
 	$now = time();
 	wp_cache_debug( "Cleaning expired cache files in $blog_cache_dir", 2 );
 	$deleted = 0;
-	if ( ( $handle = @opendir( $blog_cache_dir ) ) ) { 
+	if ( ( $handle = @opendir( $blog_cache_dir ) ) ) {
 		while ( false !== ($file = readdir($handle))) {
-			if ( preg_match("/^$file_prefix/", $file) && 
+			if ( preg_match("/^$file_prefix/", $file) &&
 				(@filemtime( $blog_cache_dir . $file) + $cache_max_time) <= $now  ) {
 				@unlink( $blog_cache_dir . $file );
 				@unlink( $blog_cache_dir . 'meta/' . str_replace( '.html', '.meta', $file ) );
@@ -1271,7 +1271,7 @@ function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 		}
 	}
 	// We must check it up again due to WP bugs calling two different actions
-	// for delete, for example both wp_set_comment_status and delete_comment 
+	// for delete, for example both wp_set_comment_status and delete_comment
 	// are called when deleting a comment
 	if ($postid > 0)  {
 		wp_cache_debug( "Post $postid changed. Update cache.", 4 );
@@ -1358,7 +1358,7 @@ function wp_cache_post_edit($post_id) {
 	if ( is_object( $post ) == false )
 		return $post_id;
 
-	// Some users are inexplicibly seeing this error on scheduled posts. 
+	// Some users are inexplicibly seeing this error on scheduled posts.
 	// define this constant to disable the post status check.
 	if ( false == defined( 'WPSCFORCEUPDATE' ) && !in_array($post->post_status, array( 'publish', 'private' ) ) ) {
 		wp_cache_debug( "wp_cache_post_edit: draft post, not deleting any cache files. status: " . $post->post_status, 4 );
@@ -1404,7 +1404,7 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 		do_action( 'gc_cache', 'prune', 'page/' );
 	} else {
 		wp_cache_debug( "wp_cache_post_id_gc clearing cached index files in $dir.", 4 );
-		prune_super_cache( $dir, true, true ); 
+		prune_super_cache( $dir, true, true );
 		do_action( 'gc_cache', 'prune', $permalink );
 	}
 }
@@ -1418,7 +1418,7 @@ function wp_cache_post_change( $post_id ) {
 		return $post_id;
 	}
 	$post = get_post( $post_id );
-	// Some users are inexplicibly seeing this error on scheduled posts. 
+	// Some users are inexplicibly seeing this error on scheduled posts.
 	// define this constant to disable the post status check.
 	if ( false == defined( 'WPSCFORCEUPDATE' ) && is_object( $post ) && !in_array($post->post_status, array( 'publish', 'private' ) ) ) {
 		wp_cache_debug( "wp_cache_post_change: draft post, not deleting any cache files.", 4 );
@@ -1473,7 +1473,7 @@ function wp_cache_post_change( $post_id ) {
 
 	wp_cache_debug( "wp_cache_post_change: checking {$blog_cache_dir}meta/", 4 );
 	$supercache_files_deleted = false;
-	if ( $handle = @opendir( $blog_cache_dir ) ) { 
+	if ( $handle = @opendir( $blog_cache_dir ) ) {
 		while ( false !== ($file = readdir($handle))) {
 			if ( strpos( $file, $file_prefix ) !== false ) {
 				if ( strpos( $file, '.html' ) ) {
@@ -1533,7 +1533,7 @@ function wp_cache_post_id() {
 	// We try hard all options. More frequent first.
 	if ($post_ID > 0 ) return $post_ID;
 	if ($comment_post_ID > 0 )  return $comment_post_ID;
-	if (is_single() || is_page()) return $posts[0]->ID;
+	if (is_singular() && !empty($posts)) return $posts[0]->ID;
 	if (isset( $_GET[ 'p' ] ) && $_GET['p'] > 0) return $_GET['p'];
 	if (isset( $_POST[ 'p' ] ) && $_POST['p'] > 0) return $_POST['p'];
 	return 0;
@@ -1575,7 +1575,7 @@ function wp_cache_gc_cron() {
 		return false;
 	}
 
-	update_option( 'wpsupercache_gc_time', time() ); 
+	update_option( 'wpsupercache_gc_time', time() );
 	wp_cache_debug( "wp_cache_gc_cron: Set GC Flag. ($gc_flag)", 5 );
 	$fp = @fopen( $gc_flag, 'w' );
 	@fclose( $fp );
