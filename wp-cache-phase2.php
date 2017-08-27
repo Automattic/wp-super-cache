@@ -403,7 +403,7 @@ function wp_cache_ob_callback( $buffer ) {
 	if ( wpsc_is_fatal_error() ) {
 		$cache_this_page = false;
 		wp_cache_debug( 'wp_cache_ob_callback: PHP Fatal error occurred. Not caching incomplete page.', 4 );
-	} elseif ( empty( $wp_super_cache_query ) && is_object( $wp_query ) ) {
+	} elseif ( empty( $wp_super_cache_query ) && !empty( $buffer ) && is_object( $wp_query ) ) {
 		$wp_super_cache_query = wp_super_cache_query_vars();
 	}
 
