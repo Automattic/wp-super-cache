@@ -370,7 +370,7 @@ function wp_super_cache_query_vars() {
 		$wp_super_cache_query[ 'is_home' ] = 1;
 	if ( is_author() )
 		$wp_super_cache_query[ 'is_author' ] = 1;
-	if ( is_feed() || get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) )
+	if ( is_feed() || ( method_exists( $GLOBALS['wp_query'], 'get') && ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) ) )
 		$wp_super_cache_query[ 'is_feed' ] = 1;
 	if ( is_404() )
 		$wp_super_cache_query = array( 'is_404' => 1 );
