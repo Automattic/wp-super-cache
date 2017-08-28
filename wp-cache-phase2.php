@@ -404,14 +404,14 @@ function wp_cache_ob_callback( $buffer ) {
 
 	if ( wpsc_is_fatal_error() ) {
 		$cache_this_page = false;
-		wp_cache_debug( 'wp_cache_ob_callback: PHP Fatal error occurred. Not caching incomplete page.', 4 );
+		wp_cache_debug( 'wp_cache_ob_callback: PHP Fatal error occurred. Not caching incomplete page.' );
 	} elseif ( empty( $wp_super_cache_query ) && !empty( $buffer ) && is_object( $wp_query ) ) {
 		$wp_super_cache_query = wp_super_cache_query_vars();
 	}
 
-	if ( empty( $wp_super_cache_query ) ) {
+	if ( empty( $wp_super_cache_query ) && function_exists( 'apply_filter' ) && apply_filter( 'wpsc_only_cache_known_pages', 1 ) ) {
 		$cache_this_page = false;
-		wp_cache_debug( 'wp_cache_ob_callback: wp_super_cache_query is empty. Not caching unknown page type.', 4 );
+		wp_cache_debug( 'wp_cache_ob_callback: wp_super_cache_query is empty. Not caching unknown page type. Return 0 to the wpsc_only_cache_known_pages filter to cache this page.' );
 	} elseif ( defined( 'DONOTCACHEPAGE' ) ) {
 		wp_cache_debug( 'DONOTCACHEPAGE defined. Caching disabled.', 2 );
 		$cache_this_page = false;
