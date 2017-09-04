@@ -18,7 +18,7 @@ function wp_cache_phase2() {
 		wp_cache_debug( 'Setting up WordPress actions', 5 );
 
 		add_action( 'template_redirect', 'wp_super_cache_query_vars' );
-		add_filter( 'wp_redirect_status', 'wpsc_catch_redirect' );
+		add_filter( 'wp_redirect_status', 'wpsc_catch_http_status_code' );
 
 		// Post ID is received
 		add_action('wp_trash_post', 'wp_cache_post_edit', 0);
@@ -371,7 +371,7 @@ function wp_super_cache_query_vars() {
 		$wp_super_cache_query[ 'is_home' ] = 1;
 	if ( is_author() )
 		$wp_super_cache_query[ 'is_author' ] = 1;
-	if ( is_feed() || ( method_exists( $GLOBALS['wp_query'], 'get') && ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) ) )
+	if ( is_feed() || get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) )
 		$wp_super_cache_query[ 'is_feed' ] = 1;
 	if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ( defined( 'JSON_REQUEST' ) && JSON_REQUEST ) )
 		$wp_super_cache_query[ 'is_rest' ] = 1;
@@ -381,11 +381,14 @@ function wp_super_cache_query_vars() {
 	return $wp_super_cache_query;
 }
 
-function wpsc_catch_redirect( $status ) {
+function wpsc_catch_http_status_code( $status ) {
 	global $wp_super_cache_query;
 
-	if ( in_array( intval( $status ), array( 301, 302, 303, 307 ) ) )
+	if ( in_array( intval( $status ), array( 301, 302, 303, 307 ) ) ) {
 		$wp_super_cache_query[ 'is_redirect' ] = 1;
+	} elseif ( $status == 304 ) {
+		$wp_super_cache_query[ 'is_304' ] = 1;
+	}
 
 	return $status;
 }
@@ -407,30 +410,24 @@ function wpsc_is_fatal_error() {
 
 function wp_cache_ob_callback( $buffer ) {
 	global $wp_cache_pages, $wp_query, $wp_super_cache_query, $cache_acceptable_files, $wp_cache_no_cache_for_get, $wp_cache_object_cache, $wp_cache_request_uri, $do_rebuild_list, $wpsc_file_mtimes, $wpsc_save_headers, $super_cache_enabled;
-	$script = basename($_SERVER['PHP_SELF']);
+	$script = basename( $_SERVER[ 'PHP_SELF' ] );
 
 	// All the things that can stop a page being cached
 	$cache_this_page = true;
 
 	if ( wpsc_is_fatal_error() ) {
-		$cache_this_page = false;
 		wp_cache_debug( 'wp_cache_ob_callback: PHP Fatal error occurred. Not caching incomplete page.' );
-	} elseif ( empty( $wp_super_cache_query ) && !empty( $buffer ) && is_object( $wp_query ) ) {
+		$cache_this_page = false;
+	} elseif ( empty( $wp_super_cache_query ) && !empty( $buffer ) && is_object( $wp_query ) && method_exists( $wp_query, 'get' ) ) {
 		$wp_super_cache_query = wp_super_cache_query_vars();
 	} elseif ( empty( $wp_super_cache_query ) && function_exists( 'http_response_code' ) ) {
-		wpsc_catch_redirect( http_response_code() );
+		wpsc_catch_http_status_code( http_response_code() );
 	}
 
 	$buffer = apply_filters( 'wp_cache_ob_callback_filter', $buffer );
 
-	if ( empty( $wp_super_cache_query ) && apply_filters( 'wpsc_only_cache_known_pages', 1 ) ) {
-		wp_cache_debug( 'wp_cache_ob_callback: wp_super_cache_query is empty. Not caching unknown page type. Return 0 to the wpsc_only_cache_known_pages filter to cache this page.' );
-		$cache_this_page = false;
-	} elseif ( defined( 'DONOTCACHEPAGE' ) ) {
+	if ( defined( 'DONOTCACHEPAGE' ) ) {
 		wp_cache_debug( 'DONOTCACHEPAGE defined. Caching disabled.', 2 );
-		$cache_this_page = false;
-	} elseif ( isset( $wp_super_cache_query[ 'is_redirect' ] ) ) {
-		wp_cache_debug( 'Redirect detected. Caching disabled.' );
 		$cache_this_page = false;
 	} elseif ( $wp_cache_no_cache_for_get && false == empty( $_GET ) && false == defined( 'DOING_CRON' ) ) {
 		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . json_encode( $_GET ), 1 );
@@ -485,6 +482,15 @@ function wp_cache_ob_callback( $buffer ) {
 		$cache_this_page = false;
 	} elseif ( isset( $wp_cache_pages[ 'feed' ] ) && $wp_cache_pages[ 'feed' ] == 1 && isset( $wp_super_cache_query[ 'is_feed' ] ) ) {
 		wp_cache_debug( 'Not caching feed.', 2 );
+		$cache_this_page = false;
+	} elseif ( isset( $wp_super_cache_query[ 'is_redirect' ] ) ) {
+		wp_cache_debug( 'Redirect detected. Caching disabled.' );
+		$cache_this_page = false;
+	} elseif ( isset( $wp_super_cache_query[ 'is_304' ] ) ) {
+		wp_cache_debug( 'HTTP 304 sent. Caching disabled.' );
+		$cache_this_page = false;
+	} elseif ( empty( $wp_super_cache_query ) && apply_filters( 'wpsc_only_cache_known_pages', 1 ) ) {
+		wp_cache_debug( 'wp_cache_ob_callback: wp_super_cache_query is empty. Not caching unknown page type. Return 0 to the wpsc_only_cache_known_pages filter to cache this page.' );
 		$cache_this_page = false;
 	}
 
@@ -1173,8 +1179,11 @@ function wp_cache_shutdown_callback() {
 		// correct Content-Type header for feeds, if we didn't see
 		// it in the response headers already. -- dougal
 		if ( isset( $wp_super_cache_query[ 'is_feed' ] ) ) {
-			$type = get_query_var('feed');
-			$type = str_replace('/','',$type);
+			if ( $type = get_query_var('feed') ) {
+				$type = str_replace('/','',$type);
+			} elseif ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) {
+				$type = 'sitemap';
+			}
 			switch ($type) {
 				case 'atom':
 					$value = "application/atom+xml";
@@ -1188,25 +1197,15 @@ function wp_cache_shutdown_callback() {
 				case 'rss':
 				case 'rss2':
 				default:
-					if ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) {
-						wp_cache_debug( "wp_cache_shutdown_callback: feed sitemap detected: text/xml" );
-						$value = "text/xml";
-					} else {
-						$value = "application/rss+xml";
-					}
+					$value = "application/rss+xml";
 			}
 			if ( isset( $wpsc_feed_ttl ) && $wpsc_feed_ttl == 1 ) {
 				$wp_cache_meta[ 'ttl' ] = 60;
 			}
 
 			wp_cache_debug( "wp_cache_shutdown_callback: feed is type: $type - $value" );
-		} elseif ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) {
-			wp_cache_debug( "wp_cache_shutdown_callback: sitemap detected: text/xml" );
-			$value = "text/xml";
-			if ( isset( $wpsc_feed_ttl ) && $wpsc_feed_ttl == 1 ) {
-				$wp_cache_meta[ 'ttl' ] = 60;
-			}
-
+		} elseif ( isset( $wp_super_cache_query[ 'is_rest' ] ) ) { // json
+			$value = 'application/json';
 		} else { // not a feed
 			$value = get_option( 'html_type' );
 			if( $value == '' )
