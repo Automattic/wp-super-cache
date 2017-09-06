@@ -354,6 +354,7 @@ function wp_cache_writers_exit() {
 
 function wp_super_cache_query_vars() {
 	global $wp_super_cache_query;
+
 	if ( is_search() )
 		$wp_super_cache_query[ 'is_search' ] = 1;
 	if ( is_page() )
@@ -372,10 +373,27 @@ function wp_super_cache_query_vars() {
 		$wp_super_cache_query[ 'is_home' ] = 1;
 	if ( is_author() )
 		$wp_super_cache_query[ 'is_author' ] = 1;
-	if ( is_feed() || get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) )
-		$wp_super_cache_query[ 'is_feed' ] = 1;
-	if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ( defined( 'JSON_REQUEST' ) && JSON_REQUEST ) )
+
+	// REST API
+	if ( ( defined( 'REST_REQUEST' )   && REST_REQUEST ) ||
+	     ( defined( 'JSON_REQUEST' )   && JSON_REQUEST ) ||
+	     ( defined( 'WC_API_REQUEST' ) && WC_API_REQUEST )
+	) {
 		$wp_super_cache_query[ 'is_rest' ] = 1;
+	}
+
+	// Feeds and sitemaps
+	if ( is_feed() ) {
+		$wp_super_cache_query[ 'is_feed' ] = 1;
+		if ( get_query_var( 'feed' ) == 'sitemap' ) {
+			$wp_super_cache_query[ 'is_sitemap' ] = 1;
+		}
+	} elseif ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) {
+		$wp_super_cache_query[ 'is_feed' ] = 1;
+		$wp_super_cache_query[ 'is_sitemap' ] = 1;
+	}
+
+	// Reset everything if it's 404
 	if ( is_404() )
 		$wp_super_cache_query = array( 'is_404' => 1 );
 
@@ -1193,28 +1211,25 @@ function wp_cache_shutdown_callback() {
 		// correct Content-Type header for feeds, if we didn't see
 		// it in the response headers already. -- dougal
 		if ( isset( $wp_super_cache_query[ 'is_feed' ] ) ) {
-			$type = get_query_var( 'feed' );
-			if ( empty( $type ) && ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) ) {
-				$type = 'sitemap';
+                        if ( isset( $wp_super_cache_query[ 'is_sitemap' ] ) )  {
+				$value = "text/xml";
 			} else {
+				$type = get_query_var( 'feed' );
 				$type = str_replace('/','',$type);
+				switch ($type) {
+					case 'atom':
+						$value = "application/atom+xml";
+						break;
+					case 'rdf':
+						$value = "application/rdf+xml";
+						break;
+					case 'rss':
+					case 'rss2':
+					default:
+						$value = "application/rss+xml";
+				}
 			}
 
-			switch ($type) {
-				case 'atom':
-					$value = "application/atom+xml";
-					break;
-				case 'rdf':
-					$value = "application/rdf+xml";
-					break;
-				case 'sitemap':
-					$value = "text/xml";
-					break;
-				case 'rss':
-				case 'rss2':
-				default:
-					$value = "application/rss+xml";
-			}
 			if ( isset( $wpsc_feed_ttl ) && $wpsc_feed_ttl == 1 ) {
 				$wp_cache_meta[ 'ttl' ] = 60;
 			}
