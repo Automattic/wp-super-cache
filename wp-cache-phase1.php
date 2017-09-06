@@ -588,6 +588,15 @@ function wp_cache_debug( $message, $level = 1 ) {
 	// path to the log file in the cache folder
 	$log_file = $cache_path . str_replace('/', '', str_replace('..', '', $wp_cache_debug_log));
 
+	if ( ! file_exists( $log_file ) && function_exists( 'wpsc_create_debug_log' ) ) {
+		global $wp_cache_debug_username;
+		if ( ! isset( $wp_cache_debug_username ) ) {
+			$wp_cache_debug_username = '';
+		}
+
+		wpsc_create_debug_log( $wp_cache_debug_log, $wp_cache_debug_username );
+	}
+
 	error_log( $log_message, 3, $log_file );
 }
 
