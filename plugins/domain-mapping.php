@@ -109,4 +109,15 @@ function wp_supercache_domain_mapping_exists() {
 if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'wpsupercache' ) {
 	add_cacheaction( 'add_cacheaction', 'wp_supercache_domain_mapping_exists' );
 }
+
+function wpsc_domain_mapping_list( $list ) {
+	$list[ 'domain_mapping' ] = array(
+		'key'   => 'domain_mapping',
+		'title' => __( 'Domain Mapping', 'wp-super-cache' ),
+		'desc'  => __( 'Provides support for <a href="http://wordpress.org/extend/plugins/wordpress-mu-domain-mapping/">Domain Mapping</a> plugin to map multiple domains to a blog.', 'wp-super-cache' ),
+	);
+	return $list;
+}
+add_cacheaction( 'wpsc_filter_list', 'wpsc_domain_mapping_list' );
+
 ?>
