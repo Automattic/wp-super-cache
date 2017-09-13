@@ -139,7 +139,7 @@ function wp_cache_serve_cache_file() {
 	global $wp_cache_object_cache, $cache_compression, $wp_cache_slash_check, $wp_supercache_304, $wp_cache_home_path, $wp_cache_no_cache_for_get;
 	global $wp_cache_disable_utf8, $wp_cache_mfunc_enabled, $wpsc_served_header;
 
-	if ( is_admin() ) {
+	if ( wpsc_is_backend() ) {
 		wp_cache_debug( 'Not serving wp-admin requests.', 5 );
 		return false;
 	}
@@ -150,7 +150,7 @@ function wp_cache_serve_cache_file() {
 	}
 
 	if ( $wp_cache_no_cache_for_get && false == empty( $_GET ) ) {
-		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . json_encode( $_GET ), 1 );
+		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . wpsc_dump_get_request(), 1 );
 		return false;
 	}
 
@@ -158,7 +158,7 @@ function wp_cache_serve_cache_file() {
 
 	if ( $wp_cache_object_cache && wp_cache_get_cookies_values() == '' ) {
 		if ( !empty( $_GET ) ) {
-			wp_cache_debug( "Non empty GET request. Not serving request from object cache. " . json_encode( $_GET ), 1 );
+			wp_cache_debug( "Non empty GET request. Not serving request from object cache. " . wpsc_dump_get_request(), 1 );
 			return false;
 		}
 
@@ -219,7 +219,7 @@ function wp_cache_serve_cache_file() {
 			wp_cache_debug( "No Super Cache file found for current URL: $file" );
 			return false;
 		} elseif ( false == empty( $_GET ) ) {
-			wp_cache_debug( "GET array not empty. Cannot serve a supercache file. " . json_encode( $_GET ) );
+			wp_cache_debug( "GET array not empty. Cannot serve a supercache file. " . wpsc_dump_get_request() );
 			return false;
 		} elseif ( wp_cache_get_cookies_values() != '' ) {
 			wp_cache_debug( "Cookies found. Cannot serve a supercache file. " . wp_cache_get_cookies_values() );
@@ -591,6 +591,48 @@ function wp_cache_debug( $message, $level = 1 ) {
 	error_log( $log_message, 3, $log_file );
 }
 
+function wpsc_dump_get_request() {
+	static $string;
+
+	if ( isset( $string) ) {
+		return $string;
+	}
+
+	if ( function_exists( 'wp_json_encode' ) ) {
+		$string = wp_json_encode( $_GET );
+	} else {
+		$string = json_encode( $_GET );
+	}
+
+	return $string;
+}
+
+function wpsc_is_backend() {
+	static $is_backend;
+
+	if ( isset( $is_backend ) ) {
+		return $is_backend;
+	}
+
+	$is_backend = is_admin();
+	if ( $is_backend ) {
+		return $is_backend;
+	}
+
+	$script = isset( $_SERVER['PHP_SELF'] ) ? basename( $_SERVER['PHP_SELF'] ) : '';
+	if ( $script !== 'index.php' ) {
+		if ( in_array( $script, array( 'wp-login.php', 'xmlrpc.php', 'wp-cron.php' ) ) ) {
+			$is_backend = true;
+		} elseif ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+			$is_backend = true;
+		} elseif ( PHP_SAPI == 'cli' || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+			$is_backend = true;
+		}
+	}
+
+	return $is_backend;
+}
+
 function wp_cache_user_agent_is_rejected() {
 	global $cache_rejected_user_agent;
 
@@ -632,22 +674,16 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 			 * Sometimes site_url doesn't return the siteurl. See http://wordpress.org/support/topic/wp-super-cache-not-refreshing-post-after-comments-made
 			*/
 			$DONOTREMEMBER = 1;
-			wp_cache_debug( "get_current_url_supercache_dir: warning! site_url ($site_url) not found in permalink ($permalink).", 1 );
-			if ( false === strpos( $permalink, $WPSC_HTTP_HOST ) ) {
-				wp_cache_debug( "get_current_url_supercache_dir: WARNING! SERVER_NAME ({$WPSC_HTTP_HOST}) not found in permalink ($permalink). ", 1 );
-				$p = parse_url( $permalink );
-				if ( is_array( $p ) ) {
-					$uri = $p[ 'path' ];
-					wp_cache_debug( "get_current_url_supercache_dir: WARNING! Using $uri as permalink. Used parse_url.", 1 );
-				} else {
-					wp_cache_debug( "get_current_url_supercache_dir: WARNING! Permalink ($permalink) could not be understood by parse_url. Using front page.", 1 );
-					$uri = '';
+			wp_cache_debug( "get_current_url_supercache_dir: WARNING! site_url ($site_url) not found in permalink ($permalink).", 1 );
+			if ( preg_match( '#^(https?:)?//([^/]+)(/[^\?\#]*)?((\?|\#).*)?$#i', $permalink, $matches ) && !empty( $matches[2] ) ) {
+				if ( $WPSC_HTTP_HOST != $matches[2] ) {
+					wp_cache_debug( "get_current_url_supercache_dir: WARNING! SERVER_NAME ({$WPSC_HTTP_HOST}) not found in permalink ($permalink).", 1 );
 				}
+				wp_cache_debug( "get_current_url_supercache_dir: Removing SERVER_NAME ({$matches[2]}) from permalink ($permalink). Is the url right?", 1 );
+				$uri = isset( $matches[3] ) ? $matches[3] : '';
 			} else {
-				wp_cache_debug( "get_current_url_supercache_dir: Removing SERVER_NAME ({$WPSC_HTTP_HOST}) from permalink ($permalink). Is the url right?", 1 );
-				$uri = str_replace( $WPSC_HTTP_HOST, '', $permalink );
-				$uri = str_replace( 'http://', '', $uri );
-				$uri = str_replace( 'https://', '', $uri );
+				wp_cache_debug( "get_current_url_supercache_dir: WARNING! Permalink ($permalink) could not be understood by parsing url. Using front page.", 1 );
+				$uri = '';
 			}
 		} else {
 			$uri = str_replace( $site_url, '', $permalink );

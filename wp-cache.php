@@ -2263,7 +2263,7 @@ function wp_cache_remove_index() {
 				}
 				if ( is_dir( $directory . "/meta" ) ) {
 					if ( is_file( $directory . "/meta/index.html" ) ) {
-						unlink( $directory . "/index.html" );
+						unlink( $directory . "/meta/index.html" );
 					}
 				}
 			}
