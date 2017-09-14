@@ -671,16 +671,19 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$permalink = get_permalink( $post_id );
 		if ( false === strpos( $permalink, $site_url ) ) {
 			/*
-			 * Sometimes site_url doesn't return the siteurl. See http://wordpress.org/support/topic/wp-super-cache-not-refreshing-post-after-comments-made
-			*/
+			 * Sometimes site_url doesn't return the siteurl. See https://wordpress.org/support/topic/wp-super-cache-not-refreshing-post-after-comments-made
+			 */
 			$DONOTREMEMBER = 1;
 			wp_cache_debug( "get_current_url_supercache_dir: WARNING! site_url ($site_url) not found in permalink ($permalink).", 1 );
-			if ( preg_match( '#^(https?:)?//([^/]+)(/[^\?\#]*)?((\?|\#).*)?$#i', $permalink, $matches ) && !empty( $matches[2] ) ) {
+			if ( preg_match( '`^(https?:)?//([^/]+)(/.*)?$`i', $permalink, $matches ) ) {
 				if ( $WPSC_HTTP_HOST != $matches[2] ) {
 					wp_cache_debug( "get_current_url_supercache_dir: WARNING! SERVER_NAME ({$WPSC_HTTP_HOST}) not found in permalink ($permalink).", 1 );
 				}
 				wp_cache_debug( "get_current_url_supercache_dir: Removing SERVER_NAME ({$matches[2]}) from permalink ($permalink). Is the url right?", 1 );
 				$uri = isset( $matches[3] ) ? $matches[3] : '';
+			} elseif ( preg_match( '`^/([^/]+)(/.*)?$`i', $permalink, $matches ) ) {
+				wp_cache_debug( "get_current_url_supercache_dir: WARNING! Permalink ($permalink) looks as absolute path. Is the url right?", 1 );
+				$uri = $permalink;
 			} else {
 				wp_cache_debug( "get_current_url_supercache_dir: WARNING! Permalink ($permalink) could not be understood by parsing url. Using front page.", 1 );
 				$uri = '';
@@ -693,7 +696,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	} else {
 		$uri = strtolower( $wp_cache_request_uri );
 	}
-	$uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?$/", '', $uri ) ) );
+	$uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?(#.*)?$/", '', $uri ) ) );
 	$dir = preg_replace( '/:.*$/', '',  $WPSC_HTTP_HOST ) . $uri; // To avoid XSS attacks
 	if ( function_exists( "apply_filters" ) ) {
 		$dir = apply_filters( 'supercache_dir', $dir );
