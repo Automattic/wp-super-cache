@@ -382,7 +382,7 @@ function wp_super_cache_query_vars() {
 		$wp_super_cache_query[ 'is_rest' ] = 1;
 	}
 
-	// Feeds and sitemaps
+	// Feeds, sitemaps and robots.txt
 	if ( is_feed() ) {
 		$wp_super_cache_query[ 'is_feed' ] = 1;
 		if ( get_query_var( 'feed' ) == 'sitemap' ) {
@@ -391,6 +391,8 @@ function wp_super_cache_query_vars() {
 	} elseif ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) {
 		$wp_super_cache_query[ 'is_feed' ] = 1;
 		$wp_super_cache_query[ 'is_sitemap' ] = 1;
+	} elseif ( is_robots() ) {
+		$wp_super_cache_query[ 'is_robots' ] = 1;
 	}
 
 	// Reset everything if it's 404
@@ -514,6 +516,9 @@ function wp_cache_ob_callback( $buffer ) {
 		$cache_this_page = false;
 	} elseif ( isset( $wp_super_cache_query[ 'is_rest' ] ) ) {
 		wp_cache_debug( 'REST API detected. Caching disabled.' );
+		$cache_this_page = false;
+	} elseif ( isset( $wp_super_cache_query[ 'is_robots' ] ) ) {
+		wp_cache_debug( 'robots.txt detected. Caching disabled.' );
 		$cache_this_page = false;
 	} elseif ( isset( $wp_super_cache_query[ 'is_redirect' ] ) ) {
 		wp_cache_debug( 'Redirect detected. Caching disabled.' );
@@ -652,13 +657,9 @@ function wp_cache_get_ob(&$buffer) {
 
 	if ( !preg_match( apply_filters( 'wp_cache_eof_tags', '/(<\/html>|<\/rss>|<\/feed>|<\/urlset|<\?xml)/i' ), $buffer ) ) {
 		$new_cache = false;
-		if( false === strpos( $_SERVER[ 'REQUEST_URI' ], 'robots.txt' ) ) {
-			if ( isset( $GLOBALS[ 'wp_super_cache_debug' ] ) && $GLOBALS[ 'wp_super_cache_debug' ] ) {
-				wp_cache_debug( "No closing html tag. Not caching.", 2 );
-				wp_cache_add_to_buffer( $buffer, "Page not cached by WP Super Cache. No closing HTML tag. Check your theme." );
-			}
-		} else {
-			wp_cache_debug( "robots.txt detected. Not caching.", 2 );
+		if ( isset( $GLOBALS[ 'wp_super_cache_debug' ] ) && $GLOBALS[ 'wp_super_cache_debug' ] ) {
+			wp_cache_debug( "No closing html tag. Not caching.", 2 );
+			wp_cache_add_to_buffer( $buffer, "Page not cached by WP Super Cache. No closing HTML tag. Check your theme." );
 		}
 	}
 
@@ -1211,22 +1212,23 @@ function wp_cache_shutdown_callback() {
 		// correct Content-Type header for feeds, if we didn't see
 		// it in the response headers already. -- dougal
 		if ( isset( $wp_super_cache_query[ 'is_feed' ] ) ) {
-                        if ( isset( $wp_super_cache_query[ 'is_sitemap' ] ) )  {
-				$value = "text/xml";
+			if ( isset( $wp_super_cache_query[ 'is_sitemap' ] ) )  {
+				$type  = 'sitemap';
+				$value = 'text/xml';
 			} else {
 				$type = get_query_var( 'feed' );
 				$type = str_replace('/','',$type);
 				switch ($type) {
 					case 'atom':
-						$value = "application/atom+xml";
+						$value = 'application/atom+xml';
 						break;
 					case 'rdf':
-						$value = "application/rdf+xml";
+						$value = 'application/rdf+xml';
 						break;
 					case 'rss':
 					case 'rss2':
 					default:
-						$value = "application/rss+xml";
+						$value = 'application/rss+xml';
 				}
 			}
 
