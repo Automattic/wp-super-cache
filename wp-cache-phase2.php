@@ -1264,29 +1264,29 @@ function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 	if ( ( $status == 'trash' || $status == 'spam' ) && $comment[ 'old_comment_approved' ] != 1 ) {
 		// don't modify cache if moderated comments are trashed or spammed
 		wp_cache_debug( "Moderated comment deleted or spammed. Don't delete any cache files.", 4 );
-		define( 'DONOTDELETECACHE', 1 );
+		defined( 'DONOTDELETECACHE' ) or define( 'DONOTDELETECACHE', 1 );
 		return wp_cache_post_id();
 	}
-	$postid = $comment['comment_post_ID'];
+	$postid = isset( $comment[ 'comment_post_ID' ] ) ? (int) $comment[ 'comment_post_ID' ] : 0;
 	// Do nothing if comment is not moderated
 	// http://ocaoimh.ie/2006/12/05/caching-wordpress-with-wp-cache-in-a-spam-filled-world
 	if ( !preg_match('/wp-admin\//', $wp_cache_request_uri) ) {
 		if ( $comment['comment_approved'] == 'delete' && ( isset( $comment[ 'old_comment_approved' ] ) && $comment[ 'old_comment_approved' ] == 0 ) ) { // do nothing if moderated comments are deleted
 			wp_cache_debug( "Moderated comment deleted. Don't delete any cache files.", 4 );
-			define( 'DONOTDELETECACHE', 1 );
+			defined( 'DONOTDELETECACHE' ) or define( 'DONOTDELETECACHE', 1 );
 			return $postid;
 		} elseif ( $comment['comment_approved'] == 'spam' ) {
 			wp_cache_debug( "Spam comment. Don't delete any cache files.", 4 );
-			define( 'DONOTDELETECACHE', 1 );
+			defined( 'DONOTDELETECACHE' ) or define( 'DONOTDELETECACHE', 1 );
 			return $postid;
 		} elseif( $comment['comment_approved'] == '0' ) {
 			if ( $comment[ 'comment_type' ] == '' ) {
 				wp_cache_debug( "Moderated comment. Don't delete supercache file until comment approved.", 4 );
 				$super_cache_enabled = 0; // don't remove the super cache static file until comment is approved
-				define( 'DONOTDELETECACHE', 1 );
+				defined( 'DONOTDELETECACHE' ) or define( 'DONOTDELETECACHE', 1 );
 			} else {
 				wp_cache_debug( "Moderated ping or trackback. Not deleting cache files..", 4 );
-				define( 'DONOTDELETECACHE', 1 );
+				defined( 'DONOTDELETECACHE' ) or define( 'DONOTDELETECACHE', 1 );
 				return $postid;
 			}
 		}
@@ -1297,7 +1297,9 @@ function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 	if ($postid > 0)  {
 		wp_cache_debug( "Post $postid changed. Update cache.", 4 );
 		return wp_cache_post_change( $postid );
-	} elseif ( $_GET[ 'delete_all' ] != 'Empty Trash' && $_GET[ 'delete_all2' ] != 'Empty Spam' ) {
+	} elseif ( isset( $GLOBALS[ 'pagenow' ] ) && $GLOBALS[ 'pagenow' ] === 'edit-comments.php' &&
+		   $_GET[ 'delete_all' ] != 'Empty Trash' && $_GET[ 'delete_all2' ] != 'Empty Spam'
+	) {
 		wp_cache_debug( "Unknown post changed. Update cache.", 4 );
 		return wp_cache_post_change( wp_cache_post_id() );
 	}
