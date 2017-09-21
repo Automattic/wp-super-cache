@@ -123,8 +123,9 @@ if ( isset( $cache_wptouch ) && $cache_wptouch == 1 ) {
 function wpsc_wptouch_list( $list ) {
 	$list[ 'wptouch' ] = array(
 		'key'   => 'wptouch',
+		'url'   => 'http://wordpress.org/extend/plugins/wptouch/',
 		'title' => __( 'WPTouch', 'wp-super-cache' ),
-		'desc'  => __( 'Provides support for <a href="http://wordpress.org/extend/plugins/wptouch/">WPTouch</a> mobile theme and plugin.', 'wp-super-cache' ),
+		'desc'  => __( 'Provides support for WPTouch mobile theme and plugin.', 'wp-super-cache' ),
 	);
 	return $list;
 }

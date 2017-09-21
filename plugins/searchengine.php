@@ -89,8 +89,9 @@ add_cacheaction( 'cache_admin_page', 'wp_supercache_searchengine_admin' );
 function wpsc_cache_no_adverts_for_friends_list( $list ) {
 	$list[ 'no_adverts_for_friends' ] = array(
 		'key'   => 'no_adverts_for_friends',
+		'url'   => 'https://odd.blog/no-adverts-for-friends/',
 		'title' => __( 'No Adverts for Friends', 'wp-super-cache' ),
-		'desc'  => __( 'Provides support for <a href="http://ocaoimh.ie/no-adverts-for-friends/">No Adverts for Friends</a>.', 'wp-super-cache' ),
+		'desc'  => __( 'Provides support for No Adverts for Friends plugin.', 'wp-super-cache' ),
 	);
 	return $list;
 }

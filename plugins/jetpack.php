@@ -79,8 +79,9 @@ if ( isset( $cache_jetpack ) && $cache_jetpack == 1 ) {
 function wpsc_cache_jetpack_list( $list ) {
 	$list[ 'jetpack' ] = array(
 		'key'   => 'jetpack',
+		'url'   => 'http://wordpress.org/extend/plugins/jetpack/',
 		'title' => __( 'Jetpack Mobile Theme', 'wp-super-cache' ),
-		'desc'  => __( 'Provides support for the <a href="http://wordpress.org/extend/plugins/jetpack/">Jetpack</a> mobile theme and plugin. PHP caching mode and mobile support will be enabled too.', 'wp-super-cache' ),
+		'desc'  => __( 'Provides support for the Jetpack mobile theme and plugin. PHP caching mode and mobile support will be enabled too.', 'wp-super-cache' ),
 	);
 	return $list;
 }
