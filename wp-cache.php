@@ -3988,12 +3988,12 @@ function wpsc_get_plugin_list() {
 }
 
 function wpsc_update_plugin_list( $update ) {
-/*
 	$list = do_cacheaction( 'wpsc_filter_list' );
-	foreach( $update as $enabled ) {
-		if ( isset( $list[ 'cache_' . $enabled ] ) ) {
-			wp_cache_setting( 'cache_' . $enabled, 1 );
+	foreach( $update as $key => $enabled ) {
+		$plugin_toggle = "cache_{$key}";
+		global $$plugin_toggle;
+		if ( isset( $$plugin_toggle ) || isset( $list[ $key ] ) ) {
+			wp_cache_setting( $plugin_toggle, (int)$enabled );
 		}
 	}
-*/
 }

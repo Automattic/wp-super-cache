@@ -259,9 +259,5 @@ class WP_Super_Cache_Settings_Map {
 		'wp_super_cache_front_page_notification' => array(
 			'global' => 'wp_super_cache_front_page_notification',
 		),
-		'plugin_list' => array(
-			'get' => 'wpsc_get_plugin_list',
-			'set' => 'wpsc_update_plugin_list',
-		),
 	);
 }
