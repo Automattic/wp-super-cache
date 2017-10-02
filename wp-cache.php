@@ -1949,99 +1949,6 @@ function wp_cache_edit_accepted() {
 	echo "</form>\n";
 }
 
-function wpsc_create_debug_log( $filename = '', $username = '' ) {
-	global $cache_path, $wp_cache_debug_username, $wp_cache_debug_log;
-	if ( $filename != '' ) {
-		$wp_cache_debug_log = $filename;
-	} else {
-		$wp_cache_debug_log = md5( time() + mt_rand() ) . ".php";
-	}
-	if ( $username != '' ) {
-		$wp_cache_debug_username = $username;
-	} else {
-		$wp_cache_debug_username = md5( time() + mt_rand() );
-	}
-
-	$msg = '
-if ( !isset( $_SERVER[ "PHP_AUTH_USER" ] ) || ( $_SERVER[ "PHP_AUTH_USER" ] != "' . $wp_cache_debug_username . '" && $_SERVER[ "PHP_AUTH_PW" ] != "' . $wp_cache_debug_username . '" ) ) {
-	header( "WWW-Authenticate: Basic realm=\"WP-Super-Cache Debug Log\"" );
-	header("HTTP/1.0 401 Unauthorized");
-	echo "You must login to view the debug log";
-	exit;
-}' . PHP_EOL;
-	$fp = fopen( $cache_path . $wp_cache_debug_log, 'w' );
-	if ( $fp ) {
-		fwrite( $fp, '<' . "?php\n" );
-		fwrite( $fp, $msg );
-		fwrite( $fp, '?' . "><pre>" . PHP_EOL );
-		fwrite( $fp, '// END HEADER' . PHP_EOL );
-		fclose( $fp );
-		wp_cache_setting( 'wp_cache_debug_log', $wp_cache_debug_log );
-		wp_cache_setting( 'wp_cache_debug_username', $wp_cache_debug_username );
-	}
-	$fp = fopen( $cache_path . 'view_' . $wp_cache_debug_log, 'w' );
-	if ( $fp ) {
-		fwrite( $fp, '<' . "?php" . PHP_EOL );
-		$msg .= '$debug_log = file( "./' . $wp_cache_debug_log . '" );
-$start_log = 1 + array_search( "// END HEADER" . PHP_EOL, $debug_log );
-if ( $start_log > 1 ) {
-	$debug_log = array_slice( $debug_log, $start_log );
-}
-?' . '><form action="" method="GET"><' . '?php
-
-$checks = array( "wp-admin", "exclude_filter", "wp-content", "wp-json" );
-foreach( $checks as $check ) {
-	if ( isset( $_GET[ $check ] ) ) {
-		$$check = 1;
-	} else {
-		$$check = 0;
-	}
-}
-
-if ( isset( $_GET[ "filter" ] ) ) {
-	$filter = htmlspecialchars( $_GET[ "filter" ] );
-} else {
-	$filter = "";
-}
-
-unset( $checks[1] ); // exclude_filter
-?' . '>
-Exclude requests: <br />
-<' . '?php foreach ( $checks as $check ) { ?>
-	<label><input type="checkbox" name="<' . '?php echo $check; ?' . '>" value="1" <' . '?php if ( $$check ) { echo "checked"; } ?' . '> /> <' . '?php echo $check; ?' . '></label><br />
-<' . '?php } ?' . '>
-<br />
-Text to filter by:
-
-<input type="text" name="filter" value="<' . '?php echo $filter; ?' . '>" /><br />
-<input type="checkbox" name="exclude_filter" value="1" <' . '?php if ( $exclude_filter ) { echo "checked"; } ?' . '> /> Exclude by filter instead of include.<br />
-<input type="submit" value="Submit" />
-</form>
-<' . '?php
-foreach ( $debug_log as $t => $line ) {
-	foreach( $checks as $check ) {
-		if ( $$check && false !== strpos( $line, " /$check/" ) ) {
-			unset( $debug_log[ $t ] );
-		}
-	}
-	if ( $filter ) {
-		if ( false !== strpos( $line, $filter ) && $exclude_filter ) {
-			unset( $debug_log[ $t ] );
-		} elseif ( false === strpos( $line, $filter ) && ! $exclude_filter ) {
-			unset( $debug_log[ $t ] );
-		}
-	}
-}
-foreach( $debug_log as $line ) {
-	echo $line . "<br />";
-}';
-		fwrite( $fp, $msg );
-		fclose( $fp );
-	}
-
-	return array( 'wp_cache_debug_log' => $wp_cache_debug_log, 'wp_cache_debug_username' => $wp_cache_debug_username );
-}
-
 function wpsc_update_debug_settings() {
 	global $wp_super_cache_debug, $wp_cache_debug_log, $wp_cache_debug_ip, $cache_path, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
 	global $wp_super_cache_front_page_check, $wp_super_cache_front_page_clear, $wp_super_cache_front_page_text, $wp_super_cache_front_page_notification, $wp_super_cache_advanced_debug;
@@ -2127,10 +2034,11 @@ function wp_cache_debug_settings() {
 		extract( wpsc_create_debug_log() ); // $wp_cache_debug_log, $wp_cache_debug_username
 	}
 	$log_file_link = "<a href='" . site_url( str_replace( ABSPATH, '', "{$cache_path}view_{$wp_cache_debug_log}" ) ) . "'>$wp_cache_debug_log</a>";
+	$raw_log_file_link = "<a href='" . site_url( str_replace( ABSPATH, '', "{$cache_path}{$wp_cache_debug_log}" ) ) . "'>" . __( 'RAW', 'wp-super-cache' ) . "</a>";
 	if ( $wp_super_cache_debug == 1 ) {
-		echo "<p>" . sprintf( __( 'Currently logging to: %s', 'wp-super-cache' ), $log_file_link ) . "</p>";
+		echo "<p>" . sprintf( __( 'Currently logging to: %s (%s)', 'wp-super-cache' ), $log_file_link, $raw_log_file_link ) . "</p>";
 	} else {
-		echo "<p>" . sprintf( __( 'Last Logged to: %s', 'wp-super-cache' ), $log_file_link ) . "</p>";
+		echo "<p>" . sprintf( __( 'Last Logged to: %s (%s)', 'wp-super-cache' ), $log_file_link, $raw_log_file_link ) . "</p>";
 	}
 	echo "<p>" . sprintf( __( 'Username/Password: %s', 'wp-super-cache' ), $wp_cache_debug_username ) . "</p>";
 
