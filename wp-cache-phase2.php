@@ -478,8 +478,12 @@ function wp_cache_ob_callback( $buffer ) {
 
 		wp_cache_debug( 'Output buffer callback', 4 );
 
-		$buffer = wp_cache_get_ob( $buffer );
-		wp_cache_shutdown_callback();
+		if ( $buffer == '' ) {
+			wp_cache_debug( "wp_cache_ob_callback: output buffer blank. Check if other plugins use ob_start." );
+		} else {
+			$buffer = wp_cache_get_ob( $buffer );
+			wp_cache_shutdown_callback();
+		}
 
 		if ( isset( $wpsc_file_mtimes ) && is_array( $wpsc_file_mtimes ) && !empty( $wpsc_file_mtimes ) ) {
 			foreach( $wpsc_file_mtimes as $cache_file => $old_mtime ) {
