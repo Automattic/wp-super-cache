@@ -61,6 +61,9 @@ Fixes fatal error for older versions of WP and corrupted config file issues.
 * Don't preload posts with permalinks that contain rejected strings. (#407)
 * Generate a list of archive feeds that can be deleted when the site is updated. Also fixes corrupted config file issue and fatal error with older versions of WordPress. (#403)
 
+= 1.5.7 =
+* Fix fatal error in plugins/searchengine.php (#398)
+
 = 1.5.6 =
 * REST API: Added /plugins endpoint to handle the plugins settings page. (#382)
 * Minor changes to indentaion and spaces to tabs conversion (#371) (#395)
