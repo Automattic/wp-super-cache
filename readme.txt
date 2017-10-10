@@ -53,11 +53,13 @@ Interested in translating WP Super Cache to your language? See the [translation 
 The cache directory, usually wp-content/cache/ is only for temporary files. Do not ever put important files or symlinks to important files or directories in that directory. They will be deleted if the plugin has write access to them.
 
 == Upgrade Notice ==
-Fixes fatal error for users who toggled the "no adverts for friends" plugin.
+Fixes fatal error for older versions of WP and corrupted config file issues.
 
 == Changelog ==
-= 1.5.7 =
-* Fix fatal error in plugins/searchengine.php (#398)
+= 1.5.7.1 =
+* If the HTTP HOST is empty then don't use it in strpos to avoid a PHP warning. (#408)
+* Don't preload posts with permalinks that contain rejected strings. (#407)
+* Generate a list of archive feeds that can be deleted when the site is updated. Also fixes corrupted config file issue and fatal error with older versions of WordPress. (#403)
 
 = 1.5.6 =
 * REST API: Added /plugins endpoint to handle the plugins settings page. (#382)
