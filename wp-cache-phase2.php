@@ -433,7 +433,7 @@ function wp_cache_ob_callback( $buffer ) {
 	} elseif ( isset( $_GET[ 'preview' ] ) ) {
 		wp_cache_debug( 'Not caching preview post.', 2 );
 		$cache_this_page = false;
-	} elseif ( !in_array($script, $cache_acceptable_files) && wp_cache_is_rejected( $wp_cache_request_uri ) ) {
+	} elseif ( !in_array( $script, (array) $cache_acceptable_files ) && wp_cache_is_rejected( $wp_cache_request_uri ) ) {
 		wp_cache_debug( 'URI rejected. Not Caching', 2 );
 		$cache_this_page = false;
 	} elseif ( wp_cache_user_agent_is_rejected() ) {
@@ -1150,6 +1150,7 @@ function wp_cache_shutdown_callback() {
 		/* @header('Last-Modified: ' . $value); */
 		$wp_cache_meta[ 'headers' ][ 'Last-Modified' ] = "Last-Modified: $value";
 	}
+	$is_feed = false;
 	if ( !isset( $response[ 'Content-Type' ] ) && !isset( $response[ 'Content-type' ] ) ) {
 		// On some systems, headers set by PHP can't be fetched from
 		// the output buffer. This is a last ditch effort to set the
@@ -1181,6 +1182,7 @@ function wp_cache_shutdown_callback() {
 			if ( isset( $wpsc_feed_ttl ) && $wpsc_feed_ttl == 1 ) {
 				$wp_cache_meta[ 'ttl' ] = 60;
 			}
+			$is_feed = true;
 
 			wp_cache_debug( "wp_cache_shutdown_callback: feed is type: $type - $value" );
 		} elseif ( get_query_var( 'sitemap' ) || get_query_var( 'xsl' ) || get_query_var( 'xml_sitemap' ) ) {
@@ -1189,6 +1191,7 @@ function wp_cache_shutdown_callback() {
 			if ( isset( $wpsc_feed_ttl ) && $wpsc_feed_ttl == 1 ) {
 				$wp_cache_meta[ 'ttl' ] = 60;
 			}
+			$is_feed = true;
 
 		} else { // not a feed
 			$value = get_option( 'html_type' );
@@ -1238,6 +1241,16 @@ function wp_cache_shutdown_callback() {
 				wp_cache_set( $oc_key, $serial, 'supercache', $cache_max_time );
 			}
 			wp_cache_writers_exit();
+
+			// record locations of archive feeds to be updated when the site is updated.
+			// Only record a maximum of 50 feeds to avoid bloating database.
+			if ( ( isset( $wp_super_cache_query[ 'is_feed' ] ) || $is_feed ) && ! isset( $wp_super_cache_query[ 'is_single' ] ) ) {
+				$wpsc_feed_list = (array) get_option( 'wpsc_feed_list' );
+				if ( count( $wpsc_feed_list ) <= 50 ) {
+					$wpsc_feed_list[] = $dir . $meta_file;
+					update_option( 'wpsc_feed_list', $wpsc_feed_list );
+				}
+			}
 		}
 	} else {
 		wp_cache_debug( "Did not write meta file: meta-{$meta_file} *$supercacheonly* *$wp_cache_not_logged_in* *$new_cache*", 2 );
@@ -1255,6 +1268,20 @@ function wp_cache_no_postid($id) {
 
 function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 	global $super_cache_enabled, $wp_cache_request_uri;
+
+	if ( defined( 'DONOTDELETECACHE' ) ) {
+		return;
+	}
+
+	// Check is it "Empty Spam" or "Empty Trash"
+	if ( isset( $GLOBALS[ 'pagenow' ] ) && $GLOBALS[ 'pagenow' ] === 'edit-comments.php' &&
+		( isset( $_REQUEST['delete_all'] ) || isset( $_REQUEST['delete_all2'] ) )
+	) {
+		wp_cache_debug( "Delete all SPAM or Trash comments. Don't delete any cache files.", 4 );
+		define( 'DONOTDELETECACHE', 1 );
+		return;
+	}
+
 	$comment = get_comment($comment_id, ARRAY_A);
 	if ( $status != 'NA' ) {
 		$comment[ 'old_comment_approved' ] = $comment[ 'comment_approved' ];
@@ -1267,7 +1294,7 @@ function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 		define( 'DONOTDELETECACHE', 1 );
 		return wp_cache_post_id();
 	}
-	$postid = $comment['comment_post_ID'];
+	$postid = isset( $comment[ 'comment_post_ID' ] ) ? (int) $comment[ 'comment_post_ID' ] : 0;
 	// Do nothing if comment is not moderated
 	// http://ocaoimh.ie/2006/12/05/caching-wordpress-with-wp-cache-in-a-spam-filled-world
 	if ( !preg_match('/wp-admin\//', $wp_cache_request_uri) ) {
@@ -1297,7 +1324,7 @@ function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 	if ($postid > 0)  {
 		wp_cache_debug( "Post $postid changed. Update cache.", 4 );
 		return wp_cache_post_change( $postid );
-	} elseif ( $_GET[ 'delete_all' ] != 'Empty Trash' && $_GET[ 'delete_all2' ] != 'Empty Spam' ) {
+	} else {
 		wp_cache_debug( "Unknown post changed. Update cache.", 4 );
 		return wp_cache_post_change( wp_cache_post_id() );
 	}

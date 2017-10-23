@@ -194,22 +194,6 @@ function wp_cache_serve_cache_file() {
 			@unlink( $cache_file );
 			return true;
 		}
-		// check for updated feed
-		if ( isset( $meta[ 'headers' ][ 'Content-Type' ] ) ) {
-			$rss_types = apply_filters( 'wpsc_rss_types', array( 'application/rss+xml', 'application/rdf+xml', 'application/atom+xml' ) );
-			foreach( $rss_types as $rss_type ) {
-				if ( strpos( $meta[ 'headers' ][ 'Content-Type' ], $rss_type ) ) {
-					global $wpsc_last_post_update;
-					if ( isset( $wpsc_last_post_update ) && filemtime( $meta_pathname ) < $wpsc_last_post_update ||
-						( isset( $meta[ 'ttl' ] ) && ( time() - filemtime( $meta_pathname ) ) > $meta[ 'ttl' ] ) ) {
-						wp_cache_debug( "wp_cache_serve_cache_file: feed out of date. deleting cache files: $meta_pathname, $cache_file" );
-						@unlink( $meta_pathname );
-						@unlink( $cache_file );
-						return true;
-					}
-				}
-			}
-		}
 	} else { // no $cache_file
 		global $wpsc_save_headers;
 		// last chance, check if a supercache file exists. Just in case .htaccess rules don't work on this host
@@ -299,7 +283,7 @@ function wp_cache_serve_cache_file() {
 				}
 				$local_mod_time = gmdate("D, d M Y H:i:s",filemtime( $file )).' GMT';
 				if ( !is_null($remote_mod_time) && $remote_mod_time == $local_mod_time ) {
-					header("HTTP/1.0 304 Not Modified");
+					header( $_SERVER[ 'SERVER_PROTOCOL' ] . " 304 Not Modified" );
 					exit();
 				}
 				header( 'Last-Modified: ' . $local_mod_time );
@@ -642,7 +626,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 			*/
 			$DONOTREMEMBER = 1;
 			wp_cache_debug( "get_current_url_supercache_dir: warning! site_url ($site_url) not found in permalink ($permalink).", 1 );
-			if ( false === strpos( $permalink, $WPSC_HTTP_HOST ) ) {
+			if ( $WPSC_HTTP_HOST == '' || false === strpos( $permalink, $WPSC_HTTP_HOST ) ) {
 				wp_cache_debug( "get_current_url_supercache_dir: WARNING! SERVER_NAME ({$WPSC_HTTP_HOST}) not found in permalink ($permalink). ", 1 );
 				$p = parse_url( $permalink );
 				if ( is_array( $p ) ) {
