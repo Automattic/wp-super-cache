@@ -2224,7 +2224,7 @@ function wp_cache_replace_line($old, $new, $my_file) {
 			}
 		}
 	}
-	foreach( (array)$lines as $line ) {
+	foreach( (array) $lines as $line ) {
 		if ( preg_match("/$old/", $line)) {
 			$found = true;
 			break;
@@ -2238,7 +2238,7 @@ function wp_cache_replace_line($old, $new, $my_file) {
 		return false;
 	}
 	if ( $found ) {
-		foreach( (array)$lines as $line ) {
+		foreach( (array) $lines as $line ) {
 			if ( ! preg_match( "/$old/", $line ) ) {
 				fputs( $fd, $line );
 			} elseif ( $new != '' ) {
@@ -2247,8 +2247,8 @@ function wp_cache_replace_line($old, $new, $my_file) {
 		}
 	} else {
 		$done = false;
-		foreach( (array)$lines as $line ) {
-			if ( $done || ! preg_match('/^(if\ \(\ \!\ )?define|\$|\?>/', $line) ) {
+		foreach( (array) $lines as $line ) {
+			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
 				fputs($fd, $line);
 			} else {
 				fputs($fd, "$new\n");
