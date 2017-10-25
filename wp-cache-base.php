@@ -2,10 +2,11 @@
 if ( false == isset( $_SERVER[ 'HTTP_HOST' ] ) ) {
 	$cache_enabled = false;
 	$WPSC_HTTP_HOST = '';
+/* We should find better place for this
 	if ( ( defined( 'DOING_CRON' ) && DOING_CRON ) || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 		// Workaround for php-cli wp-cron.php and wp-cli.
 		$WPSC_HTTP_HOST = parse_url( get_option( 'home' ), PHP_URL_HOST );
-	}
+	}*/
 } else {
 	$WPSC_HTTP_HOST = htmlentities( $_SERVER[ 'HTTP_HOST' ] );
 }
