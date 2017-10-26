@@ -67,6 +67,7 @@ Many bug fixes
 * Fixed link to chmod explanation. (#421)
 * Add more escaping to the CDN settings page. (#416)
 * Use SERVER_PROTOCOL to determine http protocol. (#412 & #413)
+* If preload stalls only send one email per day, but do display an admin notice. (#432)
 
 = 1.5.7.1 =
 * If the HTTP HOST is empty then don't use it in strpos to avoid a PHP warning. (#408)
