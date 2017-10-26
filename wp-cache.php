@@ -3596,6 +3596,8 @@ function wpsc_preload_restart_notice() {
 
 	if ( false == wpsupercache_site_admin() )
 		return false;
+	if ( ! isset( $_GET[ 'page' ] ) || $_GET[ 'page' ] != 'wpsupercache' )
+		return false;
 	echo '<div class="notice notice-error"><p>' . __( 'Warning! WP Super Cache preload was interrupted but has been restarted.', 'wp-super-cache' ) . '</p></div>';
 }
 
