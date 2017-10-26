@@ -2461,7 +2461,7 @@ function wp_cache_verify_config_file() {
 		}
 		$new = true;
 	}
-	if( $sem_id == 5419 && $cache_path != '' ) {
+	if ( $sem_id == 5419 && $cache_path != '' && $WPSC_HTTP_HOST != '' ) {
 		$sem_id = crc32( $WPSC_HTTP_HOST . $cache_path ) & 0x7fffffff;
 		wp_cache_replace_line('sem_id', '$sem_id = ' . $sem_id . ';', $wp_cache_config_file);
 	}
