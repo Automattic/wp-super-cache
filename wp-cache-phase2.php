@@ -599,7 +599,13 @@ function wp_cache_add_to_buffer( &$buffer, $text ) {
 	if ( $wp_super_cache_comments == 0 )
 		return false;
 
-	if ( strpos( $buffer, '<html' ) === false ) {
+	// Don't output debug message if we aren't handling a normal HTML response.
+	if (
+		strpos( $buffer, '<html' ) === false ||
+		( defined( 'REST_REQUEST' )   && REST_REQUEST ) ||
+		( defined( 'JSON_REQUEST' )   && JSON_REQUEST ) ||
+		( defined( 'WC_API_REQUEST' ) && WC_API_REQUEST )
+	) {
 		wp_cache_debug( site_url( $_SERVER[ 'REQUEST_URI' ] ) . " - " . $text );
 		return false;
 	}
