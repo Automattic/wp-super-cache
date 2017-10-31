@@ -1,7 +1,7 @@
 === WP Super Cache ===
 Contributors: donncha, automattic, kraftbj
 Tags: performance,caching,wp-cache,wp-super-cache,cache
-Tested up to: 4.8.2
+Tested up to: 4.8.3
 Stable tag: 1.5.8
 Requires at least: 3.0
 
@@ -68,6 +68,8 @@ Many bug fixes
 * Add more escaping to the CDN settings page. (#416)
 * Use SERVER_PROTOCOL to determine http protocol. (#412 & #413)
 * If preload stalls only send one email per day, but do display an admin notice. (#432)
+* Fixed more PHP warnings in #438 and #437
+* Hide mod_rewrite warnings for Nginx users. #434
 
 = 1.5.7.1 =
 * If the HTTP HOST is empty then don't use it in strpos to avoid a PHP warning. (#408)
