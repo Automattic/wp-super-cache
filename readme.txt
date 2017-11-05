@@ -511,7 +511,7 @@ Sometimes a category page is cached as the homepage of the site instead of the s
 "Your feed doesn't support caching (no 304 response to If-modified-since)"
 
 Supercache doesn't support 304 header checks in Expert mode but does support it in Simple mode. This is caching done by your browser, not the server. It is a check your browser does to ask the server if an updated version of the current page is available. If not, it doesn't download the old version again. The page is still cached by your server, just not by your visitors' browsers.
-Try the Cacheability Engine at http://www.ircache.net/cgi-bin/cacheability.py or http://redbot.org/ for further analysis.
+Try the Cacheability Engine at http://www.ircache.net/cgi-bin/cacheability.py or https://redbot.org/ for further analysis.
 
 = How should I best use the utm_source tracking tools in Google Analytics with this plugin? =
 
@@ -519,7 +519,7 @@ That tracking adds a query string to each url linked from various sources like T
 
 = The plugin complains that wp-content is writable! htdocs is writable! =
 
-It's not good when the web server can write to these directories but sometimes shared hosting accounts are set up in this way to make administration easier. Use `chmod 755 directory` to fix the permissions or find the permissions section of your ftp client. This [Google search](http://www.google.ie/search?sourceid=chrome&ie=UTF-8&q=ftp+fix+directory+permissions+755) will lead you to more information on this topic and there's also [this codex page](https://codex.wordpress.org/Changing_File_Permissions) too. Unfortunately some hosts require that those directories be writable. If that's the case just ignore this warning.
+It's not good when the web server can write to these directories but sometimes shared hosting accounts are set up in this way to make administration easier. Use `chmod 755 directory` to fix the permissions or find the permissions section of your ftp client. This [Google search](https://www.google.com/search?sourceid=chrome&ie=UTF-8&q=ftp+fix+directory+permissions+755) will lead you to more information on this topic and there's also [this codex page](https://codex.wordpress.org/Changing_File_Permissions) too. Unfortunately some hosts require that those directories be writable. If that's the case just ignore this warning.
 
 = How do I delete the WP_CACHE define from wp-config.php? =
 
@@ -617,7 +617,7 @@ If your site is mostly static you can disable garbage collection by entering 0 a
 
 A Content Delivery Network (CDN) is usually a network of computers situated around the world that will serve the content of your website faster by using servers close to you. Static files like images, Javascript and CSS files can be served through these networks to speed up how fast your site loads. You can also create a "poor man's CDN" by using a sub domain of your domain to serve static files too.
 
-[OSSDL CDN off-linker](https://wordpress.org/plugins/ossdl-cdn-off-linker/) has been integrated into WP Super Cache to provide basic CDN support. It works by rewriting the URLs of files (excluding .php files) in wp-content and wp-includes on your server so they point at a different hostname. Many CDNs support [origin pull](http://www.google.com/search?hl=en&q=%22origin+pull%22). This means the CDN will download the file automatically from your server when it's first requested, and will continue to serve it for a configurable length of time before downloading it again from your server.
+[OSSDL CDN off-linker](https://wordpress.org/plugins/ossdl-cdn-off-linker/) has been integrated into WP Super Cache to provide basic CDN support. It works by rewriting the URLs of files (excluding .php files) in wp-content and wp-includes on your server so they point at a different hostname. Many CDNs support [origin pull](https://www.google.com/search?hl=en&q=%22origin+pull%22). This means the CDN will download the file automatically from your server when it's first requested, and will continue to serve it for a configurable length of time before downloading it again from your server.
 
 Configure this on the "CDN" tab of the plugin settings page. This is an advanced technique and requires a basic understanding of how your webserver or CDNs work. Please be sure to clear the file cache after you configure the CDN.
 
