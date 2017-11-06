@@ -1067,6 +1067,30 @@ function wpsc_delete_url_cache( $url ) {
 	}
 }
 
+// from legolas558 d0t users dot sf dot net at http://www.php.net/is_writable
+function is_writeable_ACLSafe( $path ) {
+
+	// PHP's is_writable does not work with Win32 NTFS
+
+	if ( $path[ strlen( $path ) - 1 ] == '/' ) { // recursively return a temporary file path
+		return is_writeable_ACLSafe( $path . uniqid( mt_rand() ) . '.tmp' );
+	} elseif ( is_dir( $path ) ) {
+		return is_writeable_ACLSafe( $path . '/' . uniqid( mt_rand() ) . '.tmp' );
+	}
+
+	// check tmp file for read/write capabilities
+	$rm = file_exists( $path );
+	$f = @fopen( $path, 'a' );
+	if ( $f === false )
+		return false;
+	fclose( $f );
+	if ( ! $rm ) {
+		unlink( $path );
+	}
+
+	return true;
+}
+
 function wp_cache_setting( $field, $value ) {
 	global $wp_cache_config_file;
 
