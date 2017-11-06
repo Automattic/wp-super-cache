@@ -181,6 +181,11 @@ function wpsupercache_activate() {
 	if ( ! isset( $cache_path ) || $cache_path == '' )
 		$cache_path = WP_CONTENT_DIR . '/cache/'; // from sample config file
 
+	if ( !function_exists( 'wp_cache_debug' ) )
+		include_once( 'wp-cache-phase1.php' );
+	if ( !function_exists( 'prune_super_cache' ) )
+		include_once( 'wp-cache-phase2.php' );
+
 	ob_start();
 	wpsc_init();
 
@@ -293,6 +298,13 @@ function wp_cache_manager_error_checks() {
 		!wp_cache_verify_cache_dir() ) {
 		echo '<p>' . __( "Cannot continue... fix previous problems and retry.", 'wp-super-cache' ) . '</p>';
 		return false;
+	}
+
+	if ( false == function_exists( 'wpsc_deep_replace' ) ) {
+		$msg = __( 'Warning! You must set WP_CACHE and WPCACHEHOME in your wp-config.php for this plugin to work correctly:' ) . '<br />';
+		$msg .= "<code>define( 'WP_CACHE', true );</code><br />";
+		$msg .= "<code>define( 'WPCACHEHOME', '" . dirname( __FILE__ ) . "' );</code><br />";
+		wp_die( $msg );
 	}
 
 	if (!wp_cache_check_global_config()) {
@@ -493,13 +505,6 @@ function wp_cache_manager_updates() {
 	$valid_nonce = isset($_REQUEST['_wpnonce']) ? wp_verify_nonce($_REQUEST['_wpnonce'], 'wp-cache') : false;
 	if ( $valid_nonce == false )
 		return false;
-
-	if ( false == function_exists( 'wpsc_deep_replace' ) ) {
-		$msg = __( 'Warning! You must set WP_CACHE and WPCACHEHOME in your wp-config.php for this plugin to work correctly:' ) . '<br />';
-		$msg .= "<code>define( 'WP_CACHE', true );</code><br />";
-		$msg .= "<code>define( 'WPCACHEHOME', '" . dirname( __FILE__ ) . "' );</code><br />";
-		wp_die( $msg );
-	}
 
 	if ( isset( $_POST[ 'action' ] ) && $_POST[ 'action' ] == 'easysetup' ) {
 		$_POST[ 'action' ] = 'scupdates';
@@ -2179,84 +2184,6 @@ function wp_cache_is_enabled() {
 			return true;
 	}
 	return false;
-}
-
-function wp_cache_setting( $field, $value ) {
-	global $wp_cache_config_file;
-
-	$GLOBALS[ $field ] = $value;
-	if ( is_numeric( $value ) ) {
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $value;", $wp_cache_config_file );
-	} elseif ( is_object( $value ) || is_array( $value ) ) {
-		$text = var_export( $value, true );
-		$text = preg_replace( '/[\s]+/', ' ', $text );
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
-	} else {
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
-	}
-}
-
-function wp_cache_replace_line($old, $new, $my_file) {
-	if ( @is_file( $my_file ) == false ) {
-		return false;
-	}
-	if (!is_writeable_ACLSafe($my_file)) {
-		trigger_error( "Error: file $my_file is not writable." );
-		return false;
-	}
-
-	$found = false;
-	$loaded = false;
-	$c = 0;
-	$lines = array();
-	while( ! $loaded ) {
-		$lines = file( $my_file );
-		if ( ! empty( $lines ) && is_array( $lines ) ) {
-			$loaded = true;
-		} else {
-			$c++;
-			if ( $c > 100 ) {
-				trigger_error( "wp_cache_replace_line: Error  - file $my_file could not be loaded." );
-				return false;
-			}
-		}
-	}
-	foreach( (array) $lines as $line ) {
-		if ( preg_match("/$old/", $line)) {
-			$found = true;
-			break;
-		}
-	}
-
-	$tmp_file = dirname( $my_file ) . '/' . mt_rand() . '.php';
-	$fd = fopen( $tmp_file, 'w' );
-	if ( ! $fd ) {
-		trigger_error( "wp_cache_replace_line: Error  - could not write to $tmp_file" );
-		return false;
-	}
-	if ( $found ) {
-		foreach( (array) $lines as $line ) {
-			if ( ! preg_match( "/$old/", $line ) ) {
-				fputs( $fd, $line );
-			} elseif ( $new != '' ) {
-				fputs( $fd, "$new\n" );
-			}
-		}
-	} else {
-		$done = false;
-		foreach( (array) $lines as $line ) {
-			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
-				fputs($fd, $line);
-			} else {
-				fputs($fd, "$new\n");
-				fputs($fd, $line);
-				$done = true;
-			}
-		}
-	}
-	fclose( $fd );
-	@rename( $tmp_file, $my_file );
-	return true;
 }
 
 function wp_cache_remove_index() {

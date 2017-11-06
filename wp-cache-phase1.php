@@ -1067,4 +1067,82 @@ function wpsc_delete_url_cache( $url ) {
 	}
 }
 
+function wp_cache_setting( $field, $value ) {
+	global $wp_cache_config_file;
+
+	$GLOBALS[ $field ] = $value;
+	if ( is_numeric( $value ) ) {
+		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $value;", $wp_cache_config_file );
+	} elseif ( is_object( $value ) || is_array( $value ) ) {
+		$text = var_export( $value, true );
+		$text = preg_replace( '/[\s]+/', ' ', $text );
+		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
+	} else {
+		wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
+	}
+}
+
+function wp_cache_replace_line($old, $new, $my_file) {
+	if ( @is_file( $my_file ) == false ) {
+		return false;
+	}
+	if (!is_writeable_ACLSafe($my_file)) {
+		trigger_error( "Error: file $my_file is not writable." );
+		return false;
+	}
+
+	$found = false;
+	$loaded = false;
+	$c = 0;
+	$lines = array();
+	while( ! $loaded ) {
+		$lines = file( $my_file );
+		if ( ! empty( $lines ) && is_array( $lines ) ) {
+			$loaded = true;
+		} else {
+			$c++;
+			if ( $c > 100 ) {
+				trigger_error( "wp_cache_replace_line: Error  - file $my_file could not be loaded." );
+				return false;
+			}
+		}
+	}
+	foreach( (array) $lines as $line ) {
+		if ( preg_match("/$old/", $line)) {
+			$found = true;
+			break;
+		}
+	}
+
+	$tmp_file = dirname( $my_file ) . '/' . mt_rand() . '.php';
+	$fd = fopen( $tmp_file, 'w' );
+	if ( ! $fd ) {
+		trigger_error( "wp_cache_replace_line: Error  - could not write to $tmp_file" );
+		return false;
+	}
+	if ( $found ) {
+		foreach( (array) $lines as $line ) {
+			if ( ! preg_match( "/$old/", $line ) ) {
+				fputs( $fd, $line );
+			} elseif ( $new != '' ) {
+				fputs( $fd, "$new\n" );
+			}
+		}
+	} else {
+		$done = false;
+		foreach( (array) $lines as $line ) {
+			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
+				fputs($fd, $line);
+			} else {
+				fputs($fd, "$new\n");
+				fputs($fd, $line);
+				$done = true;
+			}
+		}
+	}
+	fclose( $fd );
+	@rename( $tmp_file, $my_file );
+	return true;
+}
+
 ?>
