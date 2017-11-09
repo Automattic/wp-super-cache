@@ -51,7 +51,6 @@ Interested in translating WP Super Cache to your language? See the [translation 
 
 The cache directory, usually wp-content/cache/ is only for temporary files. Do not ever put important files or symlinks to important files or directories in that directory. They will be deleted if the plugin has write access to them.
 
-
 ### Troubleshooting ###
 If things don't work when you installed the plugin here are a few things to check:
 
@@ -144,7 +143,6 @@ Updates to the plugin will be posted here, to [Holy Shmoly!](https://odd.blog/) 
 Install like any other plugin, directly from your plugins page but make sure you have custom permalinks enabled. Go to the plugin settings page at Settings->WP Super Cache and enable caching.
 
 ### How to uninstall WP Super Cache ###
-
 Almost all you have to do is deactivate the plugin on the plugins page. The plugin should clean up most of the files it created and modified, but it doesn't as yet remove the mod_rewrite rules from the .htaccess file. Look for the section in that file marked by SuperCache BEGIN and END tags. The plugin doesn't remove those because some people add the WordPress rules in that block too.
 
 To manually uninstall:
