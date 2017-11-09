@@ -49,11 +49,11 @@ Cached files will still be deleted when posts are made or edited or comments mad
 ### Documentation ###
 If you need more information than the following, you can have a look at the [Developer documentation](https://odd.blog/wp-super-cache-developers/).
 
-### Preloading ###
+#### Preloading ####
 You can generate cached files for the posts, categories and tags of your site by preloading. Preloading will visit each page of your site generating a cached page as it goes along, just like any other visitor to the site. Due to the sequential nature of this function, it can take some time to preload a complete site if there are many posts.
 To make preloading more effective it can be useful to disable garbage collection so that older cache files are not deleted. This is done by enabling "Preload Mode" in the settings. Be aware however, that pages will go out of date eventually but that updates by submitting comments or editing posts will clear portions of the cache.
 
-### Garbage Collection ###
+#### Garbage Collection ####
 Your cache directory fills up over time, which takes up space on your server. If space is limited or billed by capacity, or if you worry that the cached pages of your site will go stale then garbage collection has to be done. Garbage collection happens on a regular basis and deletes old files in the cache directory. On the advanced settings page you can specify:
 1. Cache timeout. How long cache files are considered fresh for. After this time they are stale and can be deleted.
 2. Scheduler. Setup how often garbage collection should be done.
@@ -62,17 +62,17 @@ There's no right or wrong settings for garbage collection. It depends on your ow
 If your site gets regular updates, or comments then set the timeout to 1800 seconds, and set the timer to 600 seconds.
 If your site is mostly static you can disable garbage collection by entering 0 as the timeout, or use a really large timeout value.
 
-### CDN ###
+#### CDN ####
 A Content Delivery Network (CDN) is usually a network of computers situated around the world that will serve the content of your website faster by using servers close to you. Static files like images, Javascript and CSS files can be served through these networks to speed up how fast your site loads. You can also create a "poor man's CDN" by using a sub domain of your domain to serve static files too.
 
 [OSSDL CDN off-linker](https://wordpress.org/plugins/ossdl-cdn-off-linker/) has been integrated into WP Super Cache to provide basic CDN support. It works by rewriting the URLs of files (excluding .php files) in wp-content and wp-includes on your server so they point at a different hostname. Many CDNs support [origin pull](https://www.google.com/search?hl=en&q=%22origin+pull%22). This means the CDN will download the file automatically from your server when it's first requested, and will continue to serve it for a configurable length of time before downloading it again from your server.
 
 Configure this on the "CDN" tab of the plugin settings page. This is an advanced technique and requires a basic understanding of how your webserver or CDNs work. Please be sure to clear the file cache after you configure the CDN.
 
-### REST API ###
+#### REST API ####
 There are now REST API endpoints for accessing the settings of this plugin. You'll need to be authenticated as an admin user with permission to view the settings page to use it. This has not been documented yet but you can find all the code that deals with this in the "rest" directory.
 
-### Custom Caching ###
+#### Custom Caching ####
 It is now possible to hook into the caching process using the add_cacheaction() function.
 
 Three hooks are available:
