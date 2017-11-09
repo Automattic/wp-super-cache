@@ -1,11 +1,11 @@
 # WP Super Cache #
-Contributors: donncha, automattic, kraftbj
-Tags: performance, caching, wp-cache, wp-super-cache, cache
-Tested up to: 4.8.3
-Stable tag: 1.5.8
-Requires at least: 3.0
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+* Contributors: donncha, automattic, kraftbj
+* Tags: performance, caching, wp-cache, wp-super-cache, cache
+* Tested up to: 4.8.3
+* Stable tag: 1.5.8
+* Requires at least: 3.0
+* License: GPLv2 or later
+* License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 A very fast caching engine for WordPress that produces static html files.
 
