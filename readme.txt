@@ -157,7 +157,7 @@ To manually uninstall:
 6. Remove the directory wp-content/cache/
 7. Remove the directory wp-super-cache from your plugins directory.
 
-== If all else fails and your site is broken ==
+### If all else fails and your site is broken ###
 1. Remove the WP_CACHE define from wp-config.php. It looks like `define( 'WP_CACHE', true );`
 2. Remove the rules (see above) that the plugin wrote to the .htaccess file in your root directory.
 3. Delete the wp-super-cache folder in the plugins folder.
