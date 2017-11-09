@@ -28,7 +28,7 @@ The plugin serves cached files in 3 ways (ranked by speed):
 
 If you're not comfortable with editing PHP files then use simple mode. It's easy to set up and very fast.
 
-### Recommended Settings ##
+### Recommended Settings ###
 1. Simple caching.
 2. Compress pages.
 3. Don't cache pages for known users.
@@ -43,15 +43,55 @@ Consider deleting the contents of the "Rejected User Agents" text box and allow 
 Likewise, preload as many posts as you can and enable "Preload Mode". Garbage collection will still occur but it won't affect the preloaded files. If you don't care about sidebar widgets updating often set the preload interval to 2880 minutes (2 days) so all your posts aren't recached very often. When the preload occurs the cache files for the post being refreshed is deleted and then regenerated. Afterwards a garbage collection of all old files is performed to clean out stale cache files.
 Cached files will still be deleted when posts are made or edited or comments made when preloading is enabled.
 
-See the [WP Super Cache homepage](https://wordpress.org/plugins/wp-super-cache/) for further information. [Developer documentation](https://odd.blog/wp-super-cache-developers/) is also available for those who need to interact with the cache or write plugins.
-
-There's a [GIT repository](https://github.com/Automattic/wp-super-cache) too if you want to contribute a patch.
-
 The [commit list](https://github.com/Automattic/wp-super-cache/commits/master) is a good place to start if you want to know what has changed since you last downloaded the plugin.
 
 Interested in translating WP Super Cache to your language? See the [translation page](https://translate.wordpress.org/projects/wp-plugins/wp-super-cache) for the plugin.
 
 The cache directory, usually wp-content/cache/ is only for temporary files. Do not ever put important files or symlinks to important files or directories in that directory. They will be deleted if the plugin has write access to them.
+
+### Development ###
+* Active development of this plugin is handled [on GitHub](https://github.com/Automattic/wp-super-cache).
+
+### Documentation ###
+If you need more information than the following, you can have a look at the [Developer documentation](https://odd.blog/wp-super-cache-developers/).
+
+### Preloading ###
+You can generate cached files for the posts, categories and tags of your site by preloading. Preloading will visit each page of your site generating a cached page as it goes along, just like any other visitor to the site. Due to the sequential nature of this function, it can take some time to preload a complete site if there are many posts.
+To make preloading more effective it can be useful to disable garbage collection so that older cache files are not deleted. This is done by enabling "Preload Mode" in the settings. Be aware however, that pages will go out of date eventually but that updates by submitting comments or editing posts will clear portions of the cache.
+
+### Garbage Collection ###
+Your cache directory fills up over time, which takes up space on your server. If space is limited or billed by capacity, or if you worry that the cached pages of your site will go stale then garbage collection has to be done. Garbage collection happens on a regular basis and deletes old files in the cache directory. On the advanced settings page you can specify:
+1. Cache timeout. How long cache files are considered fresh for. After this time they are stale and can be deleted.
+2. Scheduler. Setup how often garbage collection should be done.
+3. Notification emails. You can be informed on garbage collection job progress.
+There's no right or wrong settings for garbage collection. It depends on your own site.
+If your site gets regular updates, or comments then set the timeout to 1800 seconds, and set the timer to 600 seconds.
+If your site is mostly static you can disable garbage collection by entering 0 as the timeout, or use a really large timeout value.
+
+### CDN ###
+A Content Delivery Network (CDN) is usually a network of computers situated around the world that will serve the content of your website faster by using servers close to you. Static files like images, Javascript and CSS files can be served through these networks to speed up how fast your site loads. You can also create a "poor man's CDN" by using a sub domain of your domain to serve static files too.
+
+[OSSDL CDN off-linker](https://wordpress.org/plugins/ossdl-cdn-off-linker/) has been integrated into WP Super Cache to provide basic CDN support. It works by rewriting the URLs of files (excluding .php files) in wp-content and wp-includes on your server so they point at a different hostname. Many CDNs support [origin pull](https://www.google.com/search?hl=en&q=%22origin+pull%22). This means the CDN will download the file automatically from your server when it's first requested, and will continue to serve it for a configurable length of time before downloading it again from your server.
+
+Configure this on the "CDN" tab of the plugin settings page. This is an advanced technique and requires a basic understanding of how your webserver or CDNs work. Please be sure to clear the file cache after you configure the CDN.
+
+### REST API ###
+There are now REST API endpoints for accessing the settings of this plugin. You'll need to be authenticated as an admin user with permission to view the settings page to use it. This has not been documented yet but you can find all the code that deals with this in the "rest" directory.
+
+### Custom Caching ###
+It is now possible to hook into the caching process using the add_cacheaction() function.
+
+Three hooks are available:
+
+1. 'wp_cache_get_cookies_values' - modify the key used by WP Cache.
+2. 'add_cacheaction' - runs in phase2. Allows a plugin to add WordPress hooks.
+3. 'cache_admin_page' - runs in the admin page. Use it to modify that page, perhaps by adding new configuration options.
+
+There is one regular WordPress filter too. Use the "do_createsupercache" filter
+to customize the checks made before caching. The filter accepts one parameter.
+The output of WP-Cache's wp_cache_get_cookies_values() function.
+
+See plugins/searchengine.php as an example I use for my [No Adverts for Friends](https://odd.blog/no-adverts-for-friends/) plugin.
 
 ### Troubleshooting ###
 If things don't work when you installed the plugin here are a few things to check:
@@ -98,44 +138,6 @@ If that doesn't work, add this line to your wp-config.php:
 27. Use [Cron View](https://wordpress.org/plugins/cron-view/) to help diagnose garbage collection and preload problems. Use the plugin to make sure jobs are scheduled and for what time. Look for the wp_cache_gc and wp_cache_full_preload_hook jobs.
 18. The error message, "WP Super Cache is installed but broken. The constant WPCACHEHOME must be set in the file wp-config.php and point at the WP Super Cache plugin directory." appears at the end of every page. You can delete wp-content/advanced-cache.php and reload the plugin settings page or edit wp-config.php and look for WPCACHEHOME and make sure it points at the wp-super-cache folder. This will normally be wp-content/plugins/wp-super-cache/ but you'll likely need the full path to that file (so it's easier to let the settings page fix it). If it is not correct the caching engine will not load.
 19. If your server is running into trouble because of the number of semaphores used by the plugin it's because your users are using file locking which is not recommended (but is needed by a small number of users). You can globally disable file locking by defining the constant WPSC_DISABLE_LOCKING, or defining the constant WPSC_REMOVE_SEMAPHORE so that sem_remove() is called after every page is cached but that seems to cause problems for other processes requesting the same semaphore. Best to disable it.
-
-### Preloading ###
-You can generate cached files for the posts, categories and tags of your site by preloading. Preloading will visit each page of your site generating a cached page as it goes along, just like any other visitor to the site. Due to the sequential nature of this function, it can take some time to preload a complete site if there are many posts.
-To make preloading more effective it can be useful to disable garbage collection so that older cache files are not deleted. This is done by enabling "Preload Mode" in the settings. Be aware however, that pages will go out of date eventually but that updates by submitting comments or editing posts will clear portions of the cache.
-
-### Garbage Collection ###
-Your cache directory fills up over time, which takes up space on your server. If space is limited or billed by capacity, or if you worry that the cached pages of your site will go stale then garbage collection has to be done. Garbage collection happens on a regular basis and deletes old files in the cache directory. On the advanced settings page you can specify:
-1. Cache timeout. How long cache files are considered fresh for. After this time they are stale and can be deleted.
-2. Scheduler. Setup how often garbage collection should be done.
-3. Notification emails. You can be informed on garbage collection job progress.
-There's no right or wrong settings for garbage collection. It depends on your own site.
-If your site gets regular updates, or comments then set the timeout to 1800 seconds, and set the timer to 600 seconds.
-If your site is mostly static you can disable garbage collection by entering 0 as the timeout, or use a really large timeout value.
-
-### CDN ###
-A Content Delivery Network (CDN) is usually a network of computers situated around the world that will serve the content of your website faster by using servers close to you. Static files like images, Javascript and CSS files can be served through these networks to speed up how fast your site loads. You can also create a "poor man's CDN" by using a sub domain of your domain to serve static files too.
-
-[OSSDL CDN off-linker](https://wordpress.org/plugins/ossdl-cdn-off-linker/) has been integrated into WP Super Cache to provide basic CDN support. It works by rewriting the URLs of files (excluding .php files) in wp-content and wp-includes on your server so they point at a different hostname. Many CDNs support [origin pull](https://www.google.com/search?hl=en&q=%22origin+pull%22). This means the CDN will download the file automatically from your server when it's first requested, and will continue to serve it for a configurable length of time before downloading it again from your server.
-
-Configure this on the "CDN" tab of the plugin settings page. This is an advanced technique and requires a basic understanding of how your webserver or CDNs work. Please be sure to clear the file cache after you configure the CDN.
-
-### REST API ###
-There are now REST API endpoints for accessing the settings of this plugin. You'll need to be authenticated as an admin user with permission to view the settings page to use it. This has not been documented yet but you can find all the code that deals with this in the "rest" directory.
-
-### Custom Caching ###
-It is now possible to hook into the caching process using the add_cacheaction() function.
-
-Three hooks are available:
-
-1. 'wp_cache_get_cookies_values' - modify the key used by WP Cache.
-2. 'add_cacheaction' - runs in phase2. Allows a plugin to add WordPress hooks.
-3. 'cache_admin_page' - runs in the admin page. Use it to modify that page, perhaps by adding new configuration options.
-
-There is one regular WordPress filter too. Use the "do_createsupercache" filter
-to customize the checks made before caching. The filter accepts one parameter.
-The output of WP-Cache's wp_cache_get_cookies_values() function.
-
-See plugins/searchengine.php as an example I use for my [No Adverts for Friends](https://odd.blog/no-adverts-for-friends/) plugin.
 
 ### Updates ###
 Updates to the plugin will be posted here, to [Holy Shmoly!](https://odd.blog/) and the [WP Super Cache homepage](https://wordpress.org/plugins/wp-super-cache/) will always link to the newest version.
