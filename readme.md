@@ -1,9 +1,11 @@
 # WP Super Cache #
 Contributors: donncha, automattic, kraftbj
-Tags: performance,caching,wp-cache,wp-super-cache,cache
+Tags: performance, caching, wp-cache, wp-super-cache, cache
 Tested up to: 4.8.3
 Stable tag: 1.5.8
 Requires at least: 3.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 A very fast caching engine for WordPress that produces static html files.
 
@@ -12,9 +14,9 @@ This plugin generates static html files from your dynamic WordPress blog.  After
 
 The static html files will be served to the vast majority of your users:
 
-1. Users who are not logged in.
-2. Users who have not left a comment on your blog.
-3. Or users who have not viewed a password protected post.
+* Users who are not logged in.
+* Users who have not left a comment on your blog.
+* Or users who have not viewed a password protected post.
 
 99% of your visitors will be served static html files. One cached file can be served thousands of times. Other visitors will be served custom cached files tailored to their visit. If they are logged in, or have left comments those details will be displayed and cached for them.
 
