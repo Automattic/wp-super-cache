@@ -46,7 +46,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			$this->set_debug_settings( $parameters );
 		}
 
-		if ( count( $errors ) > 0 ) {
+		if ( isset( $errors ) ) {
 			return rest_ensure_response( $errors );
 
 		} else {
