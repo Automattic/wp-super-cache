@@ -46,13 +46,13 @@ function wp_cache_phase2() {
 		do_cacheaction( 'add_cacheaction' );
 	}
 
-	if ( is_admin() ) {
+	if ( wpsc_is_backend() ) {
 		wp_cache_debug( 'Not caching wp-admin requests.', 5 );
 		return false;
 	}
 
-	if ( !empty( $_GET ) && !defined( "DOING_CRON" ) ) {
-		wp_cache_debug( 'Supercache caching disabled. Only using wp-cache. Non empty GET request. ' . json_encode( $_GET ), 5 );
+	if ( !empty( $_GET ) ) {
+		wp_cache_debug( 'Supercache caching disabled. Only using wp-cache. Non empty GET request. ' . wpsc_dump_get_request(), 5 );
 		$super_cache_enabled = false;
 	}
 
@@ -460,8 +460,8 @@ function wp_cache_ob_callback( $buffer ) {
 	if ( defined( 'DONOTCACHEPAGE' ) ) {
 		wp_cache_debug( 'DONOTCACHEPAGE defined. Caching disabled.', 2 );
 		$cache_this_page = false;
-	} elseif ( $wp_cache_no_cache_for_get && !empty( $_GET ) && false == defined( 'DOING_CRON' ) ) {
-		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . json_encode( $_GET ), 1 );
+	} elseif ( $wp_cache_no_cache_for_get && !empty( $_GET ) ) {
+		wp_cache_debug( "Non empty GET request. Caching disabled on settings page. " . wpsc_dump_get_request(), 1 );
 		$cache_this_page = false;
 	} elseif ( $_SERVER["REQUEST_METHOD"] == 'POST' || !empty( $_POST ) || get_option( 'gzipcompression' ) ) {
 		wp_cache_debug( 'Not caching POST request.', 5 );
