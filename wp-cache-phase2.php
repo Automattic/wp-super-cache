@@ -171,17 +171,8 @@ function wpcache_logged_in_message() {
 
 if ( !function_exists( 'wp_cache_user_agent_is_rejected' ) ) {
 	function wp_cache_user_agent_is_rejected() {
-		global $cache_rejected_user_agent;
-
-		if (!function_exists('apache_request_headers')) return false;
-		$headers = apache_request_headers();
-		if (!isset($headers["User-Agent"])) return false;
-		if ( false == is_array( $cache_rejected_user_agent ) )
-			return false;
-		foreach ($cache_rejected_user_agent as $expr) {
-			if (strlen($expr) > 0 && stristr($headers["User-Agent"], $expr))
-				return true;
-		}
+		if ( function_exists( '_deprecated_function' ) )
+			_deprecated_function( 'wp_cache_user_agent_is_rejected from wp-cache-phase2.php', 'WP Super Cache 1.5.9' );
 		return false;
 	}
 }
