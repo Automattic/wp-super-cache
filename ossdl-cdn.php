@@ -34,8 +34,8 @@ if ($arr_of_cnames[0] == '') $arr_of_cnames = array();
  * @return Boolean true if to exclude given match from rewriting
  */
 function scossdl_off_exclude_match($match, $excludes) {
-	foreach ($excludes as $badword) {
-		if (stristr($match, $badword) != false) {
+	foreach( $excludes as $badword ) {
+		if ( ! empty( $badword ) && stripos( $match, $badword ) !== false ) {
 			return true;
 		}
 	}
@@ -221,7 +221,7 @@ function scossdl_off_options() {
 		<input type="hidden" name="action" value="update_ossdl_off" />
 		<p class="submit"><input type="submit" class="button-primary" value="<?php _e( 'Save Changes', 'wp-super-cache' ) ?>" /></p>
 		</form></p>
-		<p><?php _e( 'CDN functionality provided by <a href="http://wordpress.org/plugins/ossdl-cdn-off-linker/">OSSDL CDN Off Linker</a> by <a href="http://mark.ossdl.de/">Mark Kubacki</a>', 'wp-super-cache' ); ?></p>
+		<p><?php _e( 'CDN functionality provided by <a href="https://wordpress.org/plugins/ossdl-cdn-off-linker/">OSSDL CDN Off Linker</a> by <a href="http://mark.ossdl.de/">Mark Kubacki</a>', 'wp-super-cache' ); ?></p>
 	<?php
 }
 ?>

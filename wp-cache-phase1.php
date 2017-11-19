@@ -474,7 +474,7 @@ function wp_cache_mobile_group( $user_agent ) {
 	return "mobile";
 }
 
-// From http://wordpress.org/plugins/wordpress-mobile-edition/ by Alex King
+// From https://wordpress.org/plugins/wordpress-mobile-edition/ by Alex King
 function wp_cache_check_mobile( $cache_key ) {
 	global $wp_cache_mobile_enabled, $wp_cache_mobile_browsers, $wp_cache_mobile_prefixes;
 	if ( !isset( $wp_cache_mobile_enabled ) || false == $wp_cache_mobile_enabled )
@@ -795,7 +795,7 @@ function wpsc_delete_files( $dir, $delete = true ) {
 
 	$dir = wpsc_get_realpath( $dir );
 	if ( ! $dir ) {
-		wp_cache_debug( "wpsc_delete_files: directory does not exist" );
+		wp_cache_debug( "wpsc_delete_files: directory does not exist: " . $dir );
 		return false;
 	}
 
@@ -1015,7 +1015,7 @@ function wpsc_create_debug_log( $filename = '', $username = '' ) {
 	$msg = '
 if ( !isset( $_SERVER[ "PHP_AUTH_USER" ] ) || ( $_SERVER[ "PHP_AUTH_USER" ] != "' . $wp_cache_debug_username . '" && $_SERVER[ "PHP_AUTH_PW" ] != "' . $wp_cache_debug_username . '" ) ) {
 	header( "WWW-Authenticate: Basic realm=\"WP-Super-Cache Debug Log\"" );
-	header("HTTP/1.0 401 Unauthorized");
+	header( $_SERVER[ "SERVER_PROTOCOL" ] . " 401 Unauthorized" );
 	echo "You must login to view the debug log";
 	exit;
 }' . PHP_EOL;
@@ -1106,6 +1106,113 @@ function wpsc_delete_url_cache( $url ) {
 	} else {
 		return false;
 	}
+}
+
+// from legolas558 d0t users dot sf dot net at http://www.php.net/is_writable
+function is_writeable_ACLSafe( $path ) {
+
+	// PHP's is_writable does not work with Win32 NTFS
+
+	if ( $path[ strlen( $path ) - 1 ] == '/' ) { // recursively return a temporary file path
+		return is_writeable_ACLSafe( $path . uniqid( mt_rand() ) . '.tmp' );
+	} elseif ( is_dir( $path ) ) {
+		return is_writeable_ACLSafe( $path . '/' . uniqid( mt_rand() ) . '.tmp' );
+	}
+
+	// check tmp file for read/write capabilities
+	$rm = file_exists( $path );
+	$f = @fopen( $path, 'a' );
+	if ( $f === false )
+		return false;
+	fclose( $f );
+	if ( ! $rm ) {
+		unlink( $path );
+	}
+
+	return true;
+}
+
+function wp_cache_setting( $field, $value ) {
+	global $wp_cache_config_file;
+
+	$GLOBALS[ $field ] = $value;
+	if ( is_numeric( $value ) ) {
+		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $value;", $wp_cache_config_file );
+	} elseif ( is_object( $value ) || is_array( $value ) ) {
+		$text = var_export( $value, true );
+		$text = preg_replace( '/[\s]+/', ' ', $text );
+		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
+	} else {
+		wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
+	}
+}
+
+function wp_cache_replace_line( $old, $new, $my_file ) {
+	if ( @is_file( $my_file ) == false ) {
+		return false;
+	}
+	if (!is_writeable_ACLSafe($my_file)) {
+		trigger_error( "Error: file $my_file is not writable." );
+		return false;
+	}
+
+	$found = false;
+	$loaded = false;
+	$c = 0;
+	$lines = array();
+	while( ! $loaded ) {
+		$lines = file( $my_file );
+		if ( ! empty( $lines ) && is_array( $lines ) ) {
+			$loaded = true;
+		} else {
+			$c++;
+			if ( $c > 100 ) {
+				trigger_error( "wp_cache_replace_line: Error  - file $my_file could not be loaded." );
+				return false;
+			}
+		}
+	}
+	foreach( (array) $lines as $line ) {
+		if ( preg_match("/$old/", $line)) {
+			$found = true;
+			break;
+		}
+	}
+
+	$tmp_file = dirname( $my_file ) . '/' . mt_rand() . '.php';
+	$fd = fopen( $tmp_file, 'w' );
+	if ( ! $fd ) {
+		trigger_error( "wp_cache_replace_line: Error  - could not write to $tmp_file" );
+		return false;
+	}
+	if ( $found ) {
+		foreach( (array) $lines as $line ) {
+			if ( ! preg_match( "/$old/", $line ) ) {
+				fputs( $fd, $line );
+			} elseif ( $new != '' ) {
+				fputs( $fd, "$new\n" );
+			}
+		}
+	} else {
+		$done = false;
+		foreach( (array) $lines as $line ) {
+			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
+				fputs($fd, $line);
+			} else {
+				fputs($fd, "$new\n");
+				fputs($fd, $line);
+				$done = true;
+			}
+		}
+	}
+	fclose( $fd );
+	@rename( $tmp_file, $my_file );
+
+	if ( function_exists( "opcache_invalidate" ) ) {
+		opcache_invalidate( $my_file );
+	}
+
+	return true;
 }
 
 ?>
