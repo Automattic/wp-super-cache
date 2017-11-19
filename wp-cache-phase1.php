@@ -1,8 +1,5 @@
 <?php
 //error_reporting(E_ERROR | E_PARSE); // uncomment to debug this file!
-// Pre-2.6 compatibility
-if( !defined('WP_CONTENT_DIR') )
-	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
 
 if( !@include( WP_CONTENT_DIR . '/wp-cache-config.php' ) )
 	return false;
@@ -589,7 +586,7 @@ function wp_cache_user_agent_is_rejected() {
 	if ( false == is_array( $cache_rejected_user_agent ) )
 		return false;
 	foreach ($cache_rejected_user_agent as $expr) {
-		if (strlen($expr) > 0 && stristr($headers["User-Agent"], $expr))
+		if ( ! empty( $expr ) && false !== stripos( $headers["User-Agent"], $expr ) )
 			return true;
 	}
 	return false;
