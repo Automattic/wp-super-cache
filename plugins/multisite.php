@@ -22,9 +22,9 @@ function wp_super_cache_blogs_field( $name, $blog_id ) {
 
 	if ( isset( $_GET['id'] ) && $blog_id === $_GET['id'] ) {
 		$valid_nonce = isset( $_GET['_wpnonce'] ) ? wp_verify_nonce( $_GET['_wpnonce'], 'wp-cache' . $_GET['id'] ) : false;
-		if ( 'disable_cache' === $valid_nonce && isset( $_GET['action'] ) && $_GET['action'] ) {
+		if ( $valid_nonce && isset( $_GET['action'] ) && 'disable_cache' === $_GET['action'] ) {
 			add_blog_option( $_GET['id'], 'wp_super_cache_disabled', 1 );
-		} elseif ( 'enable_cache' === $valid_nonce && isset( $_GET['action'] ) && $_GET['action'] ) {
+		} elseif ( $valid_nonce && isset( $_GET['action'] ) &&'enable_cache' ===  $_GET['action'] ) {
 			delete_blog_option( $_GET['id'], 'wp_super_cache_disabled' );
 		}
 	}
@@ -37,7 +37,7 @@ function wp_super_cache_blogs_field( $name, $blog_id ) {
 }
 
 function wp_super_cache_multisite_notice() {
-	if ( 'wpsupercache' === isset( $_GET['page'] ) && $_GET['page'] ) {
+	if ( isset( $_GET['page'] ) && 'wpsupercache' === $_GET['page'] ) {
 		echo '<div class="error"><p><strong>' . __( 'Caching has been disabled on this blog on the Network Admin Sites page.', 'wp-super-cache' ) . '</strong></p></div>';
 	}
 }

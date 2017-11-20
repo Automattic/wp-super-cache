@@ -116,7 +116,7 @@ function wp_supercache_domain_mapping_exists() {
 	}
 }
 
-if ( 'wpsupercache' === isset( $_GET['page'] ) && $_GET['page'] ) {
+if ( isset( $_GET['page'] ) && 'wpsupercache' === $_GET['page'] ) {
 	add_cacheaction( 'add_cacheaction', 'wp_supercache_domain_mapping_exists' );
 }
 

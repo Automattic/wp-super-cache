@@ -11,9 +11,9 @@ function wp_supercache_searchengine( $string ) {
 		return $string;
 	}
 
-	if ( 1 === isset( $_COOKIE['7a1254cba80da02d5478d91cfd0a873a'] ) && $_COOKIE['7a1254cba80da02d5478d91cfd0a873a'] ) {
+	if ( isset( $_COOKIE['7a1254cba80da02d5478d91cfd0a873a'] ) && '1' === $_COOKIE['7a1254cba80da02d5478d91cfd0a873a'] ) {
 		$string = 'searchengine';
-	} elseif ( '' === isset( $_SERVER['HTTP_REFERER'] ) && $_SERVER['HTTP_REFERER'] ) {
+	} elseif ( isset( $_SERVER['HTTP_REFERER'] ) && '' === $_SERVER['HTTP_REFERER'] ) {
 		if ( is_array( $passingthrough ) === false ) {
 			return $string;
 		}
