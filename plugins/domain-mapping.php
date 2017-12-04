@@ -13,7 +13,7 @@ function domain_mapping_gc_cache( $function, $directory ) {
 	}
 
 	$protocol = ( isset( $_SERVER['HTTPS'] ) && 'on' === strtolower( $_SERVER['HTTPS'] ) ) ? 'https://' : 'http://';
-	$siteurl = trailingslashit( str_replace( $protocol, '', $siteurl ) );
+	$siteurl  = trailingslashit( str_replace( $protocol, '', $siteurl ) );
 
 	if ( 'homepage' === $directory ) {
 		$directory = '';
@@ -23,11 +23,11 @@ function domain_mapping_gc_cache( $function, $directory ) {
 		case 'rebuild':
 			@wp_cache_rebuild_or_delete( $cache_path . 'supercache/' . $siteurl . $directory . 'index.html' );
 			@wp_cache_rebuild_or_delete( $cache_path . 'supercache/' . $siteurl . $directory . 'index.html.gz' );
-		break;
+			break;
 		case 'prune':
 			prune_super_cache( $cache_path . 'supercache/' . $siteurl . $directory . 'index.html', true, true );
 			prune_super_cache( $cache_path . 'supercache/' . $siteurl . $directory . 'index.html.gz', true, true );
-		break;
+			break;
 	}
 
 	return $directory;
@@ -45,7 +45,7 @@ function domain_mapping_supercachedir( $dir ) {
 	}
 
 	$protocol = ( isset( $_SERVER['HTTPS'] ) && 'on' === strtolower( $_SERVER['HTTPS'] ) ) ? 'https://' : 'http://';
-	$siteurl = str_replace( $protocol, '', $siteurl );
+	$siteurl  = str_replace( $protocol, '', $siteurl );
 	return trailingslashit( $cache_path . 'supercache/' . $siteurl );
 }
 

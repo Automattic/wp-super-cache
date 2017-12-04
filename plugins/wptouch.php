@@ -31,8 +31,8 @@ function wp_super_cache_wptouch_admin() {
 		}
 		echo '<p><strong>' . sprintf( __( 'WPTouch support is now %s', 'wp-super-cache' ), $status ) . '</strong></p>';
 	}
-		echo '<div class="submit"><input class="button-primary" ' . SUBMITDISABLED . 'type="submit" value="' . __( 'Update', 'wp-super-cache' ) . '" /></div>';
-		wp_nonce_field( 'wp-cache' );
+	echo '<div class="submit"><input class="button-primary" ' . SUBMITDISABLED . 'type="submit" value="' . __( 'Update', 'wp-super-cache' ) . '" /></div>';
+	wp_nonce_field( 'wp-cache' );
 	?>
 	</form>
 	</fieldset>
@@ -70,7 +70,7 @@ function wp_super_cache_maybe_disable_wptouch( $t ) {
 
 	if ( ( isset( $_COOKIE['wptouch_switch_toggle'] ) && 'normal' === $_COOKIE['wptouch_switch_toggle'] ) ||
 		( isset( $_COOKIE['wptouch-pro-view'] ) && 'desktop' === $_COOKIE['wptouch-pro-view'] ) ) {
-			return true;
+		return true;
 	}
 
 	$ua = explode( ',', $wptouch_exclude_ua );
