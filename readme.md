@@ -45,6 +45,7 @@ Cached files will still be deleted when posts are made or edited or comments mad
 
 ### Development ###
 * Active development of this plugin is handled [on GitHub](https://github.com/Automattic/wp-super-cache).
+* Translation of the plugin into different languages is on the [translation page](https://translate.wordpress.org/projects/wp-plugins/wp-super-cache).
 
 ### Documentation ###
 If you need more information than the following, you can have a look at the [Developer documentation](https://odd.blog/wp-super-cache-developers/).
