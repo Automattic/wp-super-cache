@@ -20,7 +20,7 @@ if ( defined( 'DISABLE_SUPERCACHE' ) ) {
 include WPCACHEHOME . 'wp-cache-base.php';
 
 if ( '' != $blogcacheid ) {
-    $blog_cache_dir = str_replace( '//', '/', $cache_path . 'blogs/' . $blogcacheid.'/' );
+    $blog_cache_dir = str_replace( '//', '/', $cache_path . 'blogs/' . $blogcacheid . '/' );
 } else {
     $blog_cache_dir = $cache_path;
 }
