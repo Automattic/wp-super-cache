@@ -63,6 +63,8 @@ There's no right or wrong settings for garbage collection. It depends on your ow
 If your site gets regular updates, or comments then set the timeout to 1800 seconds, and set the timer to 600 seconds.
 If your site is mostly static you can disable garbage collection by entering 0 as the timeout, or use a really large timeout value.
 
+The cache directory, usually wp-content/cache/ is only for temporary files. Do not ever put important files or symlinks to important files or directories in that directory. They will be deleted if the plugin has write access to them.
+
 #### CDN ####
 A Content Delivery Network (CDN) is usually a network of computers situated around the world that will serve the content of your website faster by using servers close to you. Static files like images, Javascript and CSS files can be served through these networks to speed up how fast your site loads. You can also create a "poor man's CDN" by using a sub domain of your domain to serve static files too.
 
