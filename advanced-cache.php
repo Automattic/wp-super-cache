@@ -22,7 +22,7 @@ function wpcache_broken_message()
 if ( false == defined( 'WPCACHEHOME' ) ) {
     define( 'ADVANCEDCACHEPROBLEM', 1 );
 } elseif ( !include_once( WPCACHEHOME . 'wp-cache-phase1.php' ) ) {
-    if ( !@is_file( WPCACHEHOE . 'wp-cache-phase1.php' ) ) {
+    if ( !@is_file( WPCACHEHOME . 'wp-cache-phase1.php' ) ) {
         define( 'ADVANCEDCACHEPROBLEM', 1 );
     }
 }
