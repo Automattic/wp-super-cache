@@ -570,8 +570,11 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$uri = strtolower( $wp_cache_request_uri );
 	}
 	$uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?(#.*)?$/", '', $uri ) ) );
+	$hostname = $WPSC_HTTP_HOST;
 	// Get hostname from wp options for wp-cron, wp-cli and similar requests.
-	$hostname = empty( $WPSC_HTTP_HOST ) ? (string) parse_url( get_option( 'home' ), PHP_URL_HOST ) : $WPSC_HTTP_HOST;
+	if ( empty( $hostname ) && function_exists( 'get_option' ) ) {
+		$hostname = (string) parse_url( get_option( 'home' ), PHP_URL_HOST );
+	}
 	$dir = preg_replace( '/:.*$/', '', $hostname ) . $uri; // To avoid XSS attacks
 	if ( function_exists( "apply_filters" ) ) {
 		$dir = apply_filters( 'supercache_dir', $dir );
