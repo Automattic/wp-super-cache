@@ -81,7 +81,7 @@ if ( '' !== DYNAMIC_CACHE_TEST_TAG ) {
 	}
 	add_cacheaction( 'wpsc_cachedata_safety', 'dynamic_cache_test_safety' );
 
-	function dynamic_cache_test_filter( &$cachedata ) {
+	function dynamic_cache_test_filter( $cachedata ) {
 		return str_replace( DYNAMIC_CACHE_TEST_TAG, '<!-- Hello world at ' . date( 'H:i:s' ) . ' -->', $cachedata );
 	}
 	add_cacheaction( 'wpsc_cachedata', 'dynamic_cache_test_filter' );
@@ -138,7 +138,6 @@ if ( '' !== DYNAMIC_CACHE_TEST_TAG ) {
  * very last line of dynamic_output_buffer_test() replaces the placeholder tag
  * with the dynamic content in the cache file.
  *
- *
  * Use an output buffer to capture dynamic content while the page is generated
  * and insert into the right place:
  * Remember to add the DYNAMIC_OUTPUT_BUFFER_TAG text (as defined below) to
@@ -153,7 +152,7 @@ if ( '' !== DYNAMIC_CACHE_TEST_TAG ) {
 define( 'DYNAMIC_OUTPUT_BUFFER_TAG', '' ); // Change this to a secret placeholder tag.
 
 if ( '' !== DYNAMIC_OUTPUT_BUFFER_TAG ) {
-	function dynamic_output_buffer_test( &$cachedata = 0 ) {
+	function dynamic_output_buffer_test( $cachedata = 0 ) {
 		if ( defined( 'DYNAMIC_OB_TEXT' ) ) {
 			return str_replace( DYNAMIC_OUTPUT_BUFFER_TAG, DYNAMIC_OB_TEXT, $cachedata );
 		}
