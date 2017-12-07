@@ -23,6 +23,11 @@
  * for processing.
  *
  * **** MAKE SURE YOU KEEP THE TEMPLATE TAG SECRET ****
+ * You should probably add 'deny from all' to the .htaccess in the cache directory
+ * so visitors can't directly load any cached html files and discover the secret
+ * tag. Or you can move the cache directory out of the web path and set the
+ * cache location to that new directory on the advanced settings page.
+ *
  */
 
 /*
