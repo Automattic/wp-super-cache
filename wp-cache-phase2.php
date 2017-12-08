@@ -1081,14 +1081,23 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 			}
 		}
 	} else {
-		$done = false;
+		$done  = false;
+		$state = false;
 		foreach( (array) $lines as $line ) {
-			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
-				fputs($fd, $line);
-			} else {
+
+			if ( false !== strpos( $line, '{' ) ) {
+				$state = true;
+			}
+
+			// Insert new line before first variable.
+			if ( ! $done && ! $state && preg_match( '/^\s*\$/', $line ) ) {
 				fputs($fd, "$new\n");
-				fputs($fd, $line);
 				$done = true;
+			}
+			fputs($fd, $line);
+
+			if ( false !== strpos( $line, '}' ) ) {
+				$state = false;
 			}
 		}
 	}
