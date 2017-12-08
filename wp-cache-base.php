@@ -33,5 +33,3 @@ if ( ( defined( 'WP_ALLOW_MULTISITE' ) && constant( 'WP_ALLOW_MULTISITE' ) == tr
 		$blogcacheid = str_replace( '/', '', $blogcacheid );
 	}
 }
-
-
