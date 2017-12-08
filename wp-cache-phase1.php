@@ -104,5 +104,3 @@ if ( defined( 'DOING_CRON' ) ) {
 if ( ! isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && false == $wp_super_cache_late_init ) ) {
 	wp_cache_serve_cache_file();
 }
-
-
