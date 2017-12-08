@@ -190,12 +190,7 @@ function scossdl_off_options() {
 		<table class="form-table"><tbody>
 			<tr valign="top">
 				<td style='text-align: right'>
-					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" 
-					<?php
-					if ( $ossdlcdn ) {
-						echo 'checked=1';}
-?>
- />
+					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" <?php if ( $ossdlcdn ) { echo "checked=1"; } ?> />
 				</td>
 				<th scope="row"><label for="ossdlcdn"><?php _e( 'Enable CDN Support', 'wp-super-cache' ); ?></label></th>
 			</tr>
@@ -235,12 +230,7 @@ function scossdl_off_options() {
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row" colspan='2'><label><input type='checkbox' name='ossdl_https' value='1' 
-				<?php
-				if ( get_option( 'ossdl_https' ) ) {
-					echo 'checked'; }
-?>
- /> <?php _e( 'Skip https URLs to avoid "mixed content" errors', 'wp-super-cache' ); ?></label></th>
+				<th scope="row" colspan='2'><label><input type='checkbox' name='ossdl_https' value='1' <?php if ( get_option( 'ossdl_https' ) ) { echo 'checked'; } ?> /> <?php _e( 'Skip https URLs to avoid "mixed content" errors', 'wp-super-cache' ); ?></label></th>
 			</tr>
 		</tbody></table>
 		<input type="hidden" name="action" value="update_ossdl_off" />
