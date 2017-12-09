@@ -1019,18 +1019,37 @@ function is_writeable_ACLSafe( $path ) {
 	return true;
 }
 
+function wpsc_var_dump( $var ) {
+
+	switch ( gettype( $var ) ) {
+		case 'boolean':
+			$output = $var ? 'true' : 'false';
+			break;
+		case 'double':
+		case 'integer':
+			$output = strval( $var );
+			break;
+		case 'string':
+			$output = "'" . addslashes($var) . "'";
+			break;
+		case 'array':
+			$output = implode( ', ', array_map( 'wpsc_var_dump', $var ) );
+			$output = empty( $output ) ? 'array()' : 'array( ' . $output . ' )';
+			break;
+		default:
+			$output = str_replace( PHP_EOL, ' ', var_export( $var, true ) );
+	}
+
+	return $output;
+}
+
 function wp_cache_setting( $field, $value ) {
 	global $wp_cache_config_file;
 
-	$GLOBALS[ $field ] = $value;
-	if ( is_numeric( $value ) ) {
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $value;", $wp_cache_config_file );
-	} elseif ( is_object( $value ) || is_array( $value ) ) {
-		$text = var_export( $value, true );
-		$text = preg_replace( '/[\s]+/', ' ', $text );
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
-	} else {
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
+	if ( $value !== $GLOBALS[ $field ] ) {
+		$new_value = '$' . $field . ' = ' . wpsc_var_dump( $value ) . ';';
+		wp_cache_replace_line( '^\s*\$' . $field, $new_value , $wp_cache_config_file );
+		$GLOBALS[ $field ] = $value;
 	}
 }
 
@@ -1081,6 +1100,13 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 			}
 		}
 	} else {
+		$reg_exps = array( '/^\s*define\s*\(/', '/^\s*\$/' );
+		foreach( $reg_exps as $reg_exp ) {
+			if ( preg_match( $reg_exp, $new ) ) {
+				break;
+			}
+		}
+
 		$done  = false;
 		$state = false;
 		foreach( (array) $lines as $line ) {
@@ -1089,8 +1115,8 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 				$state = true;
 			}
 
-			// Insert new line before first variable.
-			if ( ! $done && ! $state && preg_match( '/^\s*\$/', $line ) ) {
+			// Insert new line before first variable/constant.
+			if ( ! $done && ! $state && preg_match( $reg_exp, $line ) ) {
 				fputs($fd, "$new\n");
 				$done = true;
 			}
