@@ -1019,36 +1019,27 @@ function is_writeable_ACLSafe( $path ) {
 	return true;
 }
 
-function wpsc_var_dump( $var ) {
+function wpsc_var_export( $var ) {
 
-	switch ( gettype( $var ) ) {
-		case 'boolean':
-			$output = $var ? 'true' : 'false';
-			break;
-		case 'double':
-		case 'integer':
-			$output = strval( $var );
-			break;
-		case 'string':
-			$output = "'" . addslashes($var) . "'";
-			break;
-		case 'array':
-			$output = implode( ', ', array_map( 'wpsc_var_dump', $var ) );
-			$output = empty( $output ) ? 'array()' : 'array( ' . $output . ' )';
-			break;
-		default:
-			$output = str_replace( PHP_EOL, ' ', var_export( $var, true ) );
+	if ( is_string( $var ) ) {
+		return "'" . addslashes($var) . "'";
+	}
+	elseif ( is_numeric( $var ) ) {
+		return strval( $var );
+	}
+	elseif ( is_array( $var ) ) {
+		$str = implode( ', ', array_map( 'wpsc_var_export', $var ) );
+		return empty( $str ) ? 'array()' : 'array( ' . $str . ' )';
 	}
 
-	return $output;
+	return str_replace( PHP_EOL, ' ', var_export( $var, true ) );
 }
 
 function wp_cache_setting( $field, $value ) {
-	global $wp_cache_config_file;
 
 	if ( $value !== $GLOBALS[ $field ] ) {
-		$new_value = '$' . $field . ' = ' . wpsc_var_dump( $value ) . ';';
-		wp_cache_replace_line( '^\s*\$' . $field, $new_value , $wp_cache_config_file );
+		$new_value = '$' . $field . ' = ' . wpsc_var_export( $value ) . ';';
+		wp_cache_replace_line( '^\s*\$' . $field . '\s*=', $new_value , $GLOBALS['wp_cache_config_file'] );
 		$GLOBALS[ $field ] = $value;
 	}
 }
