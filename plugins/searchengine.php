@@ -4,7 +4,7 @@ function wp_supercache_searchengine( $string ) {
 	global $passingthrough, $nevershowads, $cache_no_adverts_for_friends;
 
 	$cache_no_adverts_for_friends = wpsc_get_searchengine_setting();
-	if ( ! $cache_no_adverts_for_friends || empty( $string) ) {
+	if ( ! $cache_no_adverts_for_friends || '' != $string ) {
 		return $string;
 	}
 
