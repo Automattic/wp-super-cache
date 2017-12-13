@@ -973,7 +973,7 @@ if ( $start_log > 1 ) {
 
 $checks = array( "wp-admin", "exclude_filter", "wp-content", "wp-json" );
 foreach( $checks as $check ) {
-	if ( isset( $_GET[$check] ) ) {
+	if ( isset( $_GET[ $check ] ) ) {
 		$$check = 1;
 	} else {
 		$$check = 0;
@@ -1656,7 +1656,7 @@ function wp_cache_ob_callback( $buffer ) {
 		wp_cache_debug( 'URI rejected. Not Caching', 2 );
 		$cache_this_page = false;
 	} elseif ( wp_cache_user_agent_is_rejected() ) {
-		wp_cache_debug( "USER AGENT ({$_SERVER[ 'HTTP_USER_AGENT' ]}) rejected. Not Caching", 4 );
+		wp_cache_debug( "USER AGENT ({$_SERVER['HTTP_USER_AGENT']}) rejected. Not Caching", 4 );
 		$cache_this_page = false;
 	} elseif ( isset( $wp_cache_pages['single'] ) && $wp_cache_pages['single'] == 1 && isset( $wp_super_cache_query['is_single'] ) ) {
 		wp_cache_debug( 'Not caching single post.', 2 );
@@ -2860,7 +2860,7 @@ function wp_cache_post_change( $post_id ) {
 					if ( $post_id > 0 && $meta ) {
 						$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
 						if ( $meta['blog_id'] == $blog_id && ( ( $all == true && ! $meta['post'] ) || $meta['post'] == $post_id ) ) {
-							wp_cache_debug( "Post change: deleting post wp-cache files for {$meta[ 'uri' ]}: $file", 4 );
+							wp_cache_debug( "Post change: deleting post wp-cache files for {$meta['uri']}: $file", 4 );
 							@unlink( $blog_cache_dir . 'meta/' . $file );
 							@unlink( $blog_cache_dir . $file );
 							if ( false == $supercache_files_deleted && $super_cache_enabled == true ) {
@@ -2871,11 +2871,11 @@ function wp_cache_post_change( $post_id ) {
 							}
 						}
 					} elseif ( $meta['blog_id'] == $blog_id ) {
-						wp_cache_debug( "Post change: deleting wp-cache files for {$meta[ 'uri' ]}: $file", 4 );
+						wp_cache_debug( "Post change: deleting wp-cache files for {$meta['uri']}: $file", 4 );
 						@unlink( $blog_cache_dir . 'meta/' . $file );
 						@unlink( $blog_cache_dir . $file );
 						if ( $super_cache_enabled == true ) {
-							wp_cache_debug( "Post change: deleting supercache files for {$meta[ 'uri' ]}" );
+							wp_cache_debug( "Post change: deleting supercache files for {$meta['uri']}" );
 							wpsc_rebuild_files( $dir . $meta['uri'] );
 							do_action( 'gc_cache', 'rebuild', trailingslashit( $meta['uri'] ) );
 						}
