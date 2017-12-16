@@ -3817,14 +3817,9 @@ function update_mod_rewrite_rules( $add_rules = true ) {
 	}
 
 	$generated_rules = wpsc_get_htaccess_info();
+	$existing_rules  = implode( "\n", extract_from_markers( $home_path . '.htaccess', 'WPSuperCache' ) );
 
-	if ( $add_rules ) {
-		$rules = $generated_rules[ 'rules' ];
-	}  else {
-		$rules = '';
-	}
-
-	$existing_rules = implode( "\n", extract_from_markers( $home_path . '.htaccess', 'WPSuperCache' ) );
+	$rules = $add_rules ? $generated_rules[ 'rules' ] : '';
 
 	if ( $existing_rules == $rules ) {
 		$update_mod_rewrite_rules_error = "rules have not changed";
@@ -3834,6 +3829,10 @@ function update_mod_rewrite_rules( $add_rules = true ) {
 	if ( $generated_rules[ 'wprules' ] == '' ) {
 		$update_mod_rewrite_rules_error = "WordPress rules empty";
 		return false;
+	}
+
+	if ( empty( $rules ) ) {
+		return insert_with_markers( $home_path . '.htaccess', 'WPSuperCache', array() );
 	}
 
 	$url = trailingslashit( get_bloginfo( 'url' ) );
