@@ -1359,17 +1359,20 @@ function wpsc_admin_tabs( $current = 0 ) {
 }
 
 function wsc_mod_rewrite() {
-	global $valid_nonce, $cache_path, $wp_cache_mod_rewrite, $is_nginx;
+	global $valid_nonce, $cache_path;
 
-	if ( $is_nginx ) {
+	if ( $GLOBALS['is_nginx'] ) {
 		return false;
 	}
 
-	if ( defined( 'WPSC_DISABLE_HTACCESS_UPDATE' ) )
+	if ( defined( 'WPSC_DISABLE_HTACCESS_UPDATE' ) ) {
 		return false;
+	}
 
-	if ( !$wp_cache_mod_rewrite )
+	if ( $GLOBALS['cache_enabled'] !== true || $GLOBALS['wp_cache_mod_rewrite'] !== 1 ) {
 		return false;
+	}
+
 	?>
 	<a name="modrewrite"></a><fieldset class="options">
 	<h3><?php _e( 'Mod Rewrite Rules', 'wp-super-cache' ); ?></h3>
