@@ -2567,13 +2567,17 @@ function wpsc_delete_cats_tags( $post ) {
 }
 
 function wpsc_post_transition( $new_status, $old_status, $post ) {
-	if (
-		($old_status == 'publish' && $new_status != 'publish' ) // post unpublished
-		||
-		($old_status != 'publish' && $new_status == 'publish') // post published
-	) {
+
+	if ( $old_status == 'publish' && $new_status != 'publish' ) { // post unpublished
+		list( $permalink, $post_name ) = get_sample_permalink( $post->ID );
+		$post_url = str_replace( array( '%pagename%', '%postname%' ), $post->post_name, $permalink );
+	}
+	elseif ( $old_status != 'publish' && $new_status == 'publish' )  { // post published
+		$post_url  = get_permalink( $post->ID );
+	}
+
+	if ( ! empty( $post_url ) ) {
 		wpsc_delete_post_archives( $post );
-		$post_url = get_permalink( $post->ID );
 		wpsc_delete_url_cache( $post_url );
 		wp_cache_debug( "wpsc_post_transition: deleting cache of post: " . $post_url );
 	}
@@ -2613,6 +2617,7 @@ function wp_cache_post_edit($post_id) {
 	} else {
 		wp_cache_debug( "wp_cache_post_edit: Clearing cache for post $post_id on post edit.", 2 );
 		wp_cache_post_change( $post_id );
+		wpsc_delete_post_archives( $post_id ); // delete related archive pages.
 	}
 }
 
@@ -2700,7 +2705,6 @@ function wp_cache_post_change( $post_id ) {
 	if ( $all == true ) {
 		wp_cache_debug( "Post change: supercache enabled: deleting cache files in " . $dir );
 		wpsc_rebuild_files( $dir );
-		wpsc_delete_post_archives( $post_id ); // delete related archive pages.
 		do_action( 'gc_cache', 'prune', 'homepage' );
 		if ( get_option( 'show_on_front' ) == 'page' ) {
 			wp_cache_debug( "Post change: deleting page_on_front and page_for_posts pages.", 4 );

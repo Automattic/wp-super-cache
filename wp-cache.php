@@ -55,6 +55,14 @@ function wpsc_init() {
 	if ( !defined( 'WP_CACHE' ) || ( defined( 'WP_CACHE' ) && constant( 'WP_CACHE' ) == false ) ) {
 		$wp_cache_check_wp_config = true;
 	}
+}
+
+function wpsc_init_actions() {
+	global $cache_enabled;
+
+	if ( ! $cache_enabled || ( defined( 'WPLOCKDOWN' ) && constant( 'WPLOCKDOWN' ) != '0' ) ) {
+		return;
+	}
 
 	// Post ID is received
 	add_action( 'wp_trash_post', 'wp_cache_post_edit', 0 );
@@ -98,7 +106,10 @@ if ( class_exists( 'WP_REST_Controller' ) ) {
 function wp_super_cache_text_domain() {
 	load_plugin_textdomain( 'wp-super-cache', false, basename( dirname( __FILE__ ) ) . '/languages' );
 }
+
 add_action( 'init', 'wp_super_cache_text_domain' );
+
+add_action( 'init', 'wpsc_init_actions' );
 
 function wp_cache_set_home() {
 	global $wp_cache_is_home;
