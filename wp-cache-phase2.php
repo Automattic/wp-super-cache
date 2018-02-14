@@ -1124,28 +1124,7 @@ function wp_cache_phase2() {
 		add_action( 'template_redirect', 'wp_super_cache_query_vars' );
 		add_filter( 'wp_redirect_status', 'wpsc_catch_http_status_code' );
 		add_filter( 'status_header', 'wpsc_catch_status_header', 10, 2 );
-
-		// Post ID is received
-		add_action('wp_trash_post', 'wp_cache_post_edit', 0);
-		add_action('publish_post', 'wp_cache_post_edit', 0);
-		add_action('edit_post', 'wp_cache_post_change', 0); // leaving a comment called edit_post
-		add_action('delete_post', 'wp_cache_post_edit', 0);
-		add_action('publish_phone', 'wp_cache_post_edit', 0);
-		// Coment ID is received
-		add_action('trackback_post', 'wp_cache_get_postid_from_comment', 99);
-		add_action('pingback_post', 'wp_cache_get_postid_from_comment', 99);
-		add_action('comment_post', 'wp_cache_get_postid_from_comment', 99);
-		add_action('edit_comment', 'wp_cache_get_postid_from_comment', 99);
-		add_action('wp_set_comment_status', 'wp_cache_get_postid_from_comment', 99, 2);
-		// No post_id is available
-		add_action('switch_theme', 'wp_cache_no_postid', 99);
-		add_action('edit_user_profile_update', 'wp_cache_no_postid', 99);
-		add_action( 'wp_update_nav_menu', 'wp_cache_clear_cache_on_menu' );
-		add_action('wp_cache_gc','wp_cache_gc_cron');
-		add_action( 'clean_post_cache', 'wp_cache_post_edit' );
 		add_filter( 'supercache_filename_str', 'wp_cache_check_mobile' );
-		add_action( 'wp_cache_gc_watcher', 'wp_cache_gc_watcher' );
-		add_action( 'transition_post_status', 'wpsc_post_transition', 10, 3 );
 
 		do_cacheaction( 'add_cacheaction' );
 	}
@@ -2564,6 +2543,10 @@ function wpsc_delete_post_archives( $post ) {
 }
 
 function wpsc_delete_cats_tags( $post ) {
+        if ( function_exists( '_deprecated_function' ) ) {
+		_deprecated_function( __FUNCTION__, 'WP Super Cache 1.5.9', 'wpsc_delete_post_archives' );
+	}
+
 	$post = get_post($post);
 	$categories = get_the_category($post->ID);
 	if ( $categories ) {
@@ -2590,14 +2573,17 @@ function wpsc_delete_cats_tags( $post ) {
 }
 
 function wpsc_post_transition( $new_status, $old_status, $post ) {
-	if (
-		($old_status == 'publish' && $new_status != 'publish' ) // post unpublished
-		||
-		($old_status != 'publish' && $new_status == 'publish') // post published
-	) {
-		//wpsc_delete_cats_tags( $post );
+
+	if ( $old_status == 'publish' && $new_status != 'publish' ) { // post unpublished
+		list( $permalink, $post_name ) = get_sample_permalink( $post->ID );
+		$post_url = str_replace( array( '%pagename%', '%postname%' ), $post->post_name, $permalink );
+	}
+	elseif ( $old_status != 'publish' && $new_status == 'publish' )  { // post published
+		$post_url  = get_permalink( $post->ID );
+	}
+
+	if ( ! empty( $post_url ) ) {
 		wpsc_delete_post_archives( $post );
-		$post_url = get_permalink( $post->ID );
 		wpsc_delete_url_cache( $post_url );
 		wp_cache_debug( 'wpsc_post_transition: deleting cache of post: ' . $post_url );
 	}
@@ -2637,6 +2623,7 @@ function wp_cache_post_edit($post_id) {
 	} else {
 		wp_cache_debug( "wp_cache_post_edit: Clearing cache for post $post_id on post edit.", 2 );
 		wp_cache_post_change( $post_id );
+		wpsc_delete_post_archives( $post_id ); // delete related archive pages.
 	}
 }
 
