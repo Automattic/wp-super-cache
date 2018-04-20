@@ -2094,10 +2094,10 @@ function wp_cache_phase2_clean_cache($file_prefix) {
 						@unlink( $blog_cache_dir . 'meta/' . $file );
 					}
 				}
-				do_action('wp_cache_cleared');
 			}
 		}
 		closedir($handle);
+                do_action('wp_cache_cleared');
 	}
 	wp_cache_writers_exit();
 }
