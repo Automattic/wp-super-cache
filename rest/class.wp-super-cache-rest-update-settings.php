@@ -87,7 +87,11 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 
 			$set_method = method_exists( $this, 'set_' . $map['global'] ) ?
 				'set_' . $map['global'] : 'set_global';
-			$has_error  = call_user_func( array( $this, $set_method ), $key, $value );
+			if ( $set_method == 'set_global' ) {
+				$has_error  = call_user_func( array( $this, $set_method ), $key, $value );
+			} else {
+				$has_error  = call_user_func( array( $this, $set_method ), $value );
+			}
 		}
 
 		if ( ! empty( $has_error ) ) {
