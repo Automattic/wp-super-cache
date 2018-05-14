@@ -3601,12 +3601,12 @@ function wp_cache_disable_plugin( $delete_config_file = true ) {
 			$file_not_deleted[] = 'wp-cache-config.php';
 	}
 	if ( $file_not_deleted ) {
-		$msg = __( "Dear User,\n\nWP Super Cache was removed from your blog or deactivated but some files could\nnot be deleted.\n\n" );
+		$msg = __( "Dear User,\n\nWP Super Cache was removed from your blog or deactivated but some files could\nnot be deleted.\n\n", 'wp-super-cache' );
 		foreach( (array)$file_not_deleted as $filename ) {
 			$msg .=  WP_CONTENT_DIR . "/{$filename}\n";
 		}
 		$msg .= "\n";
-		$msg .= sprintf( __( "You should delete these files manually.\nYou may need to change the permissions of the files or parent directory.\nYou can read more about this in the Codex at\n%s\n\nThank you." ), 'https://codex.wordpress.org/Changing_File_Permissions#About_Chmod' );
+		$msg .= sprintf( __( "You should delete these files manually.\nYou may need to change the permissions of the files or parent directory.\nYou can read more about this in the Codex at\n%s\n\nThank you.", 'wp-super-cache' ), 'https://codex.wordpress.org/Changing_File_Permissions#About_Chmod' );
 
 		wp_mail( get_option( 'admin_email' ), __( 'WP Super Cache: could not delete files', 'wp-super-cache' ), $msg );
 	}
