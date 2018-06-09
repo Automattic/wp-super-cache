@@ -1055,7 +1055,7 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 		return false;
 	}
 
-	$tmp_file = tempnam( sys_get_temp_dir(), 'wpsc' );
+	$tmp_file = tempnam( get_temp_dir(), 'wpsc' );
 	if ( ! is_writeable_ACLSafe( $tmp_file ) ) {
 		set_transient( 'wpsc_config_error', 'tmp_file_ro', 10 );
 		trigger_error( "Error: temporary file $tmp_file is not writable. Make sure directory is writeable." );
