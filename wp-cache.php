@@ -3351,7 +3351,16 @@ function wpsc_get_htaccess_info() {
 	} else {
 		$cache_control_header = 'max-age=3, must-revalidate';
 	}
-	$gziprules .= "<IfModule mod_headers.c>\n  Header set Vary '$vary_header'\n  Header set Cache-Control '$cache_control_header'\n</IfModule>\n";
+	$headers_text = "";
+	if ( $vary_header != '' ) {
+		$headers_text .= "  Header set Vary '$vary_header'\n";
+	}
+	if ( $cache_control_header != '' ) {
+		$headers_text .= "  Header set Cache-Control '$cache_control_header'\n";
+	}
+	if ( $headers_text != '' ) {
+		$gziprules .= "<IfModule mod_headers.c>\n$headers_text</IfModule>\n";
+	}
 	$gziprules .= "<IfModule mod_expires.c>\n  ExpiresActive On\n  ExpiresByType text/html A3\n</IfModule>\n";
 	$gziprules .= "Options -Indexes\n";
 	return array( "document_root" => $document_root, "apache_root" => $apache_root, "home_path" => $home_path, "home_root" => $home_root, "home_root_lc" => $home_root_lc, "inst_root" => $inst_root, "wprules" => $wprules, "scrules" => $scrules, "condition_rules" => $condition_rules, "rules" => $rules, "gziprules" => $gziprules );
