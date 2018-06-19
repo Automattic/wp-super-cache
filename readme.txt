@@ -265,6 +265,8 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 * Fixed serving expired supercache files (#562)
 * Write directly to the config file to avoid permission problems with wp-content. (#563)
 * Correctly set the .htaccess rules on the main site of a multisite. (#557)
+* Check if set_transient() exists before using it. (#565)
+* Removed searchengine.php example plugin as it sets a cookie to track users. Still available [here](https://github.com/Automattic/wp-super-cache/blob/4cda5c0f2218e40e118232b5bf22d227fb3206b7/plugins/searchengine.php). (#567)
 * For advanced users only. Change the vary and cache control headers. See https://github.com/Automattic/wp-super-cache/pull/555 (#555)
 
 ### 1.6.1 ###
