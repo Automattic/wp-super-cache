@@ -3371,8 +3371,11 @@ function clear_post_supercache( $post_id ) {
 	if ( false == @is_dir( $dir ) )
 		return false;
 
-	wp_cache_debug( "clear_post_supercache: deleting files in $dir", 2 );
-	if ( get_post_type( $post_id ) != 'page' ) { // don't delete child pages if they exist
+	wp_cache_debug( "clear_post_supercache: post_id: $post_id. deleting files in $dir" );
+	if (
+		get_post_type( $post_id ) != 'page' &&
+		get_supercache_dir() != $dir
+	) { // don't delete child pages if they exist, or sub directories of the homepage
 		prune_super_cache( $dir, true );
 	} else {
 		wpsc_delete_files( $dir );
