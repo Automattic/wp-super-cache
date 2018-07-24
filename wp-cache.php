@@ -3550,6 +3550,7 @@ function wp_cron_preload_cache() {
 			wp_cache_debug( 'wp_cron_preload_cache: scheduling the next preload in 30 seconds.', 5 );
 			wp_schedule_single_event( time() + 30, 'wp_cache_preload_hook' );
 		}
+		wpsc_delete_files( get_supercache_dir() );
 	} else {
 		$msg = '';
 		update_option( 'preload_cache_counter', array( 'c' => 0, 't' => time() ) );
