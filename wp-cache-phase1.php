@@ -49,6 +49,14 @@ if ( is_array( $plugins ) ) {
 	}
 }
 
+if ( isset( $wpsc_plugins ) && is_array( $wpsc_plugins ) ) {
+	foreach( $wpsc_plugins as $plugin_file ) {
+		if ( file_exists( ABSPATH . $plugin_file ) ) {
+			include_once( ABSPATH . $plugin_file );
+		}
+	}
+}
+
 if (
 	file_exists( WPCACHEHOME . '../wp-super-cache-plugins/' ) &&
 	is_dir( WPCACHEHOME . '../wp-super-cache-plugins/' )
