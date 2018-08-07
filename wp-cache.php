@@ -4111,3 +4111,32 @@ function wpsc_get_plugins() {
 	global $wpsc_plugins;
 	return $wpsc_plugins;
 }
+
+function wpsc_add_cookie( $name ) {
+	global $wpsc_cookies;
+	if (
+		! isset( $wpsc_cookies ) ||
+		! is_array( $wpsc_cookies ) ||
+		! in_array( $name, $wpsc_cookies )
+	) {
+		$wpsc_cookies[] = $name;
+		wp_cache_setting( 'wpsc_cookies', $wpsc_cookies );
+	}
+}
+
+function wpsc_delete_cookie( $name ) {
+	global $wpsc_cookies;
+	if (
+		isset( $wpsc_cookies ) &&
+		is_array( $wpsc_cookies ) &&
+		in_array( $name, $wpsc_cookies )
+	) {
+		unset( $wpsc_cookies[ array_search( $name, $wpsc_cookies ) ] );
+		wp_cache_setting( 'wpsc_cookies', $wpsc_cookies );
+	}
+}
+
+function wpsc_get_cookies() {
+	global $wpsc_cookies;
+	return $wpsc_cookies;
+}
