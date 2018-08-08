@@ -3310,7 +3310,7 @@ function wpsc_get_htaccess_info() {
 	}
 	$condition_rules[] = "RewriteCond %{REQUEST_METHOD} !POST";
 	$condition_rules[] = "RewriteCond %{QUERY_STRING} ^$";
-	$condition_rules[] = "RewriteCond %{HTTP:Cookie} !^.*(comment_author_|" . wpsc_get_logged_in_cookie() . "|wp-postpass_).*$";
+	$condition_rules[] = "RewriteCond %{HTTP:Cookie} !^.*(comment_author_|" . wpsc_get_logged_in_cookie() . wpsc_get_extra_cookies() . "|wp-postpass_).*$";
 	$condition_rules[] = "RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\\\"]+ [NC]";
 	$condition_rules[] = "RewriteCond %{HTTP:Profile} !^[a-z0-9\\\"]+ [NC]";
 	if ( $wp_cache_mobile_enabled ) {
@@ -4139,4 +4139,16 @@ function wpsc_delete_cookie( $name ) {
 function wpsc_get_cookies() {
 	global $wpsc_cookies;
 	return $wpsc_cookies;
+}
+
+function wpsc_get_extra_cookies() {
+	global $wpsc_cookies;
+	if (
+		is_array( $wpsc_cookies ) &&
+		! empty( $wpsc_cookies )
+	) {
+		return '|' . implode( '|', $wpsc_cookies );
+	} else {
+		return '';
+	}
 }
