@@ -83,9 +83,24 @@ if ( class_exists( 'WP_REST_Controller' ) ) {
 }
 
 function wp_super_cache_init_action() {
+	global $wpsc_cookies, $wpsc_plugins;
+
 	load_plugin_textdomain( 'wp-super-cache', false, basename( dirname( __FILE__ ) ) . '/languages' );
 
 	wpsc_register_post_hooks();
+
+	$cookies = array_unique( apply_filters( 'wpsc_cookies', $wpsc_cookies ) );
+	if ( $cookies != $wpsc_cookies ) {
+		$wpsc_cookies = $cookies;
+		wp_cache_setting( 'wpsc_cookies', $wpsc_cookies );
+	}
+
+	$plugins = array_unique( apply_filters( 'wpsc_plugins', $wpsc_plugins ) );
+	if ( $plugins != $wpsc_plugins ) {
+		$wpsc_plugins = $plugins;
+		wp_cache_setting( 'wpsc_plugins', $wpsc_plugins );
+	}
+
 }
 add_action( 'init', 'wp_super_cache_init_action' );
 
