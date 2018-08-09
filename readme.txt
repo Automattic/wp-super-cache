@@ -270,6 +270,7 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 * Changes between [1.6.2 and 1.6.3](https://github.com/Automattic/wp-super-cache/compare/1.6.2...1.6.3)
 * Added cookie helper functions (#580)
 * Added plugin helper functions (#574)
+* Added actions to modify cookie and plugin lists. (#582)
 * Really disable garbage collection when timeout = 0 (#571)
 * Added warnings about DISABLE_WP_CRON (#575)
 * Don't clean expired cache files after preload if garbage collection is disabled (#572)
