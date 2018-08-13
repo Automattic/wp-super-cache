@@ -2854,6 +2854,10 @@ function wp_cache_delete_buttons() {
 }
 
 function delete_cache_dashboard() {
+	if ( function_exists( '_deprecated_function' ) ) {
+		_deprecated_function( __FUNCTION__, 'WP Super Cache 1.6.4' );
+	}
+
 	if ( false == wpsupercache_site_admin() )
 		return false;
 
@@ -2862,7 +2866,7 @@ function delete_cache_dashboard() {
 
 	echo "<li><a href='" . wp_nonce_url( 'options-general.php?page=wpsupercache&wp_delete_cache=1', 'wp-cache' ) . "' target='_blank' title='" . __( 'Delete Super Cache cached files (opens in new window)', 'wp-super-cache' ) . "'>" . __( 'Delete Cache', 'wp-super-cache' ) . "</a></li>";
 }
-add_action( 'dashmenu', 'delete_cache_dashboard' );
+//add_action( 'dashmenu', 'delete_cache_dashboard' );
 
 function wpsc_dirsize($directory, $sizes) {
 	global $cache_max_time, $cache_path, $valid_nonce, $wp_cache_preload_on, $file_prefix;
@@ -3712,20 +3716,31 @@ function uninstall_supercache( $folderPath ) { // from http://www.php.net/manual
 }
 
 function supercache_admin_bar_render() {
-	global $wp_admin_bar, $wp_cache_not_logged_in;
-	if ( !is_user_logged_in() || !$wp_cache_not_logged_in )
-		return false;
+	global $wp_admin_bar;
 
-	if ( function_exists('current_user_can') && false == current_user_can('delete_others_posts') )
+        if ( ! function_exists( 'current_user_can' ) || ! is_user_logged_in() ) {
 		return false;
+	}
 
-	$wp_admin_bar->add_menu( array(
-				'parent' => '',
-				'id' => 'delete-cache',
-				'title' => __( 'Delete Cache', 'wp-super-cache' ),
-				'meta' => array( 'title' => __( 'Delete cache of the current page', 'wp-super-cache' ) ),
-				'href' => wp_nonce_url( admin_url( 'index.php?action=delcachepage&path=' . urlencode( preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER[ 'REQUEST_URI' ] ) ) ), 'delete-cache' )
-				) );
+	if ( ( is_singular() || is_archive() || is_front_page() ) && current_user_can(  'delete_others_posts' ) ) {
+		$wp_admin_bar->add_menu( array(
+					'parent' => '',
+					'id' => 'delete-cache',
+					'title' => __( 'Delete Cache', 'wp-super-cache' ),
+					'meta' => array( 'title' => __( 'Delete cache of the current page', 'wp-super-cache' ) ),
+					'href' => wp_nonce_url( admin_url( 'index.php?action=delcachepage&path=' . urlencode( preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER[ 'REQUEST_URI' ] ) ) ), 'delete-cache' )
+					) );
+	}
+
+	if ( is_admin() && wpsupercache_site_admin() && current_user_can( 'manage_options' ) ) {
+		$wp_admin_bar->add_menu( array(
+					'parent' => '',
+					'id' => 'delete-cache',
+					'title' => __( 'Delete Cache', 'wp-super-cache' ),
+					'meta' => array( 'title' => __( 'Delete Super Cache cached files (opens in new window)', 'wp-super-cache' ), 'target' => '_blank' ),
+					'href' => wp_nonce_url( admin_url( 'options-general.php?page=wpsupercache&tab=contents&wp_delete_cache=1' ), 'wp-cache' )
+					) );
+	}
 }
 add_action( 'wp_before_admin_bar_render', 'supercache_admin_bar_render' );
 
