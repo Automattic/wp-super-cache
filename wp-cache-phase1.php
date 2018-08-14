@@ -125,6 +125,14 @@ if ( defined( 'DOING_CRON' ) ) {
 	return true;
 }
 
-if ( ! isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && false == $wp_super_cache_late_init ) ) {
+// WordPress 4.6 introduces action ms_loaded.
+if ( is_multisite() &&
+	empty( $wp_super_cache_late_init ) &&
+	version_compare( $wp_version, '4.6', '>=' ) &&
+	function_exists( 'add_action' )
+) {
+	add_action( 'ms_loaded', 'wp_cache_serve_cache_file' );
+}
+elseif ( ! isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && false == $wp_super_cache_late_init ) ) {
 	wp_cache_serve_cache_file();
 }

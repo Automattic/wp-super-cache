@@ -8,9 +8,16 @@ if ( false == isset( $_SERVER['HTTP_HOST'] ) ) {
 
 // We want to be able to identify each blog in a WordPress MU install
 $blogcacheid = '';
-if ( ( defined( 'WP_ALLOW_MULTISITE' ) && constant( 'WP_ALLOW_MULTISITE' ) == true ) || defined( 'SUBDOMAIN_INSTALL' ) || defined( 'VHOST' ) || defined( 'SUNRISE' ) ) {
+if ( is_multisite() ) {
+	global $current_blog;
+
 	$blogcacheid = 'blog'; // main blog
-	if ( defined( 'SUBDOMAIN_INSTALL' ) && constant( 'SUBDOMAIN_INSTALL' ) == true ) {
+	if ( is_object( $current_blog ) && function_exists( 'is_subdomain_install' ) ) {
+		$blogcacheid = is_subdomain_install() ?  $current_blog->domain : trim( $current_blog->path, '/' );
+		if ( empty( $blogcacheid  ) ) {
+			$blogcacheid = 'blog';
+		}
+	} elseif ( ( defined('SUBDOMAIN_INSTALL') && SUBDOMAIN_INSTALL ) || ( defined( 'VHOST' ) && VHOST == 'yes' ) ) {
 		$blogcacheid = $WPSC_HTTP_HOST;
 	} else {
 		if ( isset( $base ) == false ) {
@@ -32,4 +39,5 @@ if ( ( defined( 'WP_ALLOW_MULTISITE' ) && constant( 'WP_ALLOW_MULTISITE' ) == tr
 		}
 		$blogcacheid = str_replace( '/', '', $blogcacheid );
 	}
+	$blog_cache_dir = str_replace( '//', '/', $cache_path . 'blogs/' . $blogcacheid . '/' );
 }

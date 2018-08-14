@@ -46,6 +46,12 @@ function wp_cache_serve_cache_file() {
 	global $key, $blogcacheid, $wp_cache_request_uri, $file_prefix, $blog_cache_dir, $meta_file, $cache_file, $cache_filename, $meta_pathname, $wp_cache_gzip_encoding, $meta;
 	global $wp_cache_object_cache, $cache_compression, $wp_cache_slash_check, $wp_supercache_304, $wp_cache_home_path, $wp_cache_no_cache_for_get;
 	global $wp_cache_disable_utf8, $wp_cache_mfunc_enabled, $wpsc_served_header;
+	global $current_blog;
+
+	// Fixes $blogcacheid and $blog_cache_dir if ms-settings.php is loaded.
+	if ( is_multisite() && is_object( $current_blog ) ) {
+		require WPCACHEHOME . 'wp-cache-base.php';
+	}
 
 	if ( wpsc_is_backend() ) {
 		wp_cache_debug( 'Not serving wp-admin requests.', 5 );
