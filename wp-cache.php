@@ -3094,6 +3094,10 @@ function wp_cache_catch_404() {
 //add_action( 'template_redirect', 'wp_cache_catch_404' );
 
 function wp_cache_favorite_action( $actions ) {
+	if ( function_exists( '_deprecated_function' ) ) {
+		_deprecated_function( __FUNCTION__, 'WP Super Cache 1.6.4' );
+	}
+
 	if ( false == wpsupercache_site_admin() )
 		return $actions;
 
@@ -3104,7 +3108,7 @@ function wp_cache_favorite_action( $actions ) {
 
 	return $actions;
 }
-add_filter( 'favorite_actions', 'wp_cache_favorite_action' );
+//add_filter( 'favorite_actions', 'wp_cache_favorite_action' );
 
 function wp_cache_plugin_notice( $plugin ) {
 	global $cache_enabled;
