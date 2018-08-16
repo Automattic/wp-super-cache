@@ -1,5 +1,5 @@
 <?php
-global $WPSC_HTTP_HOST, $blogcacheid;
+global $WPSC_HTTP_HOST, $cache_path, $current_blog, $blogcacheid, $blog_cache_dir;
 
 if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 	$WPSC_HTTP_HOST = htmlentities( $_SERVER['HTTP_HOST'] );
@@ -12,10 +12,11 @@ if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 
 // We want to be able to identify each blog in a WordPress MU install
 $blogcacheid = '';
-if ( is_multisite() ) {
-	global $current_blog;
+$blog_cache_dir = $cache_path;
 
+if ( is_multisite() ) {
 	$blogcacheid = 'blog'; // main blog
+
 	if ( is_object( $current_blog ) && function_exists( 'is_subdomain_install' ) ) {
 		$blogcacheid = is_subdomain_install() ?  $current_blog->domain : trim( $current_blog->path, '/' );
 		if ( empty( $blogcacheid  ) ) {
