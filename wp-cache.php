@@ -3720,7 +3720,20 @@ function uninstall_supercache( $folderPath ) { // from http://www.php.net/manual
 }
 
 function supercache_admin_bar_render() {
-	global $wp_admin_bar, $wp_cache_home_path, $current_blog;
+	global $wp_admin_bar;
+
+	if ( function_exists( '_deprecated_function' ) ) {
+		_deprecated_function( __FUNCTION__, 'WP Super Cache 1.6.4' );
+	}
+
+	wpsc_admin_bar_render( $wp_admin_bar );
+}
+
+/**
+ * Adds "Delete Cache" button in WP Admin Bar.
+ */
+function wpsc_admin_bar_render( $wp_admin_bar ) {
+	global $wp_cache_home_path, $current_blog;
 
         if ( ! function_exists( 'current_user_can' ) || ! is_user_logged_in() ) {
 		return false;
@@ -3737,7 +3750,7 @@ function supercache_admin_bar_render() {
 					'id' => 'delete-cache',
 					'title' => __( 'Delete Cache', 'wp-super-cache' ),
 					'meta' => array( 'title' => __( 'Delete cache of the current page', 'wp-super-cache' ) ),
-					'href' => wp_nonce_url( admin_url( 'index.php?action=delcachepage&path=' . urlencode( preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $path ) ) ), 'delete-cache' )
+					'href' => wp_nonce_url( admin_url( 'index.php?action=delcachepage&path=' . urlencode( $path ) ), 'delete-cache' )
 					) );
 	}
 
@@ -3751,7 +3764,7 @@ function supercache_admin_bar_render() {
 					) );
 	}
 }
-add_action( 'wp_before_admin_bar_render', 'supercache_admin_bar_render' );
+add_action( 'admin_bar_menu', 'wpsc_admin_bar_render', 99 );
 
 function wpsc_cancel_preload() {
 	global $cache_path;
