@@ -1,6 +1,7 @@
 <?php
 global $WPSC_HTTP_HOST, $cache_path, $current_blog, $blogcacheid, $blog_cache_dir;
 
+
 if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 	$WPSC_HTTP_HOST = htmlentities( $_SERVER['HTTP_HOST'] );
 } elseif ( PHP_SAPI === 'cli' && function_exists( 'get_option' ) ) {
