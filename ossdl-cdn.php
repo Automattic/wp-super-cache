@@ -2,36 +2,90 @@
 
 /* Taken from OSSDL CDN off-linker, a plugin by W-Mark Kubacki (http://mark.ossdl.de/) and used with permission */
 
-/* Set up some defaults */
-if ( get_option( 'ossdl_off_cdn_url' ) === false ) {
-	add_option( 'ossdl_off_cdn_url', get_option( 'siteurl' ) );
-}
-if ( get_option( 'ossdl_off_blog_url' ) === false ) {
-	add_option( 'ossdl_off_blog_url', apply_filters( 'ossdl_off_blog_url', untrailingslashit( get_option( 'siteurl' ) ) ) );
-}
-$ossdl_off_blog_url = get_option( 'ossdl_off_blog_url' );
-$ossdl_off_cdn_url  = trim( get_option( 'ossdl_off_cdn_url' ) );
-if ( get_option( 'ossdl_off_include_dirs' ) === false ) {
-	add_option( 'ossdl_off_include_dirs', 'wp-content,wp-includes' );
-}
-$ossdl_off_include_dirs = trim( get_option( 'ossdl_off_include_dirs' ) );
-if ( get_option( 'ossdl_off_exclude' ) === false ) {
-	add_option( 'ossdl_off_exclude', '.php' );
-}
-$ossdl_off_exclude = trim( get_option( 'ossdl_off_exclude' ) );
-$arr_of_excludes   = array_map( 'trim', explode( ',', $ossdl_off_exclude ) );
-if ( ! is_array( $arr_of_excludes ) ) {
-	$arr_of_excludes = array();
+if ( ! isset( $ossdlcdn ) ) {
+	$ossdlcdn = 1; // have to default to on for existing users.
 }
 
-if ( get_option( 'ossdl_cname' ) == false ) {
-	add_option( 'ossdl_cname', '' );
+if ( 1 === $ossdlcdn && ! is_admin() ) {
+	scossdl_off_get_options();
+	add_action( 'init', 'do_scossdl_off_ob_start' );
 }
-$ossdl_cname   = trim( get_option( 'ossdl_cname' ) );
-$ossdl_https   = intval( get_option( 'ossdl_https' ) );
-$arr_of_cnames = array_map( 'trim', explode( ',', $ossdl_cname ) );
-if ( $arr_of_cnames[0] == '' ) {
-	$arr_of_cnames = array();
+
+/**
+ * Set up some defaults.
+ *
+ * @global string $ossdl_off_blog_url
+ * @global string $ossdl_off_cdn_url
+ * @global string $ossdl_cname
+ * @global int    $ossdl_https
+ * @global array  $ossdl_off_include_dirs
+ * @global array  $ossdl_off_excludes
+ * @global array  $ossdl_arr_of_cnames
+ *
+ * @return void
+ */
+function scossdl_off_get_options() {
+	global $ossdl_off_blog_url, $ossdl_off_cdn_url, $ossdl_cname, $ossdl_https;
+	global $ossdl_off_include_dirs, $ossdl_off_excludes, $ossdl_arr_of_cnames;
+
+	$ossdl_off_blog_url = get_option( 'ossdl_off_blog_url' );
+	if ( false === $ossdl_off_blog_url ) {
+		$ossdl_off_blog_url = apply_filters( 'ossdl_off_blog_url', untrailingslashit( get_site_url() ) );
+		add_option( 'ossdl_off_blog_url', $ossdl_off_blog_url );
+	}
+
+	$ossdl_off_cdn_url = get_option( 'ossdl_off_blog_url' );
+	if ( false === $ossdl_off_cdn_url ) {
+		$ossdl_off_cdn_url = untrailingslashit( get_site_url() );
+		add_option( 'ossdl_off_cdn_url', $ossdl_off_cdn_url );
+	}
+
+	$include_dirs = get_option( 'ossdl_off_include_dirs' );
+	if ( false !== $include_dirs ) {
+		$ossdl_off_include_dirs = array_filter( array_map( 'trim', explode( ',', $include_dirs ) ) );
+	} else {
+		$ossdl_off_include_dirs = scossdl_off_default_inc_dirs();
+		add_option( 'ossdl_off_include_dirs', implode( ',', $ossdl_off_include_dirs ) );
+	}
+
+	$exclude = get_option( 'ossdl_off_exclude' );
+	if ( false !== $exclude ) {
+		$ossdl_off_excludes = array_filter( array_map( 'trim', explode( ',', $exclude ) ) );
+	} else {
+		$ossdl_off_excludes = array( '.php' );
+		add_option( 'ossdl_off_exclude', implode( ',', $ossdl_off_excludes ) );
+	}
+
+	$ossdl_cname = get_option( 'ossdl_cname' );
+	if ( false !== $ossdl_cname ) {
+		$ossdl_cname = trim( $ossdl_cname );
+	} else {
+		$ossdl_cname = '';
+		add_option( 'ossdl_cname', $ossdl_cname );
+	}
+	$ossdl_arr_of_cnames = array_filter( array_map( 'trim', explode( ',', $ossdl_cname ) ) );
+
+	$ossdl_https   = intval( get_option( 'ossdl_https' ) );
+}
+
+/**
+ * Get default directories.
+ *
+ * @return array
+ */
+function scossdl_off_default_inc_dirs() {
+	global $wp_cache_home_path, $current_blog;
+
+	$home_path = ( is_multisite() && is_object( $current_blog ) ) ? $current_blog->path : $wp_cache_home_path;
+
+	$include_dirs = array( content_url(), includes_url() );
+	foreach( $include_dirs as $key => $dir ) {
+		$dir = wp_make_link_relative( $dir );
+		$dir = preg_replace( '`^' . preg_quote( $home_path, '`' ) . '`', '', $dir );
+		$include_dirs[$key] = trim( $dir, '/' );
+	}
+
+	return $include_dirs;
 }
 
 /**
@@ -44,10 +98,11 @@ if ( $arr_of_cnames[0] == '' ) {
  */
 function scossdl_off_exclude_match( $match, $excludes ) {
 	foreach ( $excludes as $badword ) {
-		if ( ! empty( $badword ) && stripos( $match, $badword ) !== false ) {
+		if ( false !== stripos( $match, $badword ) ) {
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -72,28 +127,27 @@ function scossdl_string_mod( $str, $mod ) {
  * Called by #scossdl_off_filter.
  */
 function scossdl_off_rewriter( $match ) {
-	global $ossdl_off_blog_url, $ossdl_off_cdn_url, $arr_of_excludes, $arr_of_cnames, $ossdl_https;
+	global $ossdl_off_blog_url, $ossdl_off_cdn_url, $ossdl_https;
+	global $ossdl_off_excludes, $ossdl_arr_of_cnames;
+	static $count_cnames = null, $include_dirs = null;
 
-	if ( $ossdl_off_cdn_url == '' ) {
+	// Set up static variables. Run once only.
+	if ( ! isset( $count_cnames ) ) {
+		$count_cnames = count( $ossdl_arr_of_cnames );
+		$include_dirs = scossdl_off_additional_directories();
+	}
+
+	if ( $ossdl_https && 0 === strpos( $match[0], 'https' ) ) {
 		return $match[0];
 	}
 
-	if ( $ossdl_https && 0 === strncmp( $match[0], 'https', 5 ) ) {
+	if ( scossdl_off_exclude_match( $match[0], $ossdl_off_excludes ) ) {
 		return $match[0];
 	}
 
-	if ( false === in_array( $ossdl_off_cdn_url, $arr_of_cnames ) ) {
-		$arr_of_cnames[] = $ossdl_off_cdn_url;
-	}
-
-	if ( scossdl_off_exclude_match( $match[0], $arr_of_excludes ) ) {
-		return $match[0];
-	}
-
-	$include_dirs = scossdl_off_additional_directories();
-	if ( preg_match( '/' . $include_dirs . '/', $match[0] ) ) {
-		$offset = scossdl_string_mod( $match[1], count( $arr_of_cnames ) );
-		return str_replace( $ossdl_off_blog_url, $arr_of_cnames[ $offset ], $match[0] );
+	if ( preg_match( '`(' . $include_dirs . ')`', $match[0] ) ) {
+		$offset = scossdl_string_mod( $match[1], $count_cnames );
+		return str_replace( $ossdl_off_blog_url, $ossdl_arr_of_cnames[ $offset ], $match[0] );
 	}
 
 	return $match[0];
@@ -105,14 +159,14 @@ function scossdl_off_rewriter( $match ) {
  * @return String with the pattern with {@literal |} as prefix, or empty
  */
 function scossdl_off_additional_directories() {
-        global $ossdl_off_include_dirs;
+	global $ossdl_off_include_dirs;
 
-        $arr_dirs = explode( ',', $ossdl_off_include_dirs );
-        if ( $ossdl_off_include_dirs == '' || count( $arr_dirs ) < 1 ) {
-               return 'wp\-content|wp\-includes';
-        }
+	$arr_dirs = array();
+	foreach( $ossdl_off_include_dirs as $dir ) {
+		$arr_dirs[] = preg_quote( trim( $dir ), '`' );
+	}
 
-        return implode( '|', array_map( 'preg_quote', array_map( 'trim', $arr_dirs ) ) );
+	return implode( '|', $arr_dirs );
 }
 
 /**
@@ -120,13 +174,28 @@ function scossdl_off_additional_directories() {
  */
 function scossdl_off_filter( $content ) {
 	global $ossdl_off_blog_url, $ossdl_off_cdn_url;
+	global $ossdl_off_include_dirs, $ossdl_off_excludes, $ossdl_arr_of_cnames;
 
-	if ( $ossdl_off_blog_url == $ossdl_off_cdn_url ) { // no rewrite needed
-		return $content;
+	if ( empty( $content ) || empty( $ossdl_off_cdn_url ) ||
+		$ossdl_off_blog_url === $ossdl_off_cdn_url
+	) {
+		return $content; // no rewrite needed.
+	}
+
+	if ( empty( $ossdl_off_include_dirs ) || ! is_array( $ossdl_off_include_dirs ) ) {
+		$ossdl_off_include_dirs = scossdl_off_default_inc_dirs();
+	}
+
+	if ( empty( $ossdl_off_excludes ) || ! is_array( $ossdl_off_excludes ) ) {
+		$ossdl_off_excludes = array();
+	}
+
+	if ( ! in_array( $ossdl_off_cdn_url, (array) $ossdl_arr_of_cnames ) ) {
+		$ossdl_arr_of_cnames = array_merge( array( $ossdl_off_cdn_url ), (array) $ossdl_arr_of_cnames );
 	}
 
 	$dirs  = scossdl_off_additional_directories();
-	$regex = '#(?<=[(\"\'])' . preg_quote( $ossdl_off_blog_url ) . '/(?:((?:' . $dirs . ')[^\"\')]+)|([^/\"\']+\.[^/\"\')]+))(?=[\"\')])#';
+	$regex = '`(?<=[(\"\'])' . preg_quote( $ossdl_off_blog_url, '`' ) . '/(?:((?:' . $dirs . ')[^\"\')]+)|([^/\"\']+\.[^/\"\')]+))(?=[\"\')])`';
 	return preg_replace_callback( $regex, 'scossdl_off_rewriter', $content );
 }
 
@@ -135,15 +204,12 @@ function scossdl_off_filter( $content ) {
  */
 function do_scossdl_off_ob_start() {
 	global $ossdl_off_blog_url, $ossdl_off_cdn_url;
-	if ( $ossdl_off_blog_url != $ossdl_off_cdn_url ) {
+
+	if ( ! empty( $ossdl_off_cdn_url ) &&
+		$ossdl_off_blog_url !== $ossdl_off_cdn_url
+	) {
 		add_filter( 'wp_cache_ob_callback_filter', 'scossdl_off_filter' );
 	}
-}
-if ( false == isset( $ossdlcdn ) ) {
-	$ossdlcdn = 1; // have to default to on for existing users.
-}
-if ( $ossdlcdn == 1 ) {
-	add_action( 'init', 'do_scossdl_off_ob_start' );
 }
 
 function scossdl_off_update() {
@@ -154,9 +220,16 @@ function scossdl_off_update() {
 	) {
 		update_option( 'ossdl_off_cdn_url', untrailingslashit( $_POST['ossdl_off_cdn_url'] ) );
 		update_option( 'ossdl_off_blog_url', untrailingslashit( $_POST['ossdl_off_blog_url'] ) );
-		update_option( 'ossdl_off_include_dirs', $_POST['ossdl_off_include_dirs'] == '' ? 'wp-content,wp-includes' : $_POST['ossdl_off_include_dirs'] );
-		update_option( 'ossdl_off_exclude', $_POST['ossdl_off_exclude'] );
-		update_option( 'ossdl_cname', $_POST['ossdl_cname'] );
+
+		if ( empty( $_POST['ossdl_off_include_dirs'] ) ) {
+			$include_dirs = implode( ',', scossdl_off_default_inc_dirs() );
+		} else {
+			$include_dirs = sanitize_text_field( stripslashes( $_POST['ossdl_off_include_dirs'] ) );
+		}
+		update_option( 'ossdl_off_include_dirs', $include_dirs );
+
+		update_option( 'ossdl_off_exclude', sanitize_text_field( stripslashes( $_POST['ossdl_off_exclude'] ) ) );
+		update_option( 'ossdl_cname', sanitize_text_field( stripslashes( $_POST['ossdl_cname'] ) ) );
 
 		$ossdl_https = empty( $_POST['ossdl_https'] ) ? 0 : 1;
 		$ossdlcdn    = empty( $_POST['ossdlcdn'] ) ? 0 : 1;
@@ -167,16 +240,19 @@ function scossdl_off_update() {
 }
 
 function scossdl_off_options() {
-	global $ossdlcdn, $ossdl_off_blog_url;
+	global $ossdlcdn, $ossdl_off_blog_url, $ossdl_off_cdn_url, $ossdl_cname, $ossdl_https;
+	global $ossdl_off_include_dirs, $ossdl_off_excludes, $ossdl_arr_of_cnames;
 
 	scossdl_off_update();
 
-	$example_cdn_uri = str_replace( 'http://', 'http://cdn.', str_replace( 'www.', '', get_option( 'siteurl' ) ) );
-	$example_cnames  = str_replace( 'http://cdn.', 'http://cdn1.', $example_cdn_uri );
-	$example_cnames .= ',' . str_replace( 'http://cdn.', 'http://cdn2.', $example_cdn_uri );
-	$example_cnames .= ',' . str_replace( 'http://cdn.', 'http://cdn3.', $example_cdn_uri );
+	scossdl_off_get_options();
 
-	$example_cdn_uri  = get_option( 'ossdl_off_cdn_url' ) == get_option( 'siteurl' ) ? $example_cdn_uri : get_option( 'ossdl_off_cdn_url' );
+	$example_cdn_uri = ( is_ssl() ? 'https' : 'http') . '://cdn.' . preg_replace( '`^(https?:)?//(www\.)?`', '', get_site_url() );
+	$example_cnames  = str_replace( '://cdn.', '://cdn1.', $example_cdn_uri );
+	$example_cnames .= ',' . str_replace( '://cdn.', '://cdn2.', $example_cdn_uri );
+	$example_cnames .= ',' . str_replace( '://cdn.', '://cdn3.', $example_cdn_uri );
+
+	$example_cdn_uri  = $ossdl_off_cdn_url === get_site_url() ? $example_cdn_uri : $ossdl_off_cdn_url;
 	$example_cdn_uri .= '/wp-includes/js/jquery/jquery-migrate.js';
 	$example_cdn_uri  = esc_url( $example_cdn_uri );
 	?>
@@ -200,40 +276,40 @@ function scossdl_off_options() {
 			<tr valign="top">
 				<th scope="row"><label for="ossdl_off_cdn_url"><?php _e( 'Site URL', 'wp-super-cache' ); ?></label></th>
 				<td>
-					<input type="text" name="ossdl_off_blog_url" value="<?php echo esc_url( untrailingslashit( get_option( 'ossdl_off_blog_url' ) ) ); ?>" size="64" class="regular-text code" /><br />
+					<input type="text" name="ossdl_off_blog_url" value="<?php echo esc_url( untrailingslashit( $ossdl_off_blog_url ) ); ?>" size="64" class="regular-text code" /><br />
 					<span class="description"><?php _e( 'The URL of your site. No trailing <code>/</code> please.', 'wp-super-cache' ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><label for="ossdl_off_cdn_url"><?php _e( 'Off-site URL', 'wp-super-cache' ); ?></label></th>
 				<td>
-					<input type="text" name="ossdl_off_cdn_url" value="<?php echo esc_url( get_option( 'ossdl_off_cdn_url' ) ); ?>" size="64" class="regular-text code" /><br />
-					<span class="description"><?php printf( __( 'The new URL to be used in place of %1$s for rewriting. No trailing <code>/</code> please.<br />Example: <code>%2$s</code>.', 'wp-super-cache' ), esc_html( get_option( 'siteurl' ) ), esc_html( $example_cdn_uri ) ); ?></span>
+					<input type="text" name="ossdl_off_cdn_url" value="<?php echo esc_url( $ossdl_off_cdn_url ); ?>" size="64" class="regular-text code" /><br />
+					<span class="description"><?php printf( __( 'The new URL to be used in place of %1$s for rewriting. No trailing <code>/</code> please.<br />Example: <code>%2$s</code>.', 'wp-super-cache' ), esc_html( get_site_url() ), esc_html( $example_cdn_uri ) ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><label for="ossdl_off_include_dirs"><?php _e( 'Include directories', 'wp-super-cache' ); ?></label></th>
 				<td>
-					<input type="text" name="ossdl_off_include_dirs" value="<?php echo esc_attr( get_option( 'ossdl_off_include_dirs' ) ); ?>" size="64" class="regular-text code" /><br />
+					<input type="text" name="ossdl_off_include_dirs" value="<?php echo esc_attr( implode( ',', $ossdl_off_include_dirs ) ); ?>" size="64" class="regular-text code" /><br />
 					<span class="description"><?php _e( 'Directories to include in static file matching. Use a comma as the delimiter. Default is <code>wp-content, wp-includes</code>, which will be enforced if this field is left empty.', 'wp-super-cache' ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><label for="ossdl_off_exclude"><?php _e( 'Exclude if substring', 'wp-super-cache' ); ?></label></th>
 				<td>
-					<input type="text" name="ossdl_off_exclude" value="<?php echo esc_attr( get_option( 'ossdl_off_exclude' ) ); ?>" size="64" class="regular-text code" /><br />
+					<input type="text" name="ossdl_off_exclude" value="<?php echo esc_attr( implode( ',', $ossdl_off_excludes ) ); ?>" size="64" class="regular-text code" /><br />
 					<span class="description"><?php _e( 'Excludes something from being rewritten if one of the above strings is found in the URL. Use a comma as the delimiter like this, <code>.php, .flv, .do</code>, and always include <code>.php</code> (default).', 'wp-super-cache' ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><label for="ossdl_cname"><?php _e( 'Additional CNAMES', 'wp-super-cache' ); ?></label></th>
 				<td>
-					<input type="text" name="ossdl_cname" value="<?php echo esc_attr( get_option( 'ossdl_cname' ) ); ?>" size="64" class="regular-text code" /><br />
-					<span class="description"><?php printf( __( 'These <a href="http://en.wikipedia.org/wiki/CNAME_record">CNAMES</a> will be used in place of %1$s for rewriting (in addition to the off-site URL above). Use a comma as the delimiter. For pages with a large number of static files, this can improve browser performance. CNAMEs may also need to be configured on your CDN.<br />Example: %2$s', 'wp-super-cache' ), esc_html( get_option( 'siteurl' ) ), esc_html( $example_cnames ) ); ?></span>
+					<input type="text" name="ossdl_cname" value="<?php echo esc_attr( $ossdl_cname ); ?>" size="64" class="regular-text code" /><br />
+					<span class="description"><?php printf( __( 'These <a href="https://www.wikipedia.org/wiki/CNAME_record">CNAMES</a> will be used in place of %1$s for rewriting (in addition to the off-site URL above). Use a comma as the delimiter. For pages with a large number of static files, this can improve browser performance. CNAMEs may also need to be configured on your CDN.<br />Example: %2$s', 'wp-super-cache' ), esc_html( get_site_url() ), esc_html( $example_cnames ) ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row" colspan='2'><label><input type='checkbox' name='ossdl_https' value='1' <?php if ( get_option( 'ossdl_https' ) ) { echo 'checked'; } ?> /> <?php _e( 'Skip https URLs to avoid "mixed content" errors', 'wp-super-cache' ); ?></label></th>
+				<th scope="row" colspan='2'><label><input type='checkbox' name='ossdl_https' value='1' <?php if ( $ossdl_https ) { echo 'checked'; } ?> /> <?php _e( 'Skip https URLs to avoid "mixed content" errors', 'wp-super-cache' ); ?></label></th>
 			</tr>
 		</tbody></table>
 		<input type="hidden" name="action" value="update_ossdl_off" />
