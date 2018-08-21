@@ -3733,17 +3733,15 @@ function supercache_admin_bar_render() {
  * Adds "Delete Cache" button in WP Admin Bar.
  */
 function wpsc_admin_bar_render( $wp_admin_bar ) {
-	global $wp_cache_home_path, $current_blog;
 
-        if ( ! function_exists( 'current_user_can' ) || ! is_user_logged_in() ) {
+	if ( ! function_exists( 'current_user_can' ) || ! is_user_logged_in() ) {
 		return false;
 	}
 
 	if ( ( is_singular() || is_archive() || is_front_page() || is_search() ) && current_user_can(  'delete_others_posts' ) ) {
-		$req_uri = preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER[ 'REQUEST_URI' ] );
-
-		$home_path = ( is_multisite() && is_object( $current_blog ) ) ? $current_blog->path : $wp_cache_home_path;
-		$path      = preg_replace( '`^' . preg_quote( rtrim( $home_path, '/' ), '`' ) . '`', '', $req_uri );
+		$site_regex = preg_quote( rtrim( (string) parse_url( get_option( 'home' ), PHP_URL_PATH ), '/' ), '`' );
+		$req_uri    = preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER[ 'REQUEST_URI' ] );
+		$path       = preg_replace( '`^' . $site_regex . '`', '', $req_uri );
 
 		$wp_admin_bar->add_menu( array(
 					'parent' => '',
