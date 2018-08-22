@@ -272,6 +272,7 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 * Bumped the minimum WordPress version to 3.1 to use functions introduced then. (#591)
 * Fixes to wpsc_post_transition to avoid a fatal error using get_sample_permalink. (#595)
 * Fixed the admin bar "Delete Cache" link. (#589)
+* Fixed the headings used in the settings page. (#597)
 
 ### 1.6.3 ###
 * Changes between [1.6.2 and 1.6.3](https://github.com/Automattic/wp-super-cache/compare/1.6.2...1.6.3)
