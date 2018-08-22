@@ -34,7 +34,7 @@ function scossdl_off_get_options() {
 		add_option( 'ossdl_off_blog_url', $ossdl_off_blog_url );
 	}
 
-	$ossdl_off_cdn_url = get_option( 'ossdl_off_blog_url' );
+	$ossdl_off_cdn_url = get_option( 'ossdl_off_cdn_url' );
 	if ( false === $ossdl_off_cdn_url ) {
 		$ossdl_off_cdn_url = untrailingslashit( get_site_url() );
 		add_option( 'ossdl_off_cdn_url', $ossdl_off_cdn_url );
