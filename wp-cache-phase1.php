@@ -20,11 +20,12 @@ if ( defined( 'DISABLE_SUPERCACHE' ) ) {
 
 require WPCACHEHOME . 'wp-cache-base.php';
 
-if ( $blogcacheid != '' ) {
+// Moved to wp-cache-base.php
+/*if ( $blogcacheid != '' ) {
 	$blog_cache_dir = str_replace( '//', '/', $cache_path . 'blogs/' . $blogcacheid . '/' );
 } else {
 	$blog_cache_dir = $cache_path;
-}
+}*/
 
 $wp_cache_phase1_loaded = true;
 
@@ -101,8 +102,11 @@ if ( $cache_compression ) {
 	$wp_cache_gzip_encoding = gzip_accepted();
 }
 
+$wpsc_wp_gte_46 = function_exists( 'add_filter' ) && version_compare( $GLOBALS['wp_version'], '4.6', '>=' );
+
 add_cacheaction( 'supercache_filename_str', 'wp_cache_check_mobile' );
-if ( function_exists( 'add_filter' ) ) { // loaded since WordPress 4.6
+if ( $wpsc_wp_gte_46 ) {
+	// loaded since WordPress 4.6
 	add_filter( 'supercache_filename_str', 'wp_cache_check_mobile' );
 }
 
@@ -125,6 +129,10 @@ if ( defined( 'DOING_CRON' ) ) {
 	return true;
 }
 
-if ( ! isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && false == $wp_super_cache_late_init ) ) {
+// WordPress 4.6 introduces action ms_loaded.
+if ( is_multisite() && $wpsc_wp_gte_46 && empty( $wp_super_cache_late_init ) ) {
+	add_action( 'ms_loaded', 'wp_cache_serve_cache_file' );
+}
+elseif ( ! isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && false == $wp_super_cache_late_init ) ) {
 	wp_cache_serve_cache_file();
 }
