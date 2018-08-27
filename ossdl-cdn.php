@@ -65,7 +65,7 @@ function scossdl_off_get_options() {
 	}
 	$ossdl_arr_of_cnames = array_filter( array_map( 'trim', explode( ',', $ossdl_cname ) ) );
 
-	$ossdl_https   = intval( get_option( 'ossdl_https' ) );
+	$ossdl_https = intval( get_option( 'ossdl_https' ) );
 }
 
 /**
@@ -74,18 +74,17 @@ function scossdl_off_get_options() {
  * @return array
  */
 function scossdl_off_default_inc_dirs() {
-	global $wp_cache_home_path, $current_blog;
 
-	$home_path = ( is_multisite() && is_object( $current_blog ) ) ? $current_blog->path : $wp_cache_home_path;
+	$home_path = trailingslashit( (string) parse_url( get_option( 'siteurl' ), PHP_URL_PATH ) );
+	$inc_dirs  = array();
 
-	$include_dirs = array( content_url(), includes_url() );
-	foreach( $include_dirs as $key => $dir ) {
-		$dir = wp_make_link_relative( $dir );
-		$dir = preg_replace( '`^' . preg_quote( $home_path, '`' ) . '`', '', $dir );
-		$include_dirs[$key] = trim( $dir, '/' );
+	foreach ( array( content_url(), includes_url() ) as $dir ) {
+		$dir        = wp_make_link_relative( $dir );
+		$dir        = preg_replace( '`^' . preg_quote( $home_path, '`' ) . '`', '', $dir );
+		$inc_dirs[] = trim( $dir, '/' );
 	}
 
-	return $include_dirs;
+	return $inc_dirs;
 }
 
 /**
@@ -162,7 +161,7 @@ function scossdl_off_additional_directories() {
 	global $ossdl_off_include_dirs;
 
 	$arr_dirs = array();
-	foreach( $ossdl_off_include_dirs as $dir ) {
+	foreach ( $ossdl_off_include_dirs as $dir ) {
 		$arr_dirs[] = preg_quote( trim( $dir ), '`' );
 	}
 
@@ -247,19 +246,19 @@ function scossdl_off_options() {
 
 	scossdl_off_get_options();
 
-	$example_cdn_uri = ( is_ssl() ? 'https' : 'http') . '://cdn.' . preg_replace( '`^(https?:)?//(www\.)?`', '', get_site_url() );
+	$example_cdn_uri = ( is_ssl() ? 'https' : 'http' ) . '://cdn.' . preg_replace( '`^(https?:)?//(www\.)?`', '', get_site_url() );
 	$example_cnames  = str_replace( '://cdn.', '://cdn1.', $example_cdn_uri );
 	$example_cnames .= ',' . str_replace( '://cdn.', '://cdn2.', $example_cdn_uri );
 	$example_cnames .= ',' . str_replace( '://cdn.', '://cdn3.', $example_cdn_uri );
 
-	$example_cdn_uri  = $ossdl_off_cdn_url === get_site_url() ? $example_cdn_uri : $ossdl_off_cdn_url;
+	$example_cdn_uri  = ( get_site_url() === $ossdl_off_cdn_url ) ? $example_cdn_uri : $ossdl_off_cdn_url;
 	$example_cdn_uri .= '/wp-includes/js/jquery/jquery-migrate.js';
 	$example_cdn_uri  = esc_url( $example_cdn_uri );
 	?>
 		<p><?php _e( 'Your website probably uses lots of static files. Image, Javascript and CSS files are usually static files that could just as easily be served from another site or CDN. Therefore, this plugin replaces any links in the <code>wp-content</code> and <code>wp-includes</code> directories (except for PHP files) on your site with the URL you provide below. That way you can either copy all the static content to a dedicated host or mirror the files to a CDN by <a href="https://knowledgelayer.softlayer.com/faq/how-does-origin-pull-work" target="_blank">origin pull</a>.', 'wp-super-cache' ); ?></p>
 		<p><?php printf( __( '<strong style="color: red">WARNING:</strong> Test some static urls e.g., %s  to ensure your CDN service is fully working before saving changes.', 'wp-super-cache' ), '<code>' . esc_html( $example_cdn_uri ) . '</code>' ); ?></p>
 
-	<?php if ( $ossdl_off_blog_url != get_home_url() ) { ?>
+	<?php if ( get_home_url() !== $ossdl_off_blog_url ) { ?>
 		<p><?php printf( __( '<strong style="color: red">WARNING:</strong> Your siteurl and homeurl are different. The plugin is using %s as the homepage URL of your site but if that is wrong please use the filter "ossdl_off_blog_url" to fix it.', 'wp-super-cache' ), '<code>' . esc_html( $ossdl_off_blog_url ) . '</code>' ); ?></p>
 	<?php } ?>
 
@@ -269,7 +268,7 @@ function scossdl_off_options() {
 		<table class="form-table"><tbody>
 			<tr valign="top">
 				<td style='text-align: right'>
-					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" <?php if ( $ossdlcdn ) { echo "checked=1"; } ?> />
+					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" <?php echo $ossdlcdn ? 'checked' : ''; ?> />
 				</td>
 				<th scope="row"><label for="ossdlcdn"><?php _e( 'Enable CDN Support', 'wp-super-cache' ); ?></label></th>
 			</tr>
@@ -309,7 +308,7 @@ function scossdl_off_options() {
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row" colspan='2'><label><input type='checkbox' name='ossdl_https' value='1' <?php if ( $ossdl_https ) { echo 'checked'; } ?> /> <?php _e( 'Skip https URLs to avoid "mixed content" errors', 'wp-super-cache' ); ?></label></th>
+				<th scope="row" colspan='2'><label><input type='checkbox' name='ossdl_https' value='1' <?php echo $ossdl_https ? 'checked' : ''; ?> /> <?php _e( 'Skip https URLs to avoid "mixed content" errors', 'wp-super-cache' ); ?></label></th>
 			</tr>
 		</tbody></table>
 		<input type="hidden" name="action" value="update_ossdl_off" />
