@@ -503,7 +503,7 @@ function admin_bar_delete_page() {
 	}
 
 	if ( $referer && $req_path && ( false !== stripos( $referer, $req_path ) || 0 === stripos( $referer, wp_login_url() ) ) ) {
-		wp_redirect( esc_url_raw( home_url( $req_path ) ) );
+		wp_safe_redirect( esc_url_raw( home_url( $req_path ) ) );
 		exit;
 	}
 }
