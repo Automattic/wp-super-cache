@@ -481,7 +481,7 @@ add_filter( 'wp_super_cache_error_checking', 'wp_cache_manager_error_checks' );
  */
 function admin_bar_delete_page() {
 
-	if ( function_exists( 'current_user_can' ) && false == current_user_can( 'delete_others_posts' ) ) {
+	if ( ! current_user_can( 'delete_others_posts' ) ) {
 		return false;
 	}
 
@@ -492,10 +492,12 @@ function admin_bar_delete_page() {
 	$path = $valid_nonce ? realpath( trailingslashit( get_supercache_dir() . str_replace( '..', '', preg_replace( '/:.*$/', '', $req_path ) ) ) ) : false;
 
 	if ( $path ) {
-		$path = trailingslashit( $path );
+		$path           = trailingslashit( $path );
 		$supercachepath = realpath( get_supercache_dir() );
 
-		if ( false == wp_cache_confirm_delete( $path ) || substr( $path, 0, strlen( $supercachepath ) ) != $supercachepath ) {
+		if ( false === wp_cache_confirm_delete( $path ) ||
+			0 !== strpos( $path, $supercachepath )
+		) {
 			wp_die( 'Could not delete directory' );
 		}
 
