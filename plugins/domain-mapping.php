@@ -35,24 +35,47 @@ function domain_mapping_gc_cache( $function, $directory ) {
 
 function domain_mapping_supercachedir( $dir ) {
 	global $cache_path;
-	if ( ! function_exists( 'domain_mapping_warning' ) ) {
-		return $dir;
-	}
-
-	$siteurl = domain_mapping_siteurl( false );
+	$siteurl = wp_supercache_domain_mapping_siteurl();
 	if ( ! $siteurl ) {
 		return $dir;
 	}
 
+	return trailingslashit( $cache_path . 'supercache/' . $siteurl );
+}
+
+function domain_mapping_current_url_supercachedir( $dir ) {
+	global $WPSC_HTTP_HOST;
+	$siteurl = wp_supercache_domain_mapping_siteurl();
+	if ( ! $siteurl ) {
+		return $dir;
+	}
+
+	return str_replace(	$WPSC_HTTP_HOST, $siteurl, $dir );
+
+}
+
+function wp_supercache_domain_mapping_siteurl() {
+
+	if ( ! function_exists( 'domain_mapping_warning' ) ) {
+		return false;
+	}
+
+	$siteurl = domain_mapping_siteurl( false );
+	if ( ! $siteurl ) {
+		return false;
+	}
+
 	$protocol = ( isset( $_SERVER['HTTPS'] ) && 'on' === strtolower( $_SERVER['HTTPS'] ) ) ? 'https://' : 'http://';
 	$siteurl  = str_replace( $protocol, '', $siteurl );
-	return trailingslashit( $cache_path . 'supercache/' . $siteurl );
+
+	return $siteurl;
 }
 
 function domain_mapping_actions() {
 	global $cache_domain_mapping;
 	if ( '1' === $cache_domain_mapping ) {
 		add_filter( 'wp_super_cache_supercachedir', 'domain_mapping_supercachedir' );
+		add_filter( 'supercache_dir', 'domain_mapping_current_url_supercachedir' );
 		add_action( 'gc_cache', 'domain_mapping_gc_cache', 10, 2 );
 	}
 }
