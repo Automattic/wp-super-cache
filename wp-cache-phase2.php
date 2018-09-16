@@ -563,7 +563,7 @@ function get_supercache_dir( $blog_id = 0 ) {
 }
 
 function get_current_url_supercache_dir( $post_id = 0 ) {
-	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST, $wp_cache_home_path;
+	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST;
 	static $saved_supercache_dir = array();
 
 	if ( isset( $saved_supercache_dir[ $post_id ] ) ) {
@@ -571,13 +571,13 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	}
 
 	$DONOTREMEMBER = 0;
-	if ( $post_id !== 0 ) {
+	if ( 0 !== $post_id ) {
 		$home_url  = home_url();
 		$permalink = get_permalink( $post_id );
 		if ( 0 !== strpos( $permalink, $home_url ) ) {
 			/*
 			 * Sometimes site_url doesn't return the siteurl. See https://wordpress.org/support/topic/wp-super-cache-not-refreshing-post-after-comments-made
-			 * Replaced site_url with home_url - https://github.com/Automattic/wp-super-cache/pull/612 .
+			 * Replaced site_url with home_url - https://github.com/Automattic/wp-super-cache/pull/613 .
 			 */
 			$DONOTREMEMBER = 1;
 			wp_cache_debug( "get_current_url_supercache_dir: WARNING! home_url ($home_url) not found in permalink ($permalink).", 1 );
@@ -595,10 +595,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 				$uri = '';
 			}
 		} else {
-			$uri = str_replace( $home_url, '', $permalink );
-			if ( 0 !== strpos( $uri, $wp_cache_home_path ) ) {
-				$uri = rtrim( $wp_cache_home_path, '/' ) . $uri;
-			}
+			$uri = function_exists( 'wp_parse_url' ) ? (string) wp_parse_url( $permalink, PHP_URL_PATH ) : (string) parse_url( $permalink, PHP_URL_PATH );
 		}
 	} else {
 		$uri = strtolower( $wp_cache_request_uri );
@@ -615,8 +612,8 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	} else {
 		$dir = do_cacheaction( 'supercache_dir', $dir );
 	}
-	$dir = $cache_path . 'supercache/' . $dir . '/';
-	if ( is_array( $cached_direct_pages ) && in_array( $_SERVER['REQUEST_URI'], $cached_direct_pages ) ) {
+	$dir = $cache_path . 'supercache/' . trim( $dir, '/' ) . '/';
+	if ( is_array( $cached_direct_pages ) && in_array( $_SERVER['REQUEST_URI'], $cached_direct_pages, true ) ) {
 		$dir = ABSPATH . $uri . '/';
 	}
 	$dir = str_replace( '..', '', str_replace( '//', '/', $dir ) );
@@ -627,7 +624,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	return $dir;
 }
 
-/*
+/**
  * Delete (or rebuild) all the files in one directory.
  * Checks if it is in the cache directory but doesn't allow files in the following directories to be deleted:
  * wp-content/cache/
