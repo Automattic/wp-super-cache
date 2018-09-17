@@ -2786,23 +2786,34 @@ function wp_cache_post_edit( $post_id ) {
 function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 	global $wp_cache_object_cache;
 
-	if ( $wp_cache_object_cache )
+	if ( $wp_cache_object_cache ) {
 		reset_oc_version();
+	}
 
-	$post_id = intval( $post_id );
-	if( $post_id == 0 )
+	$post_id = (int) $post_id;
+	if ( 0 === $post_id ) {
 		return true;
+	}
 
-	$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
+	$permalink = get_permalink( $post_id );
 	if ( false !== strpos( $permalink, '?' ) ) {
 		wp_cache_debug( 'wp_cache_post_id_gc: NOT CLEARING CACHE. Permalink has a "?". ' . $permalink );
 		return false;
 	}
-	$dir = get_current_url_supercache_dir( $post_id );
-	wp_cache_debug( "wp_cache_post_id_gc post_id: $post_id " . get_permalink( $post_id ) . " clearing cache in $dir.", 4 );
+
+	$home_url = get_option( 'home' );
+	if ( preg_match( '`^' . preg_quote( untrailingslashit( $home_url ), '`' ) . '(/.*)$`', trailingslashit( $permalink ), $matches ) ) {
+		$rel_path = ltrim( $matches[1], '/' );
+		$dir      = get_supercache_dir() . $rel_path;
+	} else {
+		$rel_path = trailingslashit( str_replace( $home_url, '', $permalink ) );
+		$dir      = get_current_url_supercache_dir( $post_id );
+	}
+
+	wp_cache_debug( 'wp_cache_post_id_gc post_id: ' . $post_id . "($rel_path) " . $permalink . " clearing cache in $dir.", 4 );
 	if ( $all ) {
 		prune_super_cache( $dir, true, true );
-		do_action( 'gc_cache', 'prune', $permalink );
+		do_action( 'gc_cache', 'prune', $rel_path );
 		@rmdir( $dir );
 		$supercache_home = get_supercache_dir();
 		wp_cache_debug( "wp_cache_post_id_gc clearing cache in {$supercache_home}page/." );
@@ -2811,7 +2822,7 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 	} else {
 		wp_cache_debug( "wp_cache_post_id_gc clearing cached index files in $dir.", 4 );
 		prune_super_cache( $dir, true, true );
-		do_action( 'gc_cache', 'prune', $permalink );
+		do_action( 'gc_cache', 'prune', $rel_path );
 	}
 	return true;
 }
