@@ -16,12 +16,10 @@ function domain_mapping_gc_cache( $function, $directory ) {
 
 	switch ( $function ) {
 		case 'rebuild':
-			@wp_cache_rebuild_or_delete( $cache_path . 'supercache/' . $sitedir . $directory . 'index.html' );
-			@wp_cache_rebuild_or_delete( $cache_path . 'supercache/' . $sitedir . $directory . 'index.html.gz' );
+			wpsc_rebuild_files( $cache_path . 'supercache/' . $sitedir . $directory );
 			break;
 		case 'prune':
-			prune_super_cache( $cache_path . 'supercache/' . $sitedir . $directory . 'index.html', true, true );
-			prune_super_cache( $cache_path . 'supercache/' . $sitedir . $directory . 'index.html.gz', true, true );
+			wpsc_delete_files( $cache_path . 'supercache/' . $sitedir . $directory );
 			break;
 	}
 }
@@ -85,7 +83,7 @@ function wp_supercache_domain_mapping_admin() {
 			) . '</strong></p>';
 		}
 
-		echo '<div class="submit"><input class="button-primary" ' . SUBMITDISABLED . 'type="submit" value="' . esc_html__( 'Update', 'wp-super-cache' ) . '" /></div>';
+		echo '<div class="submit"><input class="button-primary" ' . SUBMITDISABLED . ' type="submit" value="' . esc_html__( 'Update', 'wp-super-cache' ) . '" /></div>';
 		wp_nonce_field( 'wp-cache' );
 		?>
 		</form>
