@@ -73,7 +73,7 @@ if (
 
 $wp_start_time = microtime();
 
-if ( $wp_cache_not_logged_in && wp_cache_get_cookies_values() ) {
+if ( $wp_cache_not_logged_in && wpsc_get_basic_cookies_values() ) {
 	wp_cache_debug( 'Caching disabled for logged in users on settings page.' );
 	return true;
 }
