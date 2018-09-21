@@ -319,6 +319,25 @@ function wp_cache_late_loader() {
 	wp_cache_phase2();
 }
 
+/**
+ * Gets basic cookies.
+ *
+ * @return array
+ */
+function wpsc_get_basic_cookies() {
+	$logged_in_cookie = 'wordpress_logged_in_';
+	if ( defined( 'LOGGED_IN_COOKIE' ) && 0 !== strpos( LOGGED_IN_COOKIE, $logged_in_cookie ) ) {
+		$logged_in_cookie = LOGGED_IN_COOKIE;
+	}
+
+	return array( 'wp-postpass_', $logged_in_cookie, 'comment_author_' );
+}
+
+/**
+ * Gets basic cookies values.
+ *
+ * @return array
+ */
 function wpsc_get_basic_cookies_values() {
 	static $string;
 
