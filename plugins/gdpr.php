@@ -9,7 +9,7 @@ if ( 1 === $cache_gdpr ) {
 	 * Forces caching (for "known" users) because it doesn't work if get_cookies returns non-empty string.
 	 * PR #616 fixes this issue. It's temporary workaround for testing purpose.
 	 */
-	if ( ! is_admin() && isset( $_COOKIE['gdpr'] ) ) {
+	if ( ! is_admin() && ( isset( $_COOKIE['gdpr'] ) || isset( $_COOKIE['wpgdprc-consent'] ) ) ) {
 		$wp_cache_saved_not_logged_in = $wp_cache_not_logged_in;
 		$wp_cache_not_logged_in       = 0;
 	}
@@ -37,7 +37,7 @@ function wpsc_gdpr_get_cookies_values( $string ) {
 		$cookie_consents = (array) json_decode( stripslashes( $_COOKIE['gdpr']['consent_types'] ) ); // WPCS: Input var ok, sanitization ok.
 
 		if ( ! empty( $cookie_consents ) ) {
-			$string             .= 'gdpr_consents_types=' . implode( '|', $cookie_consents );
+			$string             .= 'gdpr_consents_types=' . implode( '|', $cookie_consents ) . ',';
 			$super_cache_enabled = false; // Create only wp-cache file.
 		}
 	}
@@ -47,7 +47,17 @@ function wpsc_gdpr_get_cookies_values( $string ) {
 		$allowed_cookies = (array) json_decode( stripslashes( $_COOKIE['gdpr']['allowed_cookies'] ) ); // WPCS: Input var ok, sanitization ok.
 
 		if ( ! empty( $allowed_cookies ) ) {
-			$string             .= 'gdpr_allowed_cookies =' . implode( '|', $allowed_cookies );
+			$string             .= 'gdpr_allowed_cookies=' . implode( '|', $allowed_cookies ) . ',';
+			$super_cache_enabled = false; // Create only wp-cache file.
+		}
+	}
+
+	// Extracts wpgdprc-consent.
+	if ( isset( $_COOKIE['wpgdprc-consent'] ) ) {
+		$consents = is_string( $_COOKIE['wpgdprc-consent'] ) ? stripslashes( $_COOKIE['wpgdprc-consent'] ) : ''; // WPCS: Input var ok, sanitization ok.
+
+		if ( ! empty( $consents ) ) {
+			$string             .= 'gdpr_consents=' . $consents . ',';
 			$super_cache_enabled = false; // Create only wp-cache file.
 		}
 	}
