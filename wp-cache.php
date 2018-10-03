@@ -1618,7 +1618,7 @@ function wp_lock_down() {
 	$new_lockdown_desc =  $wp_lock_down == '1' ? __( 'Disable', 'wp-super-cache' ) : __( 'Enable', 'wp-super-cache' );
 	echo '<form name="wp_lock_down" action="#lockdown" method="post">';
 	echo "<input type='hidden' name='wp_lock_down' value='{$new_lockdown}' />";
-	echo '<div class="submit"><input class="button-primary" type="submit" ' . SUBMITDISABLED . ' value="' . esc_html( $new_lockdown_desc . ' ' . __( 'Lock Down', 'wp-super-cache' ) ) . '" /></div>';
+	echo '<div class="submit"><input class="button-primary" type="submit" ' . SUBMITDISABLED . ' value="' . esc_attr( $new_lockdown_desc . ' ' . __( 'Lock Down', 'wp-super-cache' ) ) . '" /></div>';
 	wp_nonce_field( 'wp-cache' );
 	echo '</form>';
 
@@ -1671,7 +1671,7 @@ function wp_lock_down() {
 		) . '</p>';
 		echo '<p>' . esc_html__( 'Make the textbox blank to remove it from the list of direct pages and delete the cached file.', 'wp-super-cache' ) . '</p>';
 
-		echo '<div class="submit"><input class="button-primary" type="submit" ' . SUBMITDISABLED . ' value="' . __( 'Update Direct Pages', 'wp-super-cache' ) . '" /></div>';
+		echo '<div class="submit"><input class="button-primary" type="submit" ' . SUBMITDISABLED . ' value="' . esc_attr__( 'Update Direct Pages', 'wp-super-cache' ) . '" /></div>';
 	}
 	wp_nonce_field( 'wp-cache' );
 	echo '</form>';
