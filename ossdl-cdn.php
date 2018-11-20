@@ -7,7 +7,6 @@ if ( ! isset( $ossdlcdn ) ) {
 }
 
 if ( 1 === $ossdlcdn && ! is_admin() ) {
-	scossdl_off_get_options();
 	add_action( 'init', 'do_scossdl_off_ob_start' );
 }
 
@@ -30,8 +29,12 @@ function scossdl_off_get_options() {
 
 	$ossdl_off_blog_url = get_option( 'ossdl_off_blog_url' );
 	if ( false === $ossdl_off_blog_url ) {
-		$ossdl_off_blog_url = apply_filters( 'ossdl_off_blog_url', untrailingslashit( get_site_url() ) );
+		$ossdl_off_blog_url = untrailingslashit( get_site_url() );
 		add_option( 'ossdl_off_blog_url', $ossdl_off_blog_url );
+	}
+
+	if ( has_filter( 'ossdl_off_blog_url' ) ) {
+		$ossdl_off_blog_url = untrailingslashit( apply_filters( 'ossdl_off_blog_url', $ossdl_off_blog_url ) );
 	}
 
 	$ossdl_off_cdn_url = get_option( 'ossdl_off_cdn_url' );
@@ -108,15 +111,18 @@ function scossdl_off_exclude_match( $match, $excludes ) {
 /**
  * Compute string modulo, based on SHA1 hash
  *
- * @param string $str
- * @param int    $mod
+ * @param string $str The string.
+ * @param int    $mod The divisor.
  *
- * @return int
+ * @return int The remainder.
  */
 function scossdl_string_mod( $str, $mod ) {
-	/* The full SHA1 is too large for PHP integer types. This should be
-	 * enough for our purpose */
+	/**
+	 * The full SHA1 is too large for PHP integer types.
+	 * This should be enough for our purpose.
+	 */
 	$num = hexdec( substr( sha1( $str ), 0, 5 ) );
+
 	return $num % $mod;
 }
 
@@ -126,8 +132,7 @@ function scossdl_string_mod( $str, $mod ) {
  * Called by #scossdl_off_filter.
  */
 function scossdl_off_rewriter( $match ) {
-	global $ossdl_off_blog_url, $ossdl_off_cdn_url, $ossdl_https;
-	global $ossdl_off_excludes, $ossdl_arr_of_cnames;
+	global $ossdl_off_blog_url, $ossdl_https, $ossdl_off_excludes, $ossdl_arr_of_cnames;
 	static $count_cnames = null, $include_dirs = null;
 
 	// Set up static variables. Run once only.
@@ -170,6 +175,10 @@ function scossdl_off_additional_directories() {
 
 /**
  * Output filter which runs the actual plugin logic.
+ *
+ * @param  string $content The content of the output buffer.
+ *
+ * @return string The rewritten content.
  */
 function scossdl_off_filter( $content ) {
 	global $ossdl_off_blog_url, $ossdl_off_cdn_url;
@@ -189,7 +198,7 @@ function scossdl_off_filter( $content ) {
 		$ossdl_off_excludes = array();
 	}
 
-	if ( ! in_array( $ossdl_off_cdn_url, (array) $ossdl_arr_of_cnames ) ) {
+	if ( ! in_array( $ossdl_off_cdn_url, (array) $ossdl_arr_of_cnames, true ) ) {
 		$ossdl_arr_of_cnames = array_merge( array( $ossdl_off_cdn_url ), (array) $ossdl_arr_of_cnames );
 	}
 
@@ -204,6 +213,8 @@ function scossdl_off_filter( $content ) {
 function do_scossdl_off_ob_start() {
 	global $ossdl_off_blog_url, $ossdl_off_cdn_url;
 
+	scossdl_off_get_options();
+
 	if ( ! empty( $ossdl_off_cdn_url ) &&
 		$ossdl_off_blog_url !== $ossdl_off_cdn_url
 	) {
@@ -211,24 +222,27 @@ function do_scossdl_off_ob_start() {
 	}
 }
 
+/**
+ * Update CDN settings to the options database table.
+ */
 function scossdl_off_update() {
 
 	if ( isset( $_POST['action'], $_POST['_wpnonce'] )
-		&& 'update_ossdl_off' === $_POST['action']
+		&& 'update_ossdl_off' === $_POST['action'] // WPCS: sanitization ok.
 		&& wp_verify_nonce( $_POST['_wpnonce'], 'wp-cache' )
 	) {
-		update_option( 'ossdl_off_cdn_url', untrailingslashit( $_POST['ossdl_off_cdn_url'] ) );
-		update_option( 'ossdl_off_blog_url', untrailingslashit( $_POST['ossdl_off_blog_url'] ) );
+		update_option( 'ossdl_off_cdn_url', untrailingslashit( wp_unslash( $_POST['ossdl_off_cdn_url'] ) ) ); // WPSC: sanitization ok.
+		update_option( 'ossdl_off_blog_url', untrailingslashit( wp_unslash( $_POST['ossdl_off_blog_url'] ) ) ); // WPSC: sanitization ok.
 
 		if ( empty( $_POST['ossdl_off_include_dirs'] ) ) {
 			$include_dirs = implode( ',', scossdl_off_default_inc_dirs() );
 		} else {
-			$include_dirs = sanitize_text_field( stripslashes( $_POST['ossdl_off_include_dirs'] ) );
+			$include_dirs = sanitize_text_field( wp_unslash( $_POST['ossdl_off_include_dirs'] ) ); // WPSC: validation ok,sanitization ok.
 		}
 		update_option( 'ossdl_off_include_dirs', $include_dirs );
 
-		update_option( 'ossdl_off_exclude', sanitize_text_field( stripslashes( $_POST['ossdl_off_exclude'] ) ) );
-		update_option( 'ossdl_cname', sanitize_text_field( stripslashes( $_POST['ossdl_cname'] ) ) );
+		update_option( 'ossdl_off_exclude', sanitize_text_field( wp_unslash( $_POST['ossdl_off_exclude'] ) ) ); // WPSC: sanitization ok.
+		update_option( 'ossdl_cname', sanitize_text_field( wp_unslash( $_POST['ossdl_cname'] ) ) ); // WPSC: sanitization ok.
 
 		$ossdl_https = empty( $_POST['ossdl_https'] ) ? 0 : 1;
 		$ossdlcdn    = empty( $_POST['ossdlcdn'] ) ? 0 : 1;
@@ -238,9 +252,12 @@ function scossdl_off_update() {
 	}
 }
 
+/**
+ * Show CDN settings.
+ */
 function scossdl_off_options() {
 	global $ossdlcdn, $ossdl_off_blog_url, $ossdl_off_cdn_url, $ossdl_cname, $ossdl_https;
-	global $ossdl_off_include_dirs, $ossdl_off_excludes, $ossdl_arr_of_cnames;
+	global $ossdl_off_include_dirs, $ossdl_off_excludes;
 
 	scossdl_off_update();
 
@@ -262,57 +279,57 @@ function scossdl_off_options() {
 		<p><?php printf( __( '<strong style="color: red">WARNING:</strong> Your siteurl and homeurl are different. The plugin is using %s as the homepage URL of your site but if that is wrong please use the filter "ossdl_off_blog_url" to fix it.', 'wp-super-cache' ), '<code>' . esc_html( $ossdl_off_blog_url ) . '</code>' ); ?></p>
 	<?php } ?>
 
-		<p><?php _e( 'You can define different CDN URLs for each site on a multsite network.', 'wp-super-cache' ); ?></p>
+		<p><?php esc_html_e( 'You can define different CDN URLs for each site on a multsite network.', 'wp-super-cache' ); ?></p>
 		<p><form method="post" action="">
 		<?php wp_nonce_field( 'wp-cache' ); ?>
 		<table class="form-table"><tbody>
 			<tr valign="top">
 				<td style='text-align: right'>
-					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" <?php echo $ossdlcdn ? 'checked' : ''; ?> />
+					<input id='ossdlcdn' type="checkbox" name="ossdlcdn" value="1" <?php checked( $ossdlcdn ); ?> />
 				</td>
-				<th scope="row"><label for="ossdlcdn"><?php _e( 'Enable CDN Support', 'wp-super-cache' ); ?></label></th>
+				<th scope="row"><label for="ossdlcdn"><?php esc_html_e( 'Enable CDN Support', 'wp-super-cache' ); ?></label></th>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="ossdl_off_cdn_url"><?php _e( 'Site URL', 'wp-super-cache' ); ?></label></th>
+				<th scope="row"><label for="ossdl_off_cdn_url"><?php esc_html_e( 'Site URL', 'wp-super-cache' ); ?></label></th>
 				<td>
-					<input type="text" name="ossdl_off_blog_url" value="<?php echo esc_url( untrailingslashit( $ossdl_off_blog_url ) ); ?>" size="64" class="regular-text code" /><br />
+					<input type="text" name="ossdl_off_blog_url" value="<?php echo esc_attr( untrailingslashit( $ossdl_off_blog_url ) ); ?>" size="64" class="regular-text code" /><br />
 					<span class="description"><?php _e( 'The URL of your site. No trailing <code>/</code> please.', 'wp-super-cache' ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="ossdl_off_cdn_url"><?php _e( 'Off-site URL', 'wp-super-cache' ); ?></label></th>
+				<th scope="row"><label for="ossdl_off_cdn_url"><?php esc_html_e( 'Off-site URL', 'wp-super-cache' ); ?></label></th>
 				<td>
-					<input type="text" name="ossdl_off_cdn_url" value="<?php echo esc_url( $ossdl_off_cdn_url ); ?>" size="64" class="regular-text code" /><br />
+					<input type="text" name="ossdl_off_cdn_url" value="<?php echo esc_attr( $ossdl_off_cdn_url ); ?>" size="64" class="regular-text code" /><br />
 					<span class="description"><?php printf( __( 'The new URL to be used in place of %1$s for rewriting. No trailing <code>/</code> please.<br />Example: <code>%2$s</code>.', 'wp-super-cache' ), esc_html( get_site_url() ), esc_html( $example_cdn_uri ) ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="ossdl_off_include_dirs"><?php _e( 'Include directories', 'wp-super-cache' ); ?></label></th>
+				<th scope="row"><label for="ossdl_off_include_dirs"><?php esc_html_e( 'Include directories', 'wp-super-cache' ); ?></label></th>
 				<td>
 					<input type="text" name="ossdl_off_include_dirs" value="<?php echo esc_attr( implode( ',', $ossdl_off_include_dirs ) ); ?>" size="64" class="regular-text code" /><br />
 					<span class="description"><?php _e( 'Directories to include in static file matching. Use a comma as the delimiter. Default is <code>wp-content, wp-includes</code>, which will be enforced if this field is left empty.', 'wp-super-cache' ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="ossdl_off_exclude"><?php _e( 'Exclude if substring', 'wp-super-cache' ); ?></label></th>
+				<th scope="row"><label for="ossdl_off_exclude"><?php esc_html_e( 'Exclude if substring', 'wp-super-cache' ); ?></label></th>
 				<td>
 					<input type="text" name="ossdl_off_exclude" value="<?php echo esc_attr( implode( ',', $ossdl_off_excludes ) ); ?>" size="64" class="regular-text code" /><br />
 					<span class="description"><?php _e( 'Excludes something from being rewritten if one of the above strings is found in the URL. Use a comma as the delimiter like this, <code>.php, .flv, .do</code>, and always include <code>.php</code> (default).', 'wp-super-cache' ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="ossdl_cname"><?php _e( 'Additional CNAMES', 'wp-super-cache' ); ?></label></th>
+				<th scope="row"><label for="ossdl_cname"><?php esc_html_e( 'Additional CNAMES', 'wp-super-cache' ); ?></label></th>
 				<td>
 					<input type="text" name="ossdl_cname" value="<?php echo esc_attr( $ossdl_cname ); ?>" size="64" class="regular-text code" /><br />
 					<span class="description"><?php printf( __( 'These <a href="https://www.wikipedia.org/wiki/CNAME_record">CNAMES</a> will be used in place of %1$s for rewriting (in addition to the off-site URL above). Use a comma as the delimiter. For pages with a large number of static files, this can improve browser performance. CNAMEs may also need to be configured on your CDN.<br />Example: %2$s', 'wp-super-cache' ), esc_html( get_site_url() ), esc_html( $example_cnames ) ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row" colspan='2'><label><input type='checkbox' name='ossdl_https' value='1' <?php echo $ossdl_https ? 'checked' : ''; ?> /> <?php _e( 'Skip https URLs to avoid "mixed content" errors', 'wp-super-cache' ); ?></label></th>
+				<th scope="row" colspan='2'><label><input type='checkbox' name='ossdl_https' value='1' <?php checked( $ossdl_https ); ?> /><?php esc_html_e( 'Skip https URLs to avoid "mixed content" errors', 'wp-super-cache' ); ?></label></th>
 			</tr>
 		</tbody></table>
 		<input type="hidden" name="action" value="update_ossdl_off" />
-		<p class="submit"><input type="submit" class="button-primary" value="<?php _e( 'Save Changes', 'wp-super-cache' ); ?>" /></p>
+		<p class="submit"><input type="submit" class="button-primary" value="<?php esc_attr_e( 'Save Changes', 'wp-super-cache' ); ?>" /></p>
 		</form></p>
 		<p><?php _e( 'CDN functionality provided by <a href="https://wordpress.org/plugins/ossdl-cdn-off-linker/">OSSDL CDN Off Linker</a> by <a href="http://mark.ossdl.de/">Mark Kubacki</a>', 'wp-super-cache' ); ?></p>
 	<?php
