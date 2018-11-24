@@ -2085,8 +2085,8 @@ function wp_cache_debug_settings() {
 	if ( ! isset( $wp_cache_debug_log ) || $wp_cache_debug_log == '' ) {
 		extract( wpsc_create_debug_log() ); // $wp_cache_debug_log, $wp_cache_debug_username
 	}
-	$log_file_link = "<a href='" . site_url( str_replace( ABSPATH, '', "{$cache_path}view_{$wp_cache_debug_log}" ) ) . "'>$wp_cache_debug_log</a>";
-	$raw_log_file_link = "<a href='" . site_url( str_replace( ABSPATH, '', "{$cache_path}{$wp_cache_debug_log}" ) ) . "'>" . __( 'RAW', 'wp-super-cache' ) . "</a>";
+	$log_file_link = "<a href='" . site_url( substr( "{$cache_path}view_{$wp_cache_debug_log}", strlen( ABSPATH ) ) ) . "'>$wp_cache_debug_log</a>";
+	$raw_log_file_link = "<a href='" . site_url( substr( "{$cache_path}{$wp_cache_debug_log}", strlen( ABSPATH ) ) ) . "'>" . __( 'RAW', 'wp-super-cache' ) . "</a>";
 	if ( $wp_super_cache_debug == 1 ) {
 		echo "<p>" . sprintf( __( 'Currently logging to: %s (%s)', 'wp-super-cache' ), $log_file_link, $raw_log_file_link ) . "</p>";
 	} else {
