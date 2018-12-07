@@ -3,8 +3,12 @@
 function domain_mapping_gc_cache( $function, $directory ) {
 	global $cache_path;
 
-	$siteurl = function_exists( 'domain_mapping_warning' ) ? domain_mapping_siteurl( false ) : false;
-	if ( false === $siteurl ) {
+	if ( ! function_exists( 'domain_mapping_warning' ) ) {
+		return;
+	}
+
+	$siteurl = domain_mapping_siteurl( false );
+	if ( ! $siteurl ) {
 		return;
 	}
 
@@ -27,8 +31,12 @@ function domain_mapping_gc_cache( $function, $directory ) {
 function domain_mapping_supercachedir( $dir ) {
 	global $cache_path;
 
-	$siteurl = function_exists( 'domain_mapping_warning' ) ? domain_mapping_siteurl( false ) : false;
-	if ( false === $siteurl ) {
+	if ( ! function_exists( 'domain_mapping_warning' ) ) {
+		return $dir;
+	}
+
+	$siteurl = domain_mapping_siteurl( false );
+	if ( ! $siteurl ) {
 		return $dir;
 	}
 
