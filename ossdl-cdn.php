@@ -272,13 +272,44 @@ function scossdl_off_options() {
 	$example_cdn_uri .= '/wp-includes/js/jquery/jquery-migrate.js';
 	$example_cdn_uri  = esc_url( $example_cdn_uri );
 	?>
+		<h3><?php _e( 'Simple CDN' ); ?></h3>
 		<p><?php _e( 'Your website probably uses lots of static files. Image, Javascript and CSS files are usually static files that could just as easily be served from another site or CDN. Therefore, this plugin replaces any links in the <code>wp-content</code> and <code>wp-includes</code> directories (except for PHP files) on your site with the URL you provide below. That way you can either copy all the static content to a dedicated host or mirror the files to a CDN by <a href="https://knowledgelayer.softlayer.com/faq/how-does-origin-pull-work" target="_blank">origin pull</a>.', 'wp-super-cache' ); ?></p>
 		<p><?php printf( __( '<strong style="color: red">WARNING:</strong> Test some static urls e.g., %s  to ensure your CDN service is fully working before saving changes.', 'wp-super-cache' ), '<code>' . esc_html( $example_cdn_uri ) . '</code>' ); ?></p>
 
 	<?php if ( get_home_url() !== $ossdl_off_blog_url ) { ?>
 		<p><?php printf( __( '<strong style="color: red">WARNING:</strong> Your siteurl and homeurl are different. The plugin is using %s as the homepage URL of your site but if that is wrong please use the filter "ossdl_off_blog_url" to fix it.', 'wp-super-cache' ), '<code>' . esc_html( $ossdl_off_blog_url ) . '</code>' ); ?></p>
 	<?php } ?>
-
+		<h3><?php _e( 'Jetpack CDN' ); ?></h3>
+		<p><?php printf(
+			__( 'The free %1$sJetpack plugin%2$s has a %3$sSite Accelerator%2$s feature that is better than the CDN in this plugin as it will offload requests for static files off your server. ', 'wp-super-cache' ),
+			'<a href="https://jetpack.com/">',
+			'</a>',
+			'<a href="https://jetpack.com/support/site-accelerator/">'
+		); ?></p>
+	<?php
+	if ( class_exists( 'Jetpack' ) ) {
+		if ( Jetpack::is_module_active( 'photon' ) ) {
+			?><p><?php printf(
+				__( 'You already have Jetpack installed and %1$sSite Accelerator%2$s enabled on this blog. <strong>We recommend you do not use the CDN on this page.</strong>', 'wp-super-cache' ),
+				'<a href="https://jetpack.com/support/site-accelerator/">',
+				'</a>'
+			); ?></p><?php
+		} else {
+			?><p><?php printf(
+				__( 'You already have Jetpack installed but %1$sSite Accelerator%2$s is disabled on this blog. Enable it on the %3$sJetpack settings page%2$s.', 'wp-super-cache' ),
+				'<a href="https://jetpack.com/support/site-accelerator/">',
+				'</a>',
+				'<a href="' . admin_url( 'admin.php?page=jetpack#/settings' ) . '">'
+			); ?></p><?php
+		}
+	} else {
+			?><p><?php printf(
+				__( '%1$sJetpack%2$s is not installed on your site. The Site Accelerator feature is free to use on any WordPress site. You should give it a go!', 'wp-super-cache' ),
+				'<a href="https://jetpack.com/">',
+				'</a>'
+			); ?></p><?php
+	}
+	?>
 		<p><?php esc_html_e( 'You can define different CDN URLs for each site on a multsite network.', 'wp-super-cache' ); ?></p>
 		<p><form method="post" action="">
 		<?php wp_nonce_field( 'wp-cache' ); ?>
