@@ -300,11 +300,12 @@ function scossdl_off_options() {
 			); ?></p><?php
 		}
 	} else {
-			?><p><?php printf(
-				__( '%1$sJetpack%2$s is not installed on your site. The Site Accelerator feature is free to use on any WordPress site and offers the same benefit as other CDN services. You should give it a try!', 'wp-super-cache' ),
+			?><p><strong><?php printf(
+				__( '%1$sJetpack%2$s was not found on your site but %3$syou can install it%2$s. The Site Accelerator feature is free to use on any WordPress site and offers the same benefit as other CDN services. You should give it a try!', 'wp-super-cache' ),
 				'<a href="https://jetpack.com/">',
-				'</a>'
-			); ?></p><?php
+				'</a>',
+				'<a href="' . admin_url( 'plugin-install.php?s=jetpack&tab=search&type=term' ) . '">'
+			); ?></strong></p><?php
 	}
 	if ( class_exists( 'Jetpack' ) && Jetpack::is_module_active( 'photon' ) ) {
 		return;
