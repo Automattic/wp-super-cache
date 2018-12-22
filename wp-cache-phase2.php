@@ -1059,18 +1059,28 @@ function is_writeable_ACLSafe( $path ) {
 	return true;
 }
 
-function wp_cache_setting( $field, $value ) {
-	global $wp_cache_config_file;
+function wpsc_var_export( $var ) {
 
-	$GLOBALS[ $field ] = $value;
-	if ( is_numeric( $value ) ) {
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $value;", $wp_cache_config_file );
-	} elseif ( is_object( $value ) || is_array( $value ) ) {
-		$text = var_export( $value, true );
-		$text = preg_replace( '/[\s]+/', ' ', $text );
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
-	} else {
-		wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
+	if ( is_string( $var ) ) {
+		return "'" . addslashes($var) . "'";
+	}
+	elseif ( is_numeric( $var ) ) {
+		return strval( $var );
+	}
+	elseif ( is_array( $var ) ) {
+		$str = implode( ', ', array_map( 'wpsc_var_export', $var ) );
+		return empty( $str ) ? 'array()' : 'array( ' . $str . ' )';
+	}
+
+	return str_replace( PHP_EOL, ' ', var_export( $var, true ) );
+}
+
+function wp_cache_setting( $field, $value ) {
+
+	if ( $value !== $GLOBALS[ $field ] ) {
+		$new_value = '$' . $field . ' = ' . wpsc_var_export( $value ) . ';';
+		wp_cache_replace_line( '^\s*\$' . $field . '\s*=', $new_value , $GLOBALS['wp_cache_config_file'] );
+		$GLOBALS[ $field ] = $value;
 	}
 }
 
@@ -1132,14 +1142,30 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 			}
 		}
 	} else {
-		$done = false;
+		$reg_exps = array( '/^\s*define\s*\(/', '/^\s*\$/' );
+		foreach( $reg_exps as $reg_exp ) {
+			if ( preg_match( $reg_exp, $new ) ) {
+				break;
+			}
+		}
+
+		$done  = false;
+		$state = false;
 		foreach( (array) $lines as $line ) {
-			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
-				fputs($fd, $line);
-			} else {
+
+			if ( false !== strpos( $line, '{' ) ) {
+				$state = true;
+			}
+
+			// Insert new line before first variable/constant.
+			if ( ! $done && ! $state && preg_match( $reg_exp, $line ) ) {
 				fputs($fd, "$new\n");
-				fputs($fd, $line);
 				$done = true;
+			}
+			fputs($fd, $line);
+
+			if ( false !== strpos( $line, '}' ) ) {
+				$state = false;
 			}
 		}
 	}

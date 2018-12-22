@@ -1523,7 +1523,7 @@ function wp_update_lock_down() {
 
 	if ( isset( $_POST[ 'wp_lock_down' ] ) && $valid_nonce ) {
 		$wp_lock_down = $_POST[ 'wp_lock_down' ] == '1' ? '1' : '0';
-		wp_cache_replace_line( '^.*WPLOCKDOWN', "if ( ! defined( 'WPLOCKDOWN' ) ) define( 'WPLOCKDOWN', '$wp_lock_down' );", $wp_cache_config_file );
+		wp_cache_replace_line( '^.*WPLOCKDOWN', "defined( 'WPLOCKDOWN' ) && define( 'WPLOCKDOWN', '$wp_lock_down' );", $wp_cache_config_file );
 		if ( false == defined( 'WPLOCKDOWN' ) )
 			define( 'WPLOCKDOWN', $wp_lock_down );
 		if ( $wp_lock_down == '0' && function_exists( 'prune_super_cache' ) )
@@ -1795,7 +1795,7 @@ function wp_cache_time_update() {
 }
 
 function wp_cache_edit_max_time() {
-	global $cache_max_time, $wp_cache_config_file, $valid_nonce, $super_cache_enabled, $cache_schedule_type, $cache_scheduled_time, $cache_schedule_interval, $cache_time_interval, $cache_gc_email_me, $wp_cache_preload_on;
+	global $cache_max_time, $super_cache_enabled, $cache_schedule_type, $cache_scheduled_time, $cache_schedule_interval, $cache_time_interval, $cache_gc_email_me, $wp_cache_preload_on;
 
 	$admin_url = admin_url( 'options-general.php?page=wpsupercache' );
 	$timezone_format = _x('Y-m-d G:i:s', 'timezone date format');
@@ -1876,6 +1876,11 @@ function wp_cache_edit_max_time() {
 }
 
 function wp_cache_sanitize_value($text, & $array) {
+
+	if ( function_exists( '_deprecated_function' ) ) {
+		_deprecated_function( __FUNCTION__, 'WP Super Cache 1.5.9' );
+	}
+
 	$text = esc_html(strip_tags($text));
 	$array = preg_split("/[\s,]+/", chop($text));
 	$text = var_export($array, true);
@@ -1884,23 +1889,19 @@ function wp_cache_sanitize_value($text, & $array) {
 }
 
 function wp_cache_update_rejected_ua() {
-	global $cache_rejected_user_agent, $wp_cache_config_file, $valid_nonce;
 
 	if ( !function_exists( 'apache_request_headers' ) ) return;
 
-	if ( isset( $_POST[ 'wp_rejected_user_agent' ] ) && $valid_nonce ) {
-		$_POST[ 'wp_rejected_user_agent' ] = str_replace( ' ', '___', $_POST[ 'wp_rejected_user_agent' ] );
-		$text = str_replace( '___', ' ', wp_cache_sanitize_value( $_POST[ 'wp_rejected_user_agent' ], $cache_rejected_user_agent ) );
-		wp_cache_replace_line( '^ *\$cache_rejected_user_agent', "\$cache_rejected_user_agent = $text;", $wp_cache_config_file );
-		foreach( $cache_rejected_user_agent as $k => $ua ) {
-			$cache_rejected_user_agent[ $k ] = str_replace( '___', ' ', $ua );
-		}
-		reset( $cache_rejected_user_agent );
+	if ( isset( $_POST['wp_rejected_user_agent'], $_POST['_wpnonce'] )
+		&& wp_verify_nonce( $_POST['_wpnonce'], 'wp-cache' )
+	) {
+		$array = preg_split( "/[\r\n,]+/", stripslashes( $_POST['wp_rejected_user_agent'] ) );
+		$array = array_map( 'trim', array_filter( $array ) );
+		wp_cache_setting( 'cache_rejected_user_agent', $array );
 	}
 }
 
 function wp_cache_edit_rejected_ua() {
-	global $cache_rejected_user_agent, $wp_cache_config_file, $valid_nonce;
 
 	if ( ! function_exists( 'apache_request_headers' ) ) {
 		return;
@@ -1913,8 +1914,8 @@ function wp_cache_edit_rejected_ua() {
 	echo "<p>" . __( 'Strings in the HTTP &#8217;User Agent&#8217; header that prevent WP-Cache from caching bot, spiders, and crawlers&#8217; requests. Note that super cached files are still sent to these agents if they already exists.', 'wp-super-cache' ) . "</p>\n";
 	echo '<form name="wp_edit_rejected_user_agent" action="' . esc_url_raw( add_query_arg( 'tab', 'settings', $admin_url ) . '#useragents' ) . '" method="post">';
 	echo '<textarea name="wp_rejected_user_agent" cols="40" rows="4" style="width: 50%; font-size: 12px;" class="code">';
-	foreach( $cache_rejected_user_agent as $ua ) {
-		echo esc_html( $ua ) . "\n";
+	foreach( $GLOBALS['cache_rejected_user_agent'] as $ua ) {
+		echo esc_attr( $ua ) . "\n";
 	}
 	echo '</textarea> ';
 	echo '<div class="submit"><input class="button-primary" type="submit" ' . SUBMITDISABLED . 'value="' . __( 'Save UA Strings', 'wp-super-cache' ) . '" /></div>';
@@ -1924,24 +1925,29 @@ function wp_cache_edit_rejected_ua() {
 }
 
 function wp_cache_update_rejected_pages() {
-	global $wp_cache_config_file, $valid_nonce, $wp_cache_pages;
 
-	if ( isset( $_POST[ 'wp_edit_rejected_pages' ] ) && $valid_nonce ) {
+	if ( isset( $_POST['wp_edit_rejected_pages'], $_POST['_wpnonce'] )
+		&& wp_verify_nonce( $_POST['_wpnonce'], 'wp-cache' )
+	) {
 		$pages = array( 'single', 'pages', 'archives', 'tag', 'frontpage', 'home', 'category', 'feed', 'author', 'search' );
 		foreach( $pages as $page ) {
-			if ( isset( $_POST[ 'wp_cache_pages' ][ $page ] ) ) {
-				$value = 1;
-			} else {
-				$value = 0;
+
+			$value = empty( $_POST['wp_cache_pages'][ $page ] ) ? 0 : 1;
+			if ( $value === $GLOBALS['wp_cache_pages'][ $page ] ) {
+				continue;
 			}
-			wp_cache_replace_line('^ *\$wp_cache_pages\[ "' . $page . '" \]', "\$wp_cache_pages[ \"{$page}\" ] = $value;", $wp_cache_config_file);
-			$wp_cache_pages[ $page ] = $value;
+
+			$page_regexp = '\s*(' . preg_quote( "'" . $page . "'" ) . '|' . preg_quote( '"' . $page . '"' ) . ')\s*';
+			$new_value   = '$wp_cache_pages[' . wpsc_var_export( $page ) . '] = ' . wpsc_var_export( $value ) . ';';
+			wp_cache_replace_line( '^\s*\$wp_cache_pages\[' . $page_regexp . '\]', $new_value, $GLOBALS['wp_cache_config_file'] );
+
+			$GLOBALS['wp_cache_pages'][ $page ] = $value;
 		}
 	}
 }
 
 function wp_cache_edit_rejected_pages() {
-	global $wp_cache_config_file, $valid_nonce, $wp_cache_pages;
+	global $wp_cache_pages;
 
 	$admin_url = admin_url( 'options-general.php?page=wpsupercache' );
 	wp_cache_update_rejected_pages();
@@ -1968,17 +1974,17 @@ function wp_cache_edit_rejected_pages() {
 }
 
 function wp_cache_update_rejected_strings() {
-	global $cache_rejected_uri, $wp_cache_config_file, $valid_nonce;
 
-	if ( isset($_REQUEST['wp_rejected_uri']) && $valid_nonce ) {
-		$text = wp_cache_sanitize_value( str_replace( '\\\\', '\\', $_REQUEST['wp_rejected_uri'] ), $cache_rejected_uri );
-		wp_cache_replace_line('^ *\$cache_rejected_uri', "\$cache_rejected_uri = $text;", $wp_cache_config_file);
+	if ( isset( $_POST['wp_rejected_uri'], $_POST['_wpnonce'] )
+		&& wp_verify_nonce( $_POST['_wpnonce'], 'wp-cache' )
+	) {
+		$array = array_filter( preg_split( '/[\s,]+/', stripslashes( $_POST['wp_rejected_uri'] ) ) );
+		wp_cache_setting( 'cache_rejected_uri', $array );
 	}
 
 }
 
 function wp_cache_edit_rejected() {
-	global $cache_rejected_uri;
 
 	$admin_url = admin_url( 'options-general.php?page=wpsupercache' );
 	wp_cache_update_rejected_strings();
@@ -1987,8 +1993,8 @@ function wp_cache_edit_rejected() {
 	echo '<form name="wp_edit_rejected" action="' . esc_url_raw( add_query_arg( 'tab', 'settings', $admin_url ) . '#rejecturi' ) . '" method="post">';
 	echo "<p>" . __( 'Add here strings (not a filename) that forces a page not to be cached. For example, if your URLs include year and you dont want to cache last year posts, it&#8217;s enough to specify the year, i.e. &#8217;/2004/&#8217;. WP-Cache will search if that string is part of the URI and if so, it will not cache that page.', 'wp-super-cache' ) . "</p>\n";
 	echo '<textarea name="wp_rejected_uri" cols="40" rows="4" style="width: 50%; font-size: 12px;" class="code">';
-	foreach ($cache_rejected_uri as $file) {
-		echo esc_html( $file ) . "\n";
+	foreach ( $GLOBALS['cache_rejected_uri'] as $file) {
+		echo esc_attr( $file ) . "\n";
 	}
 	echo '</textarea> ';
 	echo '<div class="submit"><input class="button-primary" type="submit" ' . SUBMITDISABLED . 'value="' . __( 'Save Strings', 'wp-super-cache' ) . '" /></div>';
@@ -1997,11 +2003,12 @@ function wp_cache_edit_rejected() {
 }
 
 function wp_cache_update_accepted_strings() {
-	global $cache_acceptable_files, $wp_cache_config_file, $valid_nonce;
 
-	if ( isset( $_REQUEST[ 'wp_accepted_files' ] ) && $valid_nonce ) {
-		$text = wp_cache_sanitize_value( $_REQUEST[ 'wp_accepted_files' ], $cache_acceptable_files );
-		wp_cache_replace_line( '^ *\$cache_acceptable_files', "\$cache_acceptable_files = $text;", $wp_cache_config_file );
+	if ( isset( $_POST['wp_accepted_files'], $_POST['_wpnonce'] )
+		&& wp_verify_nonce( $_POST['_wpnonce'], 'wp-cache' )
+	) {
+		$array = array_filter( preg_split( '/[\s,]+/', stripslashes( $_POST['wp_accepted_files'] ) ) );
+		wp_cache_setting( 'cache_acceptable_files', $array );
 	}
 }
 
@@ -2016,7 +2023,7 @@ function wp_cache_edit_accepted() {
 	echo "<p>" . __( 'Add here those filenames that can be cached, even if they match one of the rejected substring specified above.', 'wp-super-cache' ) . "</p>\n";
 	echo '<textarea name="wp_accepted_files" cols="40" rows="8" style="width: 50%; font-size: 12px;" class="code">';
 	foreach ($cache_acceptable_files as $file) {
-		echo esc_html($file) . "\n";
+		echo esc_attr($file) . "\n";
 	}
 	echo '</textarea> ';
 	echo '<div class="submit"><input class="button-primary" type="submit" ' . SUBMITDISABLED . 'value="' . __( 'Save Files', 'wp-super-cache' ) . '" /></div>';
@@ -2025,7 +2032,7 @@ function wp_cache_edit_accepted() {
 }
 
 function wpsc_update_debug_settings() {
-	global $wp_super_cache_debug, $wp_cache_debug_log, $wp_cache_debug_ip, $cache_path, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
+	global $wp_super_cache_debug, $wp_cache_debug_log, $wp_cache_debug_ip, $cache_path, $valid_nonce, $wp_super_cache_comments;
 	global $wp_super_cache_front_page_check, $wp_super_cache_front_page_clear, $wp_super_cache_front_page_text, $wp_super_cache_front_page_notification, $wp_super_cache_advanced_debug;
 	global $wp_cache_debug_username;
 
@@ -2106,7 +2113,7 @@ function wpsc_update_debug_settings() {
 }
 
 function wp_cache_debug_settings() {
-	global $wp_super_cache_debug, $wp_cache_debug_log, $wp_cache_debug_ip, $cache_path, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
+	global $wp_super_cache_debug, $wp_cache_debug_log, $wp_cache_debug_ip, $cache_path, $wp_super_cache_comments;
 	global $wp_super_cache_front_page_check, $wp_super_cache_front_page_clear, $wp_super_cache_front_page_text, $wp_super_cache_front_page_notification, $wp_super_cache_advanced_debug;
 	global $wp_cache_debug_username;
 
