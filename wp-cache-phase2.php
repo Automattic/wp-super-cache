@@ -1110,10 +1110,10 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 	}
 	foreach( (array) $lines as $line ) {
 		if ( trim( $new ) == trim( $line ) ) {
-			wp_cache_debug( "Setting not changed: $new" );
+			wp_cache_debug( "wp_cache_replace_line: setting not changed - $new" );
 			return false;
 		} elseif ( preg_match( "/$old/", $line ) ) {
-			wp_cache_debug( "Changing line: " . trim( $line ) . " to *$new*" );
+			wp_cache_debug( "wp_cache_replace_line: changing line " . trim( $line ) . " to *$new*" );
 			$found = true;
 		}
 	}
@@ -1121,7 +1121,7 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 	$tmp_config_filename = tempnam( $GLOBALS['cache_path'], 'wpsc' );
 	rename( $tmp_config_filename, $tmp_wpcache_filename . ".php" );
 	$tmp_config_filename .= ".php";
-	wp_cache_debug( 'Writing to ' . $tmp_config_filename );
+	wp_cache_debug( 'wp_cache_replace_line: writing to ' . $tmp_config_filename );
 	$fd = fopen( $tmp_config_filename, 'w' );
 	if ( ! $fd ) {
 		if ( function_exists( 'set_transient' ) ) {
@@ -1152,7 +1152,7 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 	}
 	fclose( $fd );
 	rename( $tmp_config_filename, $my_file );
-	wp_cache_debug( 'Copying ' . $tmp_config_filename . ' to ' . $my_file );
+	wp_cache_debug( 'wp_cache_replace_line: moved ' . $tmp_config_filename . ' to ' . $my_file );
 
 	if ( function_exists( "opcache_invalidate" ) ) {
 		@opcache_invalidate( $my_file );
