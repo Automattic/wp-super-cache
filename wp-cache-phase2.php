@@ -328,24 +328,58 @@ function wp_cache_get_cookies_values() {
 		return $string;
 	}
 
-	if ( defined( 'COOKIEHASH' ) )
-		$cookiehash = preg_quote( constant( 'COOKIEHASH' ) );
-	else
-		$cookiehash = '';
-	$regex = "/^wp-postpass_$cookiehash|^comment_author_$cookiehash";
-	if ( defined( 'LOGGED_IN_COOKIE' ) )
-		$regex .= "|^" . preg_quote( constant( 'LOGGED_IN_COOKIE' ) );
-	else
-		$regex .= "|^wordpress_logged_in_$cookiehash";
-	$regex .= "/";
+	$cookiehash = defined( 'COOKIEHASH' ) ? preg_quote( constant( 'COOKIEHASH' ) ) : '';
+
+	$regex = array(
+		'^wp-postpass_' . $cookiehash,
+		'comment_author_' . $cookiehash,
+		defined( 'LOGGED_IN_COOKIE' ) ? ( '^' . preg_quote( constant( 'LOGGED_IN_COOKIE' ) ) ) : ( '^wordpress_logged_in_' . $cookiehash )
+	);
+	$regex = '/' . join( '|', $regex ) . '/';
+
+	$authenticated = false;
 	while ($key = key($_COOKIE)) {
 		if ( preg_match( $regex, $key ) ) {
 			wp_cache_debug( "wp_cache_get_cookies_values: $regex Cookie detected: $key", 5 );
-			$string .= $_COOKIE[ $key ] . ",";
+
+			// for authenticated users ( contains a cookie starting with "wordpress_logged_in_" )
+			// we need to exchange the username from cookie value with authenticated user role
+			// @see wp_cache_on_auth_cookie_setup & wp_cache_on_auth_cookie_clean
+			if( ! $authenticated && ( strpos( $key, ( 'wordpress_logged_in_' . $cookiehash ) ) !== false ) ) {
+				$cookie_role_key = 'wpsc_role';
+				$authenticated = true;
+				$wordpress_logged_in_cookie_data = explode( '|', $_COOKIE[ $key ] );
+				if( ! empty( $wordpress_logged_in_cookie_data ) && isset( $_COOKIE[ $cookie_role_key ] ) ) {
+					$wordpress_logged_in_cookie_data[ 0 ] = $_COOKIE[ $cookie_role_key ];
+					$string .= join( '|', $wordpress_logged_in_cookie_data ) . ",";
+				} else {
+					$string .= $_COOKIE[ $key ] . ",";
+				}
+			} else {
+				$string .= $_COOKIE[ $key ] . ",";
+			}
 		}
 		next($_COOKIE);
 	}
 	reset($_COOKIE);
+
+	echo '<pre>'; var_dump( __FILE__, $_SERVER[ 'HTTP_USER_AGENT' ] ); echo '</pre>'; die;
+
+	// for guests we need to implement caching based on user agents with some conditions
+	if( ! $authenticated ) {
+		$is_google_bot = false;
+		echo '<pre>'; var_dump( __FILE__, $_SERVER[ 'HTTP_USER_AGENT' ] ); echo '</pre>'; die;
+		if( eregi('Googlebot', $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+			// it says it's the lovely google
+			$ip = $_SERVER[ 'REMOTE_ADDR' ];
+			$name = gethostbyaddr( $ip );
+			// Now we have the name, look up the corresponding IP address.
+			$host = gethostbyname( $name );
+			if( eregi('Googlebot', $name ) ) {
+				$is_google_bot = ( $host == $ip );
+			}
+		}
+	}
 
 	// If you use this hook, make sure you update your .htaccess rules with the same conditions
 	$string = do_cacheaction( 'wp_cache_get_cookies_values', $string );
