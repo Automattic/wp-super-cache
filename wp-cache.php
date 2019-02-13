@@ -4232,3 +4232,41 @@ function wpsc_get_extra_cookies() {
 		return '';
 	}
 }
+
+/**
+ * Add possibility to prevent auth cookies sending
+ * @return bool
+ */
+function wpsc_can_send_auth_cookies() {
+    return (bool)apply_filters( 'wpsc_send_auth_cookies', true );
+}
+
+/**
+ * Callback to setup "wpsc_role" cookie with authenticated user's role
+ * @hooked in "set_logged_in_cookie" action
+ *
+ * @param string $logged_in_cookie The logged-in cookie.
+ * @param int    $expire           The time the login grace period expires as a UNIX timestamp.
+ *                                 Default is 12 hours past the cookie's expiration time.
+ * @param int    $expiration       The time when the logged-in authentication cookie expires as a UNIX timestamp.
+ *                                 Default is 14 days from now.
+ * @param int    $user_id          User ID.
+ * @param string $scheme           Authentication scheme. Default 'logged_in'.
+ */
+function wpsc_on_auth_cookie_setup( $logged_in_cookie, $expire, $expiration, $user_id, $scheme ) {
+    if ( ( $user = get_userdata( $user_id ) ) && wpsc_can_send_auth_cookies() ) {
+        setcookie( 'wpsc_role', $user->roles[0], $expire, COOKIEPATH, COOKIE_DOMAIN, ( $scheme == 'secure_auth' ), true );
+    }
+}
+add_action( 'set_logged_in_cookie', 'wpsc_on_auth_cookie_setup', 10, 5 );
+
+/**
+ * Callback to remove "wpsc_role" cookie
+ * @hooked in "clear_auth_cookie" action
+ */
+function wp_cache_on_auth_cookie_clean() {
+    if( wpsc_can_send_auth_cookies() ) {
+        setcookie( 'wpsc_role', ' ', time() - YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+    }
+}
+add_action( 'clear_auth_cookie', 'wp_cache_on_auth_cookie_clean' );

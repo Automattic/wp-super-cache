@@ -344,7 +344,7 @@ function wp_cache_get_cookies_values() {
 
 			// for authenticated users ( contains a cookie starting with "wordpress_logged_in_" )
 			// we need to exchange the username from cookie value with authenticated user role
-			// @see wp_cache_on_auth_cookie_setup & wp_cache_on_auth_cookie_clean
+			// @see wpsc_on_auth_cookie_setup & wp_cache_on_auth_cookie_clean
 			if( ! $authenticated && ( strpos( $key, ( 'wordpress_logged_in_' . $cookiehash ) ) !== false ) ) {
 				$cookie_role_key = 'wpsc_role';
 				$authenticated = true;
