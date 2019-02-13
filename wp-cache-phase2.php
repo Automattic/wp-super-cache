@@ -338,7 +338,7 @@ function wp_cache_get_cookies_values() {
 	$regex = '/' . join( '|', $regex ) . '/';
 
 	$authenticated = false;
-	while ($key = key($_COOKIE)) {
+	while ( $key = key( $_COOKIE ) ) {
 		if ( preg_match( $regex, $key ) ) {
 			wp_cache_debug( "wp_cache_get_cookies_values: $regex Cookie detected: $key", 5 );
 
@@ -363,22 +363,40 @@ function wp_cache_get_cookies_values() {
 	}
 	reset($_COOKIE);
 
-	echo '<pre>'; var_dump( __FILE__, $_SERVER[ 'HTTP_USER_AGENT' ] ); echo '</pre>'; die;
-
 	// for guests we need to implement caching based on user agents with some conditions
 	if( ! $authenticated ) {
+
+		// first, let's detect for google bot
 		$is_google_bot = false;
-		echo '<pre>'; var_dump( __FILE__, $_SERVER[ 'HTTP_USER_AGENT' ] ); echo '</pre>'; die;
-		if( eregi('Googlebot', $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+		if( preg_match( '/(googlebot)/', $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
 			// it says it's the lovely google
-			$ip = $_SERVER[ 'REMOTE_ADDR' ];
+			if( ! empty( $_SERVER[ 'HTTP_X_SUCURI_CLIENTIP' ] ) ) { // check by sucury
+				$ip = $_SERVER[ 'HTTP_X_SUCURI_CLIENTIP' ];
+			} elseif ( ! empty( $_SERVER[ 'HTTP_CLIENT_IP' ] ) ) { // check ip from share internet
+				$ip = $_SERVER[ 'HTTP_CLIENT_IP' ];
+			} elseif ( ! empty( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) { // check ip is pass from proxy
+				$ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
+			} else {
+				$ip = $_SERVER[ 'REMOTE_ADDR' ];
+			}
+
 			$name = gethostbyaddr( $ip );
 			// Now we have the name, look up the corresponding IP address.
 			$host = gethostbyname( $name );
-			if( eregi('Googlebot', $name ) ) {
+			if( preg_match( '/(googlebot)/', $name ) ) {
 				$is_google_bot = ( $host == $ip );
 			}
+
+			$is_google_bot = true;
 		}
+
+		// in case of none google bot, provide possibility to implement other conditional configuration
+		if( $is_google_bot ) {
+			$conditional_cache_config = array( 'googlebot' );
+		} else {
+			$conditional_cache_config = array();
+		}
+		$string .= join( ',', $conditional_cache_config ) . ',';
 	}
 
 	// If you use this hook, make sure you update your .htaccess rules with the same conditions
@@ -397,8 +415,11 @@ function wp_cache_get_cookies_values() {
 		}
 	}
 
-	if ( $string != '' )
+	//echo '<pre>'; var_dump( __FILE__, $string ); echo '</pre>';
+	if( $string != '' ) {
 		$string = md5( $string );
+	}
+	//echo '<pre>'; var_dump( __FILE__, $string ); echo '</pre>'; die;
 
 	wp_cache_debug( "wp_cache_get_cookies_values: return: $string", 5 );
 	return $string;
