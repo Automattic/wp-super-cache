@@ -394,7 +394,7 @@ function wp_cache_get_cookies_values() {
 		if( $is_google_bot ) {
 			$conditional_cache_config = array( 'googlebot' );
 		} else {
-			$conditional_cache_config = array();
+			$conditional_cache_config = array( '' );
 		}
 		$string .= join( ',', $conditional_cache_config ) . ',';
 	}
