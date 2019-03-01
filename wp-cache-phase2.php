@@ -366,37 +366,93 @@ function wp_cache_get_cookies_values() {
 	// for guests we need to implement caching based on user agents with some conditions
 	if( ! $authenticated ) {
 
-		// first, let's detect for google bot
-		$is_google_bot = false;
-		if( preg_match( '/(googlebot)/', $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
-			// it says it's the lovely google
-			if( ! empty( $_SERVER[ 'HTTP_X_SUCURI_CLIENTIP' ] ) ) { // check by sucury
-				$ip = $_SERVER[ 'HTTP_X_SUCURI_CLIENTIP' ];
-			} elseif ( ! empty( $_SERVER[ 'HTTP_CLIENT_IP' ] ) ) { // check ip from share internet
-				$ip = $_SERVER[ 'HTTP_CLIENT_IP' ];
-			} elseif ( ! empty( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) { // check ip is pass from proxy
-				$ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
-			} else {
-				$ip = $_SERVER[ 'REMOTE_ADDR' ];
-			}
+		$google_bots = array(
 
-			$name = gethostbyaddr( $ip );
-			// Now we have the name, look up the corresponding IP address.
-			$host = gethostbyname( $name );
-			if( preg_match( '/(googlebot)/', $name ) ) {
-				$is_google_bot = ( $host == $ip );
-			}
+			// region Google Adsense Media Partner
+			/** AdSense */
+			array(
+				// meta-wp-cache-fb4650c648082f09349374eaa1674afa
+				'user_agent' => 'Mediapartners-Google',
+				'operator'   => '=',
+				'group_id'   => 'google-adsense-media-partner'
+			),
+			/** Mobile AdSense */
+			array(
+				// meta-wp-cache-fb4650c648082f09349374eaa1674afa
+				'user_agent' => '(compatible; Mediapartners-Google/2.1; +http://www.google.com/bot.html)',
+				'operator'   => 'strpos',
+				'group_id'   => 'google-adsense-media-partner'
+			),
+			// endregion
 
-			$is_google_bot = true;
+			// region Google ads | Google Shopping
+			/** AdsBot */
+			array(
+				// meta-wp-cache-6c6d0aceb9752722e67650f2deb12e6e
+				'user_agent' => 'AdsBot-Google (+http://www.google.com/adsbot.html)',
+				'operator'   => '=',
+				'group_id'   => 'google-ads-google-shopping',
+			),
+			/** AdsBot Mobile Web */
+			array(
+				// meta-wp-cache-319ebf2ace8b430c31f59e973ee0e06d
+				'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1 (compatible; AdsBot-Google-Mobile; +http://www.google.com/mobile/adsbot.html)',
+				'operator'   => '=',
+				'group_id'   => 'google-ads-google-shopping',
+			),
+			/** AdsBot Mobile Web Android */
+			array(
+				'user_agent' => 'Mozilla/5.0 (Linux; Android 5.0; SM-G920A) AppleWebKit (KHTML, like Gecko) Chrome Mobile Safari (compatible; AdsBot-Google-Mobile; +http://www.google.com/mobile/adsbot.html)',
+				'operator'   => '=',
+				'group_id'   => 'google-ads-google-shopping',
+			),
+			// endregion
+		);
+
+		// first, let's detect for google's user agent
+		$group_id = 'guest';
+		if( preg_match( '/(Google)/', $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+
+			foreach( $google_bots as $bot ) {
+				switch ( $bot[ 'operator' ] ) {
+					case '=':
+						$known_agent = ( $_SERVER[ 'HTTP_USER_AGENT' ] == $bot[ 'user_agent' ] );
+						break;
+					case 'strpos':
+						$known_agent = ( strpos( $_SERVER[ 'HTTP_USER_AGENT' ], $bot[ 'user_agent' ] ) !== false );
+						break;
+					default:
+						$known_agent = false;
+				}
+
+				if( $known_agent ) {
+					// it says it's the lovely google
+					if( ! empty( $_SERVER[ 'HTTP_X_SUCURI_CLIENTIP' ] ) ) { // check by sucuri
+						$client_ip = $_SERVER[ 'HTTP_X_SUCURI_CLIENTIP' ];
+					} elseif ( ! empty( $_SERVER[ 'HTTP_CLIENT_IP' ] ) ) { // check ip from share internet
+						$client_ip = $_SERVER[ 'HTTP_CLIENT_IP' ];
+					} elseif ( ! empty( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) { // check ip is pass from proxy
+						$client_ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
+					} else {
+						$client_ip = $_SERVER[ 'REMOTE_ADDR' ];
+					}
+
+					/** $host_name -> Host name string on unmodified $client_ip */
+					$host_name = gethostbyaddr( $client_ip );
+					if( $host_name !== $client_ip ) {
+						/** $ip_address -> IPv4 or unmodified $host_name */
+						$ip_address = gethostbyname( $host_name );
+						if( ( $ip_address !== $host_name ) && ( $ip_address == $client_ip ) ) {
+							$group_id = $bot[ 'group_id' ];
+						}
+					}
+
+					break;
+				}
+			}
 		}
 
-		// in case of none google bot, provide possibility to implement other conditional configuration
-		if( $is_google_bot ) {
-			$conditional_cache_config = array( 'googlebot' );
-		} else {
-			$conditional_cache_config = array( '' );
-		}
-		$string .= join( ',', $conditional_cache_config ) . ',';
+		$string .= sprintf( 'group_id=%s,', $group_id );
 	}
 
 	// If you use this hook, make sure you update your .htaccess rules with the same conditions
@@ -415,11 +471,9 @@ function wp_cache_get_cookies_values() {
 		}
 	}
 
-	//echo '<pre>'; var_dump( __FILE__, $string ); echo '</pre>';
 	if( $string != '' ) {
 		$string = md5( $string );
 	}
-	//echo '<pre>'; var_dump( __FILE__, $string ); echo '</pre>'; die;
 
 	wp_cache_debug( "wp_cache_get_cookies_values: return: $string", 5 );
 	return $string;
