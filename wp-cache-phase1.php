@@ -77,7 +77,7 @@ if ( wpsc_is_backend() ) {
 	return true;
 }
 
-if ( $wp_cache_not_logged_in && wpsc_get_auth_cookies() ) {
+if ( wpsc_is_caching_user_disabled() ) {
 	wp_cache_debug( 'Caching disabled for logged in users on settings page.' );
 	return true;
 }

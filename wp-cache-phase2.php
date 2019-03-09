@@ -949,6 +949,23 @@ function wp_supercache_cache_for_admins() {
 	}
 }
 
+/*
+ * Check if caching is disabled for the current visitor based on their cookies
+ */
+function wpsc_is_caching_user_disabled() {
+	global $wp_cache_not_logged_in;
+	if ( $wp_cache_not_logged_in == 2 && wpsc_get_auth_cookies() ) {
+		wp_cache_debug( 'wpsc_is_caching_user_disabled: true because logged in' );
+		return true;
+	} elseif ( $wp_cache_not_logged_in == 1 && ! empty( $_COOKIE ) ) {
+		wp_cache_debug( 'wpsc_is_caching_user_disabled: true because cookie found' );
+		return true;
+	} else {
+		wp_cache_debug( 'wpsc_is_caching_user_disabled: false' );
+		return false;
+	}
+}
+
 /* returns true/false depending on location of $dir. */
 function wp_cache_confirm_delete( $dir ) {
 	global $cache_path, $blog_cache_dir;
@@ -1248,7 +1265,12 @@ function wp_cache_phase2() {
 	global $wp_cache_gzip_encoding, $super_cache_enabled, $cache_rebuild_files, $cache_enabled, $wp_cache_gmt_offset, $wp_cache_blog_charset;
 
 	if ( $cache_enabled == false ) {
-		wp_cache_debug( 'Caching disabled! quiting!', 1 );
+		wp_cache_debug( 'wp_cache_phase2: Caching disabled! Exit' );
+		return false;
+	}
+
+	if ( wpsc_is_caching_user_disabled() ) {
+		wp_cache_debug( 'wp_cache_phase2: Caching disabled for known user! Exit.' );
 		return false;
 	}
 
@@ -1977,7 +1999,7 @@ function wp_cache_get_ob(&$buffer) {
 	}
 
 	$cache_error = '';
-	if ( $wp_cache_not_logged_in && is_user_logged_in() ) {
+	if ( wpsc_is_caching_user_disabled() ) {
 		$super_cache_enabled = false;
 		$cache_enabled = false;
 		$cache_error = 'Not caching requests by known users. (See Advanced Settings page)';
