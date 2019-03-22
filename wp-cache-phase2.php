@@ -1262,10 +1262,19 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 }
 
 function wpsc_shutdown_message() {
-	if ( ! defined( 'WPSCSHUTDOWNMESSAGE' ) ) {
-		return false;
-	}
-	echo "<!-- WP Super Cache: " . esc_html( constant( 'WPSCSHUTDOWNMESSAGE' ) ) . " -->\n";
+	 static $did_wp_footer = false;
+	 global $wp_super_cache_comments;
+
+	 if ( ! defined( 'WPSCSHUTDOWNMESSAGE' ) || ( isset( $wp_super_cache_comments) && ! $wp_super_cache_comments ) ) {
+		 return;
+	 }
+
+	 if ( ! $did_wp_footer ) {
+		 $did_wp_footer = true;
+		 register_shutdown_function( 'wpsc_shutdown_message' );
+	 } else {
+		 echo PHP_EOL . '<!-- WP Super Cache: ' . esc_html( constant( 'WPSCSHUTDOWNMESSAGE' ) ) . ' -->' . PHP_EOL;
+	 }
 }
 
 function wp_cache_phase2() {
@@ -1274,21 +1283,7 @@ function wp_cache_phase2() {
 	if ( $cache_enabled == false ) {
 		wp_cache_debug( 'wp_cache_phase2: Caching disabled! Exit' );
 		define( 'WPSCSHUTDOWNMESSAGE', __( 'Caching disabled. Page not cached.', 'wp-super-cache' ) );
-		register_shutdown_function( 'wpsc_shutdown_message' );
-		return false;
-	}
-
-	if ( wpsc_is_caching_user_disabled() ) {
-		wp_cache_debug( 'wp_cache_phase2: Caching disabled for known user! Exit.' );
-		define( 'WPSCSHUTDOWNMESSAGE', __( 'Caching disabled for known user. User logged in or cookie found.', 'wp-super-cache' ) );
-		register_shutdown_function( 'wpsc_shutdown_message' );
-		return false;
-	}
-
-	if ( wp_cache_user_agent_is_rejected() ) {
-		define( 'WPSCSHUTDOWNMESSAGE', __( 'Caching disabled because user agent was rejected.', 'wp-super-cache' ) );
-		wp_cache_debug( 'wp_cache_phase2: No caching to do as user agent rejected.' );
-		register_shutdown_function( 'wpsc_shutdown_message' );
+		add_action( 'wp_footer', 'wpsc_shutdown_message' );
 		return false;
 	}
 
@@ -1327,6 +1322,20 @@ function wp_cache_phase2() {
 		}
 	} else {
 		header( 'Vary: Accept-Encoding, Cookie' );
+	}
+
+	if ( wpsc_is_caching_user_disabled() ) {
+		wp_cache_debug( 'wp_cache_phase2: Caching disabled for known user! Exit.' );
+		define( 'WPSCSHUTDOWNMESSAGE', __( 'Caching disabled for known user. User logged in or cookie found.', 'wp-super-cache' ) );
+		add_action( 'wp_footer', 'wpsc_shutdown_message' );
+		return false;
+	}
+
+	if ( wp_cache_user_agent_is_rejected() ) {
+		define( 'WPSCSHUTDOWNMESSAGE', __( 'Caching disabled because user agent was rejected.', 'wp-super-cache' ) );
+		wp_cache_debug( 'wp_cache_phase2: No caching to do as user agent rejected.' );
+		add_action( 'wp_footer', 'wpsc_shutdown_message' );
+		return false;
 	}
 
 	ob_start( 'wp_cache_ob_callback' );
