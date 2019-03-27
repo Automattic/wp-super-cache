@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: WP Super Cache
+Plugin Name: WP Super Cache - FORK
 Plugin URI: https://wordpress.org/plugins/wp-super-cache/
 Description: Very fast caching plugin for WordPress.
 Version: 1.6.4
