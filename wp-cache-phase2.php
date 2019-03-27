@@ -371,14 +371,12 @@ function wp_cache_get_cookies_values() {
 			// region Google Adsense Media Partner
 			/** AdSense */
 			array(
-				// meta-wp-cache-fb4650c648082f09349374eaa1674afa
 				'user_agent' => 'Mediapartners-Google',
 				'operator'   => '=',
 				'group_id'   => 'google-adsense-media-partner'
 			),
 			/** Mobile AdSense */
 			array(
-				// meta-wp-cache-fb4650c648082f09349374eaa1674afa
 				'user_agent' => '(compatible; Mediapartners-Google/2.1; +http://www.google.com/bot.html)',
 				'operator'   => 'strpos',
 				'group_id'   => 'google-adsense-media-partner'
@@ -388,14 +386,12 @@ function wp_cache_get_cookies_values() {
 			// region Google ads | Google Shopping
 			/** AdsBot */
 			array(
-				// meta-wp-cache-6c6d0aceb9752722e67650f2deb12e6e
 				'user_agent' => 'AdsBot-Google (+http://www.google.com/adsbot.html)',
 				'operator'   => '=',
 				'group_id'   => 'google-ads-google-shopping',
 			),
 			/** AdsBot Mobile Web */
 			array(
-				// meta-wp-cache-319ebf2ace8b430c31f59e973ee0e06d
 				'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1 (compatible; AdsBot-Google-Mobile; +http://www.google.com/mobile/adsbot.html)',
 				'operator'   => '=',
 				'group_id'   => 'google-ads-google-shopping',
