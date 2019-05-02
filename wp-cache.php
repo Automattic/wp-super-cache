@@ -2573,7 +2573,13 @@ function wp_cache_create_advanced_cache() {
 	$ret = true;
 
 	if ( file_exists( $wp_cache_link ) ) {
-		wp_die( '<div class="notice notice-error"><h4>' . __( 'Warning!', 'wp-super-cache' ) . "</h4><p>" . sprintf( __( 'The file %s already exists. Please manually delete it before using this plugin.', 'wp-super-cache' ), $wp_cache_link ) . "</p></div>" );
+		$file = file_get_contents( $wp_cache_link );
+		if (
+			! strpos( $file, "WP SUPER CACHE 0.8.9.1" ) &&
+			! strpos( $file, "WP SUPER CACHE 1.2" )
+		) {
+			wp_die( '<div class="notice notice-error"><h4>' . __( 'Warning!', 'wp-super-cache' ) . "</h4><p>" . sprintf( __( 'The file %s already exists. Please manually delete it before using this plugin.', 'wp-super-cache' ), $wp_cache_link ) . "</p></div>" );
+		}
 	}
 
 	$file = file_get_contents( $wp_cache_file );
