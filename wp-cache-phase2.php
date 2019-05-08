@@ -315,6 +315,10 @@ function wp_cache_late_loader() {
 	wp_cache_phase2();
 }
 
+/**
+ * Method is modified by @rufus87
+ * @return mixed|string
+ */
 function wp_cache_get_cookies_values() {
 	global $wpsc_cookies;
 	static $string = '';

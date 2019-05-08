@@ -4259,6 +4259,7 @@ function wpsc_can_send_auth_cookies() {
     return (bool)apply_filters( 'wpsc_send_auth_cookies', true );
 }
 
+// region @rufus87 Fork stuff
 /**
  * Callback to setup "wpsc_role" cookie with authenticated user's role
  * @hooked in "set_logged_in_cookie" action
@@ -4288,3 +4289,4 @@ function wp_cache_on_auth_cookie_clean() {
     }
 }
 add_action( 'clear_auth_cookie', 'wp_cache_on_auth_cookie_clean' );
+// endregion
