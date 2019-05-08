@@ -52,11 +52,6 @@ function wp_cache_serve_cache_file() {
 		return false;
 	}
 
-	if ( wp_cache_user_agent_is_rejected() ) {
-		wp_cache_debug( 'No wp-cache file served as user agent rejected.', 5 );
-		return false;
-	}
-
 	if ( $wp_cache_no_cache_for_get && false == empty( $_GET ) ) {
 		wp_cache_debug( 'Non empty GET request. Caching disabled on settings page. ' . wpsc_dump_get_request(), 1 );
 		return false;
@@ -226,10 +221,11 @@ function wp_cache_serve_cache_file() {
 	} else {
 		$ungzip = false;
 	}
-	foreach ($meta[ 'headers' ] as $t => $header) {
+	foreach ( $meta['headers'] as $t => $header ) {
 		// godaddy fix, via http://blog.gneu.org/2008/05/wp-supercache-on-godaddy/ and http://www.littleredrails.com/blog/2007/09/08/using-wp-cache-on-godaddy-500-error/
-		if( strpos( $header, 'Last-Modified:' ) === false )
-			header($header);
+		if ( strpos( $header, 'Last-Modified:' ) === false ) {
+			header( $header );
+		}
 	}
 	if ( isset( $wpsc_served_header ) && $wpsc_served_header ) {
 		header( 'X-WP-Super-Cache: Served WPCache cache file' );
@@ -1214,7 +1210,10 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 		}
 	}
 	foreach( (array) $lines as $line ) {
-		if ( trim( $new ) == trim( $line ) ) {
+		if (
+			trim( $new ) != '' &&
+			trim( $new ) == trim( $line )
+		) {
 			wp_cache_debug( "wp_cache_replace_line: setting not changed - $new" );
 			return false;
 		} elseif ( preg_match( "/$old/", $line ) ) {
@@ -1271,6 +1270,11 @@ function wp_cache_phase2() {
 
 	if ( $cache_enabled == false ) {
 		wp_cache_debug( 'Caching disabled! quiting!', 1 );
+		return false;
+	}
+
+	if ( wp_cache_user_agent_is_rejected() ) {
+		wp_cache_debug( 'wp_cache_phase2: No caching to do as user agent rejected.' );
 		return false;
 	}
 
@@ -1556,8 +1560,15 @@ function wp_cache_get_response_headers() {
 		}
 
 		$hdr_key = rtrim( substr( $hdr, 0, $ptr ) );
+
 		if ( in_array( strtolower( $hdr_key ), $known_headers, true ) ) {
-			$headers[ $hdr_key ] = ltrim( substr( $hdr, $ptr + 1 ) );
+			$hdr_val = ltrim( substr( $hdr, $ptr + 1 ) );
+
+			if ( ! empty( $headers[ $hdr_key ] ) ) {
+				$hdr_val = $headers[ $hdr_key ] . ', ' . $hdr_val;
+			}
+
+			$headers[ $hdr_key ] = $hdr_val;
 		}
 	}
 
