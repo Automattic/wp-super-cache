@@ -2642,7 +2642,13 @@ function wp_cache_check_global_config() {
 	}
 
 	$line = 'define(\'WP_CACHE\', true);';
-	if (!is_writeable_ACLSafe($global) || !wp_cache_replace_line('define *\( *\'WP_CACHE\'', $line, $global) ) {
+	if (
+		! is_writeable_ACLSafe( $global_config_file ) ||
+		(
+			! wp_cache_replace_line( 'define *\( *\'WP_CACHE\'', $line, $global_config_file ) &&
+			get_transient( 'wpsc_config_error' ) != 'setting not changed'
+		)
+	) {
 		if ( defined( 'WP_CACHE' ) && constant( 'WP_CACHE' ) == false ) {
 			echo '<div class="notice notice-error">' . __( "<h4>WP_CACHE constant set to false</h4><p>The WP_CACHE constant is used by WordPress to load the code that serves cached pages. Unfortunately, it is set to false. Please edit your wp-config.php and add or edit the following line above the final require_once command:<br /><br /><code>define('WP_CACHE', true);</code></p>", 'wp-super-cache' ) . "</div>";
 		} else {
