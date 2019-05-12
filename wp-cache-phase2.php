@@ -1110,9 +1110,11 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 			trim( $new ) == trim( $line )
 		) {
 			wp_cache_debug( "wp_cache_replace_line: setting not changed - $new" );
+			set_transient( 'wpsc_config_error', 'setting not changed', 10 );
 			return false;
 		} elseif ( preg_match( "/$old/", $line ) ) {
 			wp_cache_debug( "wp_cache_replace_line: changing line " . trim( $line ) . " to *$new*" );
+			set_transient( 'wpsc_config_error', 'setting changed', 10 );
 			$found = true;
 		}
 	}
