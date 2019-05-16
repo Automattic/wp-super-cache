@@ -664,8 +664,115 @@ function get_supercache_dir( $blog_id = 0 ) {
 	} else {
 		$home = get_blog_option( $blog_id, 'home' );
 	}
+	$a = trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
+
 	return trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
 }
+
+
+/**
+ * Added by @aarony (@diazoxide)
+ * Change all non-Latin characters to Latin.
+ * Removes unnecessary forbidden characters or replaces with a $separator.
+ *
+ * @param $string
+ * @param string $separator
+ *
+ * @return string|string[]|null
+ */
+function wp_supercache_slugify($string, $separator = '-')
+{
+	$slug = trim(strip_tags($string));
+
+	/**
+	 * Making sure that the
+	 * @transliterator_transliterate function exists
+	 * Than replacing all non latin chars to latin
+	 * */
+	if(function_exists('transliterator_transliterate')){
+		$slug = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC; Any-Latin; Latin-ASCII; Lower();', $slug);
+	}
+
+	/**
+	 * Removing non latin, forbidden unnecessary
+	 * characters or replacing with $separator
+	 * */
+	$slug = preg_replace("/[^a-zA-Z0-9\\/_|+ -]/", '', $slug);
+	$slug = preg_replace("/[\\/_|+ -]+/", $separator, $slug);
+	$slug = trim($slug, $separator);
+
+	return $slug;
+}
+
+/**
+ * Added by @aarony (@diazoxide)
+ *
+ * There are cases when the URL path contains
+ * non-Latin characters and when an encoded string
+ * is obtained, the length of the string is more
+ * than 256 characters.
+ *
+ * The function converts the name of the directory
+ * to Latin to avoid this problem.
+ *
+ * If $last_hash is true than concatenating shorten md5 hash
+ * of full $string
+ *
+ * @param $string
+ *
+ * @param bool $last_hash
+ *
+ * @return string|string[]|null
+ */
+function wp_supercache_dir_to_latin( $string, $last_hash = true ) {
+
+	$result = $string;
+	/**
+	 * To avoid cases where the address
+	 * is transmitted is already encoded.
+	 * */
+	$string = urldecode( $string );
+
+	/**
+	 * Replace all strings except "/" symbol
+	 * so as not to spoil the path
+	 * */
+	$result = preg_replace_callback(
+		"/([^\/]*)+/",
+		function ( $matches ) {
+			return wp_supercache_slugify( $matches[0] );
+		},
+		$string
+	);
+
+	/**
+	 * If $last_hash is true
+	 * Than concat short md5 hash after last directory name
+	 * */
+	if ( $last_hash == true) {
+		$result = preg_replace( '/\/$/', '_' . substr( md5( $string ), 0, 12 ) . '/', $result );
+	}
+
+	return $result;
+}
+
+/**
+ * Added by @aarony (@diazoxide)
+ *
+ * Notify in admin, when php-intl extension is not available
+ * */
+if(extension_loaded('intl')!==true){
+	add_action('admin_notices', function () { ?>
+		<div class="notice-warning notice">
+			<p><?php _e('<strong>Wordpress Super Cache</strong>: To avoid cases where the permalink of posts is very long (cyrillic) and cached files are not saving, you must install or enable <strong>"php-intl"</strong> php extension.', AWSB_PLUGIN_TEXT_DOMAIN); ?></p>
+		</div>
+		<?php
+	});
+}
+
+/**
+ * Function modified by @aaron (@diazoxide)
+ * */
 function get_current_url_supercache_dir( $post_id = 0 ) {
 	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST, $wp_cache_home_path;
 	static $saved_supercache_dir = array();
@@ -705,7 +812,23 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	} else {
 		$uri = strtolower( $wp_cache_request_uri );
 	}
+
 	$uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?(#.*)?$/", '', $uri ) ) );
+
+	/**
+	 * Added by @aarony (@diazoxide)
+	 *
+	 * Automatically convert unicode non latin characters to latin
+	 * To avoid cases where the directory
+	 * Name is very long and files are not saved
+	 *
+	 * To make sure the name of last directory is unique
+	 * Concatenating shorten md5 hash of full directory to last directory name
+	 * @additional
+	 * */
+	$uri = wp_supercache_dir_to_latin($uri,true);
+
+
 	$hostname = $WPSC_HTTP_HOST;
 	// Get hostname from wp options for wp-cron, wp-cli and similar requests.
 	if ( empty( $hostname ) && function_exists( 'get_option' ) ) {
@@ -725,6 +848,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	wp_cache_debug( "supercache dir: $dir", 5 );
 	if ( $DONOTREMEMBER == 0 )
 		$saved_supercache_dir[ $post_id ] = $dir;
+
 	return $dir;
 }
 
