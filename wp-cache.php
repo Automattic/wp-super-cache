@@ -3801,22 +3801,26 @@ function supercache_admin_bar_render() {
  * Adds "Delete Cache" button in WP Admin Bar.
  */
 function wpsc_admin_bar_render( $wp_admin_bar ) {
-
+    global $wp_cache_request_uri;
 	if ( ! function_exists( 'current_user_can' ) || ! is_user_logged_in() ) {
 		return false;
 	}
 
 	if ( ( is_singular() || is_archive() || is_front_page() || is_search() ) && current_user_can(  'delete_others_posts' ) ) {
 		$site_regex = preg_quote( rtrim( (string) parse_url( get_option( 'home' ), PHP_URL_PATH ), '/' ), '`' );
-		$req_uri    = preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER[ 'REQUEST_URI' ] );
+		$req_uri    = preg_replace( '/[ <>\'\"\r\n\t\(\)]/u', '', $wp_cache_request_uri );
 		$path       = preg_replace( '`^' . $site_regex . '`', '', $req_uri );
 
 		$wp_admin_bar->add_menu( array(
 					'parent' => '',
 					'id' => 'delete-cache',
 					'title' => __( 'Delete Cache', 'wp-super-cache' ),
-					'meta' => array( 'title' => __( 'Delete cache of the current page', 'wp-super-cache' ) ),
-					'href' => wp_nonce_url( admin_url( 'index.php?action=delcachepage&path=' . rawurlencode( $path ) ), 'delete-cache' )
+				    'meta' => array( 'title' => __( 'Delete cache of the current page', 'wp-super-cache' ) ),
+					
+					/**
+					 * Modified by @aaron (@diazoxide)
+					 * */
+					'href' => wp_nonce_url( admin_url( 'index.php?action=delcachepage&path=' . wp_supercache_get_uri_cache_dir( $path) ), 'delete-cache' )
 					) );
 	}
 

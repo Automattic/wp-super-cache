@@ -671,7 +671,7 @@ function get_supercache_dir( $blog_id = 0 ) {
 
 
 /**
- * Added by @aarony (@diazoxide)
+ * Added by @aaron (@diazoxide)
  * Change all non-Latin characters to Latin.
  * Removes unnecessary forbidden characters or replaces with a $separator.
  *
@@ -680,7 +680,7 @@ function get_supercache_dir( $blog_id = 0 ) {
  *
  * @return string|string[]|null
  */
-function wp_supercache_slugify($string, $separator = '-')
+function wp_supercache_convert_non_latin_chars_to_latin($string, $separator = '-')
 {
 	$slug = trim(strip_tags($string));
 
@@ -694,8 +694,7 @@ function wp_supercache_slugify($string, $separator = '-')
 	}
 
 	/**
-	 * Removing non latin, forbidden unnecessary
-	 * characters or replacing with $separator
+	 * Removing non latin,  unnecessary characters or replacing with $separator
 	 * */
 	$slug = preg_replace("/[^a-zA-Z0-9\\/_|+ -]/", '', $slug);
 	$slug = preg_replace("/[\\/_|+ -]+/", $separator, $slug);
@@ -705,7 +704,7 @@ function wp_supercache_slugify($string, $separator = '-')
 }
 
 /**
- * Added by @aarony (@diazoxide)
+ * Added by @aaron (@diazoxide)
  *
  * There are cases when the URL path contains
  * non-Latin characters and when an encoded string
@@ -729,7 +728,7 @@ function wp_supercache_dir_to_latin( $string, $last_hash = true ) {
 	$result = $string;
 	/**
 	 * To avoid cases where the address
-	 * is transmitted is already encoded.
+	 * is transmitted also already encoded.
 	 * */
 	$string = urldecode( $string );
 
@@ -740,7 +739,7 @@ function wp_supercache_dir_to_latin( $string, $last_hash = true ) {
 	$result = preg_replace_callback(
 		"/([^\/]*)+/",
 		function ( $matches ) {
-			return wp_supercache_slugify( $matches[0] );
+			return wp_supercache_convert_non_latin_chars_to_latin( $matches[0] );
 		},
 		$string
 	);
@@ -757,9 +756,10 @@ function wp_supercache_dir_to_latin( $string, $last_hash = true ) {
 }
 
 /**
- * Added by @aarony (@diazoxide)
+ * Added by @aaron (@diazoxide)
  *
- * Notify in admin, when php-intl extension is not available
+ * Notify in admin
+ * when php-intl extension is not available
  * */
 if(extension_loaded('intl')!==true){
 	add_action('admin_notices', function () { ?>
@@ -768,6 +768,34 @@ if(extension_loaded('intl')!==true){
 		</div>
 		<?php
 	});
+}
+
+/**
+ * Added by @aaron (@diazoxide)
+ * Getting request uri string cache path
+ * Helper function
+ * Clearing uri
+ * Converting non-latin chars to Latin
+ *
+ * @param $uri
+ *
+ * @return mixed|string|string[]|null
+ */
+function wp_supercache_get_uri_cache_dir($uri){
+
+    $uri = strtolower( $uri );
+    $uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?(#.*)?$/", '', $uri ) ) );
+    /**
+     * Automatically convert unicode non latin characters to latin
+     * To avoid cases where the directory
+     * Name is very long and files are not saved
+     *
+     * To make sure the name of last directory is unique
+     * Concatenating shorten md5 hash of full directory to last directory name
+     * @additional
+     * */
+    $uri = wp_supercache_dir_to_latin($uri,true);
+    return $uri;
 }
 
 /**
@@ -813,20 +841,11 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$uri = strtolower( $wp_cache_request_uri );
 	}
 
-	$uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?(#.*)?$/", '', $uri ) ) );
-
 	/**
-	 * Added by @aarony (@diazoxide)
-	 *
-	 * Automatically convert unicode non latin characters to latin
-	 * To avoid cases where the directory
-	 * Name is very long and files are not saved
-	 *
-	 * To make sure the name of last directory is unique
-	 * Concatenating shorten md5 hash of full directory to last directory name
-	 * @additional
+	 * Getting generated request uri cache path
+     * Already corrected and converted non-latin chars
 	 * */
-	$uri = wp_supercache_dir_to_latin($uri,true);
+    $uri = wp_supercache_get_uri_cache_dir($uri);
 
 
 	$hostname = $WPSC_HTTP_HOST;
