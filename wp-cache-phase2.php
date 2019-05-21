@@ -52,11 +52,6 @@ function wp_cache_serve_cache_file() {
 		return false;
 	}
 
-	if ( wp_cache_user_agent_is_rejected() ) {
-		wp_cache_debug( 'No wp-cache file served as user agent rejected.', 5 );
-		return false;
-	}
-
 	if ( $wp_cache_no_cache_for_get && false == empty( $_GET ) ) {
 		wp_cache_debug( 'Non empty GET request. Caching disabled on settings page. ' . wpsc_dump_get_request(), 1 );
 		return false;
@@ -226,10 +221,11 @@ function wp_cache_serve_cache_file() {
 	} else {
 		$ungzip = false;
 	}
-	foreach ($meta[ 'headers' ] as $t => $header) {
+	foreach ( $meta['headers'] as $t => $header ) {
 		// godaddy fix, via http://blog.gneu.org/2008/05/wp-supercache-on-godaddy/ and http://www.littleredrails.com/blog/2007/09/08/using-wp-cache-on-godaddy-500-error/
-		if( strpos( $header, 'Last-Modified:' ) === false )
-			header($header);
+		if ( strpos( $header, 'Last-Modified:' ) === false ) {
+			header( $header );
+		}
 	}
 	if ( isset( $wpsc_served_header ) && $wpsc_served_header ) {
 		header( 'X-WP-Super-Cache: Served WPCache cache file' );
@@ -319,6 +315,10 @@ function wp_cache_late_loader() {
 	wp_cache_phase2();
 }
 
+/**
+ * Method is modified by @rufus87
+ * @return mixed|string
+ */
 function wp_cache_get_cookies_values() {
 	global $wpsc_cookies;
 	static $string = '';
@@ -328,24 +328,128 @@ function wp_cache_get_cookies_values() {
 		return $string;
 	}
 
-	if ( defined( 'COOKIEHASH' ) )
-		$cookiehash = preg_quote( constant( 'COOKIEHASH' ) );
-	else
-		$cookiehash = '';
-	$regex = "/^wp-postpass_$cookiehash|^comment_author_$cookiehash";
-	if ( defined( 'LOGGED_IN_COOKIE' ) )
-		$regex .= "|^" . preg_quote( constant( 'LOGGED_IN_COOKIE' ) );
-	else
-		$regex .= "|^wordpress_logged_in_$cookiehash";
-	$regex .= "/";
-	while ($key = key($_COOKIE)) {
+	$cookiehash = defined( 'COOKIEHASH' ) ? preg_quote( constant( 'COOKIEHASH' ) ) : '';
+
+	$regex = array(
+		'^wp-postpass_' . $cookiehash,
+		'comment_author_' . $cookiehash,
+		defined( 'LOGGED_IN_COOKIE' ) ? ( '^' . preg_quote( constant( 'LOGGED_IN_COOKIE' ) ) ) : ( '^wordpress_logged_in_' . $cookiehash )
+	);
+	$regex = '/' . join( '|', $regex ) . '/';
+
+	$authenticated = false;
+	while ( $key = key( $_COOKIE ) ) {
 		if ( preg_match( $regex, $key ) ) {
 			wp_cache_debug( "wp_cache_get_cookies_values: $regex Cookie detected: $key", 5 );
-			$string .= $_COOKIE[ $key ] . ",";
+
+			// for authenticated users ( contains a cookie starting with "wordpress_logged_in_" )
+			// we need to exchange the username from cookie value with authenticated user role
+			// @see wpsc_on_auth_cookie_setup & wp_cache_on_auth_cookie_clean
+			if( ! $authenticated && ( strpos( $key, ( 'wordpress_logged_in_' . $cookiehash ) ) !== false ) ) {
+				$cookie_role_key = 'wpsc_role';
+				$authenticated = true;
+				$wordpress_logged_in_cookie_data = explode( '|', $_COOKIE[ $key ] );
+				if( ! empty( $wordpress_logged_in_cookie_data ) && isset( $_COOKIE[ $cookie_role_key ] ) ) {
+					$wordpress_logged_in_cookie_data[ 0 ] = $_COOKIE[ $cookie_role_key ];
+					$string .= join( '|', $wordpress_logged_in_cookie_data ) . ",";
+				} else {
+					$string .= $_COOKIE[ $key ] . ",";
+				}
+			} else {
+				$string .= $_COOKIE[ $key ] . ",";
+			}
 		}
 		next($_COOKIE);
 	}
 	reset($_COOKIE);
+
+	// for guests we need to implement caching based on user agents with some conditions
+	if( ! $authenticated ) {
+
+		$google_bots = array(
+
+			// region Google Adsense Media Partner
+			/** AdSense */
+			array(
+				'user_agent' => 'Mediapartners-Google',
+				'operator'   => '=',
+				'group_id'   => 'google-adsense-media-partner'
+			),
+			/** Mobile AdSense */
+			array(
+				'user_agent' => '(compatible; Mediapartners-Google/2.1; +http://www.google.com/bot.html)',
+				'operator'   => 'strpos',
+				'group_id'   => 'google-adsense-media-partner'
+			),
+			// endregion
+
+			// region Google ads | Google Shopping
+			/** AdsBot */
+			array(
+				'user_agent' => 'AdsBot-Google (+http://www.google.com/adsbot.html)',
+				'operator'   => '=',
+				'group_id'   => 'google-ads-google-shopping',
+			),
+			/** AdsBot Mobile Web */
+			array(
+				'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1 (compatible; AdsBot-Google-Mobile; +http://www.google.com/mobile/adsbot.html)',
+				'operator'   => '=',
+				'group_id'   => 'google-ads-google-shopping',
+			),
+			/** AdsBot Mobile Web Android */
+			array(
+				'user_agent' => 'Mozilla/5.0 (Linux; Android 5.0; SM-G920A) AppleWebKit (KHTML, like Gecko) Chrome Mobile Safari (compatible; AdsBot-Google-Mobile; +http://www.google.com/mobile/adsbot.html)',
+				'operator'   => '=',
+				'group_id'   => 'google-ads-google-shopping',
+			),
+			// endregion
+		);
+
+		// first, let's detect for google's user agent
+		$group_id = 'guest';
+		if( preg_match( '/(Google)/', $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+
+			foreach( $google_bots as $bot ) {
+				switch ( $bot[ 'operator' ] ) {
+					case '=':
+						$known_agent = ( $_SERVER[ 'HTTP_USER_AGENT' ] == $bot[ 'user_agent' ] );
+						break;
+					case 'strpos':
+						$known_agent = ( strpos( $_SERVER[ 'HTTP_USER_AGENT' ], $bot[ 'user_agent' ] ) !== false );
+						break;
+					default:
+						$known_agent = false;
+				}
+
+				if( $known_agent ) {
+					// it says it's the lovely google
+					if( ! empty( $_SERVER[ 'HTTP_X_SUCURI_CLIENTIP' ] ) ) { // check by sucuri
+						$client_ip = $_SERVER[ 'HTTP_X_SUCURI_CLIENTIP' ];
+					} elseif ( ! empty( $_SERVER[ 'HTTP_CLIENT_IP' ] ) ) { // check ip from share internet
+						$client_ip = $_SERVER[ 'HTTP_CLIENT_IP' ];
+					} elseif ( ! empty( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) { // check ip is pass from proxy
+						$client_ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
+					} else {
+						$client_ip = $_SERVER[ 'REMOTE_ADDR' ];
+					}
+
+					/** $host_name -> Host name string on unmodified $client_ip */
+					$host_name = gethostbyaddr( $client_ip );
+					if( $host_name !== $client_ip ) {
+						/** $ip_address -> IPv4 or unmodified $host_name */
+						$ip_address = gethostbyname( $host_name );
+						if( ( $ip_address !== $host_name ) && ( $ip_address == $client_ip ) ) {
+							$group_id = $bot[ 'group_id' ];
+						}
+					}
+
+					break;
+				}
+			}
+		}
+
+		$string .= sprintf( 'group_id=%s,', $group_id );
+	}
 
 	// If you use this hook, make sure you update your .htaccess rules with the same conditions
 	$string = do_cacheaction( 'wp_cache_get_cookies_values', $string );
@@ -363,8 +467,9 @@ function wp_cache_get_cookies_values() {
 		}
 	}
 
-	if ( $string != '' )
+	if( $string != '' ) {
 		$string = md5( $string );
+	}
 
 	wp_cache_debug( "wp_cache_get_cookies_values: return: $string", 5 );
 	return $string;
@@ -559,8 +664,143 @@ function get_supercache_dir( $blog_id = 0 ) {
 	} else {
 		$home = get_blog_option( $blog_id, 'home' );
 	}
+	$a = trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
+
 	return trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
 }
+
+
+/**
+ * Added by @aaron (@diazoxide)
+ * Change all non-Latin characters to Latin.
+ * Removes unnecessary forbidden characters or replaces with a $separator.
+ *
+ * @param $string
+ * @param string $separator
+ *
+ * @return string|string[]|null
+ */
+function wp_supercache_convert_non_latin_chars_to_latin($string, $separator = '-')
+{
+	$slug = trim(strip_tags($string));
+
+	/**
+	 * Making sure that the
+	 * @transliterator_transliterate function exists
+	 * Than replacing all non latin chars to latin
+	 * */
+	if(function_exists('transliterator_transliterate')){
+		$slug = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC; Any-Latin; Latin-ASCII; Lower();', $slug);
+	}
+
+	/**
+	 * Removing non latin,  unnecessary characters or replacing with $separator
+	 * */
+	$slug = preg_replace("/[^a-zA-Z0-9\\/_|+ -]/", '', $slug);
+	$slug = preg_replace("/[\\/_|+ -]+/", $separator, $slug);
+	$slug = trim($slug, $separator);
+
+	return $slug;
+}
+
+/**
+ * Added by @aaron (@diazoxide)
+ *
+ * There are cases when the URL path contains
+ * non-Latin characters and when an encoded string
+ * is obtained, the length of the string is more
+ * than 256 characters.
+ *
+ * The function converts the name of the directory
+ * to Latin to avoid this problem.
+ *
+ * If $last_hash is true than concatenating shorten md5 hash
+ * of full $string
+ *
+ * @param $string
+ *
+ * @param bool $last_hash
+ *
+ * @return string|string[]|null
+ */
+function wp_supercache_dir_to_latin( $string, $last_hash = true ) {
+
+	$result = $string;
+	/**
+	 * To avoid cases where the address
+	 * is transmitted also already encoded.
+	 * */
+	$string = urldecode( $string );
+
+	/**
+	 * Replace all strings except "/" symbol
+	 * so as not to spoil the path
+	 * */
+	$result = preg_replace_callback(
+		"/([^\/]*)+/",
+		function ( $matches ) {
+			return wp_supercache_convert_non_latin_chars_to_latin( $matches[0] );
+		},
+		$string
+	);
+
+	/**
+	 * If $last_hash is true
+	 * Than concat short md5 hash after last directory name
+	 * */
+	if ( $last_hash == true) {
+		$result = preg_replace( '/\/$/', '_' . substr( md5( $string ), 0, 12 ) . '/', $result );
+	}
+
+	return $result;
+}
+
+/**
+ * Added by @aaron (@diazoxide)
+ *
+ * Notify in admin
+ * when php-intl extension is not available
+ * */
+if(extension_loaded('intl')!==true){
+	add_action('admin_notices', function () { ?>
+		<div class="notice-warning notice">
+			<p><?php _e('<strong>Wordpress Super Cache</strong>: To avoid cases where the permalink of posts is very long (cyrillic) and cached files are not saving, you must install or enable <strong>"php-intl"</strong> php extension.', AWSB_PLUGIN_TEXT_DOMAIN); ?></p>
+		</div>
+		<?php
+	});
+}
+
+/**
+ * Added by @aaron (@diazoxide)
+ * Getting request uri string cache path
+ * Helper function
+ * Clearing uri
+ * Converting non-latin chars to Latin
+ *
+ * @param $uri
+ *
+ * @return mixed|string|string[]|null
+ */
+function wp_supercache_get_uri_cache_dir($uri){
+
+    $uri = strtolower( $uri );
+    $uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?(#.*)?$/", '', $uri ) ) );
+    /**
+     * Automatically convert unicode non latin characters to latin
+     * To avoid cases where the directory
+     * Name is very long and files are not saved
+     *
+     * To make sure the name of last directory is unique
+     * Concatenating shorten md5 hash of full directory to last directory name
+     * @additional
+     * */
+    $uri = wp_supercache_dir_to_latin($uri,true);
+    return $uri;
+}
+
+/**
+ * Function modified by @aaron (@diazoxide)
+ * */
 function get_current_url_supercache_dir( $post_id = 0 ) {
 	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST, $wp_cache_home_path;
 	static $saved_supercache_dir = array();
@@ -600,7 +840,14 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	} else {
 		$uri = strtolower( $wp_cache_request_uri );
 	}
-	$uri = wpsc_deep_replace( array( '..', '\\', 'index.php', ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( "/(\?.*)?(#.*)?$/", '', $uri ) ) );
+
+	/**
+	 * Getting generated request uri cache path
+     * Already corrected and converted non-latin chars
+	 * */
+    $uri = wp_supercache_get_uri_cache_dir($uri);
+
+
 	$hostname = $WPSC_HTTP_HOST;
 	// Get hostname from wp options for wp-cron, wp-cli and similar requests.
 	if ( empty( $hostname ) && function_exists( 'get_option' ) ) {
@@ -620,6 +867,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	wp_cache_debug( "supercache dir: $dir", 5 );
 	if ( $DONOTREMEMBER == 0 )
 		$saved_supercache_dir[ $post_id ] = $dir;
+
 	return $dir;
 }
 
@@ -1109,7 +1357,10 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 		}
 	}
 	foreach( (array) $lines as $line ) {
-		if ( trim( $new ) == trim( $line ) ) {
+		if (
+			trim( $new ) != '' &&
+			trim( $new ) == trim( $line )
+		) {
 			wp_cache_debug( "wp_cache_replace_line: setting not changed - $new" );
 			return false;
 		} elseif ( preg_match( "/$old/", $line ) ) {
@@ -1166,6 +1417,11 @@ function wp_cache_phase2() {
 
 	if ( $cache_enabled == false ) {
 		wp_cache_debug( 'Caching disabled! quiting!', 1 );
+		return false;
+	}
+
+	if ( wp_cache_user_agent_is_rejected() ) {
+		wp_cache_debug( 'wp_cache_phase2: No caching to do as user agent rejected.' );
 		return false;
 	}
 
@@ -1451,8 +1707,15 @@ function wp_cache_get_response_headers() {
 		}
 
 		$hdr_key = rtrim( substr( $hdr, 0, $ptr ) );
+
 		if ( in_array( strtolower( $hdr_key ), $known_headers, true ) ) {
-			$headers[ $hdr_key ] = ltrim( substr( $hdr, $ptr + 1 ) );
+			$hdr_val = ltrim( substr( $hdr, $ptr + 1 ) );
+
+			if ( ! empty( $headers[ $hdr_key ] ) ) {
+				$hdr_val = $headers[ $hdr_key ] . ', ' . $hdr_val;
+			}
+
+			$headers[ $hdr_key ] = $hdr_val;
 		}
 	}
 

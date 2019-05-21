@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: WP Super Cache
+Plugin Name: WP Super Cache - FORK
 Plugin URI: https://wordpress.org/plugins/wp-super-cache/
 Description: Very fast caching plugin for WordPress.
-Version: 1.6.4
+Version: 1.6.5
 Author: Automattic
 Author URI: https://automattic.com/
 License: GPL2+
@@ -134,13 +134,26 @@ function get_wpcachehome() {
 	}
 }
 
-function wpsupercache_uninstall() {
-	global $wp_cache_config_file, $wp_cache_link, $cache_path;
-	$files = array( $wp_cache_config_file, $wp_cache_link );
-	foreach( $files as $file ) {
-		if ( null !== $file && '' !== $file && file_exists( $file ) ) {
-			unlink( $file );
+function wpsc_remove_advanced_cache() {
+	global $wp_cache_link;
+	if ( file_exists( $wp_cache_link ) ) {
+		$file = file_get_contents( $wp_cache_link );
+		if (
+			strpos( $file, "WP SUPER CACHE 0.8.9.1" ) ||
+			strpos( $file, "WP SUPER CACHE 1.2" )
+		) {
+			unlink( $wp_cache_link );
 		}
+	}
+}
+
+function wpsupercache_uninstall() {
+	global $wp_cache_config_file, $cache_path;
+
+	wpsc_remove_advanced_cache();
+
+	if ( file_exists( $wp_cache_config_file ) ) {
+		unlink( $wp_cache_config_file );
 	}
 
 	wp_cache_remove_index();
@@ -164,9 +177,7 @@ if ( is_admin() ) {
 function wpsupercache_deactivate() {
 	global $wp_cache_config_file, $wp_cache_link, $cache_path;
 
-	if ( file_exists( $wp_cache_link ) ) {
-		unlink( $wp_cache_link );
-	}
+	wpsc_remove_advanced_cache();
 
 	if ( ! empty( $cache_path ) ) {
 		prune_super_cache( $cache_path, true );
@@ -2561,6 +2572,16 @@ function wp_cache_create_advanced_cache() {
 	}
 	$ret = true;
 
+	if ( file_exists( $wp_cache_link ) ) {
+		$file = file_get_contents( $wp_cache_link );
+		if (
+			! strpos( $file, "WP SUPER CACHE 0.8.9.1" ) &&
+			! strpos( $file, "WP SUPER CACHE 1.2" )
+		) {
+			wp_die( '<div class="notice notice-error"><h4>' . __( 'Warning!', 'wp-super-cache' ) . "</h4><p>" . sprintf( __( 'The file %s already exists. Please manually delete it before using this plugin.', 'wp-super-cache' ), $wp_cache_link ) . "</p></div>" );
+		}
+	}
+
 	$file = file_get_contents( $wp_cache_file );
 	$fp = @fopen( $wp_cache_link, 'w' );
 	if( $fp ) {
@@ -2581,11 +2602,7 @@ function wp_cache_check_link() {
 		if( strpos( $file, "WP SUPER CACHE 0.8.9.1" ) || strpos( $file, "WP SUPER CACHE 1.2" ) ) {
 			return true;
 		} else {
-			if( !@unlink($wp_cache_link) ) {
-				$ret = false;
-			} else {
-				$ret = wp_cache_create_advanced_cache();
-			}
+			$ret = wp_cache_create_advanced_cache();
 		}
 	} else {
 		$ret = wp_cache_create_advanced_cache();
@@ -3181,8 +3198,9 @@ function wp_cache_admin_notice() {
 		echo '<div class="notice notice-info"><p><strong>' . sprintf( __('WP Super Cache is disabled. Please go to the <a href="%s">plugin admin page</a> to enable caching.', 'wp-super-cache' ), admin_url( 'options-general.php?page=wpsupercache' ) ) . '</strong></p></div>';
 
 	if ( defined( 'WP_CACHE' ) && WP_CACHE == true && ( defined( 'ADVANCEDCACHEPROBLEM' ) || ( $cache_enabled && false == isset( $wp_cache_phase1_loaded ) ) ) ) {
-		echo '<div class="notice notice-error"><p>' . sprintf( __( 'Warning! WP Super Cache caching <strong>was</strong> broken but has been <strong>fixed</strong>! The script advanced-cache.php could not load wp-cache-phase1.php.<br /><br />The file %1$s/advanced-cache.php has been recreated and WPCACHEHOME fixed in your wp-config.php. Reload to hide this message.', 'wp-super-cache' ), WP_CONTENT_DIR ) . '</p></div>';
-		wp_cache_create_advanced_cache();
+		if ( wp_cache_create_advanced_cache() ) {
+			echo '<div class="notice notice-error"><p>' . sprintf( __( 'Warning! WP Super Cache caching <strong>was</strong> broken but has been <strong>fixed</strong>! The script advanced-cache.php could not load wp-cache-phase1.php.<br /><br />The file %1$s/advanced-cache.php has been recreated and WPCACHEHOME fixed in your wp-config.php. Reload to hide this message.', 'wp-super-cache' ), WP_CONTENT_DIR ) . '</p></div>';
+		}
 	}
 }
 add_action( 'admin_notices', 'wp_cache_admin_notice' );
@@ -3783,22 +3801,26 @@ function supercache_admin_bar_render() {
  * Adds "Delete Cache" button in WP Admin Bar.
  */
 function wpsc_admin_bar_render( $wp_admin_bar ) {
-
+    global $wp_cache_request_uri;
 	if ( ! function_exists( 'current_user_can' ) || ! is_user_logged_in() ) {
 		return false;
 	}
 
 	if ( ( is_singular() || is_archive() || is_front_page() || is_search() ) && current_user_can(  'delete_others_posts' ) ) {
 		$site_regex = preg_quote( rtrim( (string) parse_url( get_option( 'home' ), PHP_URL_PATH ), '/' ), '`' );
-		$req_uri    = preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER[ 'REQUEST_URI' ] );
+		$req_uri    = preg_replace( '/[ <>\'\"\r\n\t\(\)]/u', '', $wp_cache_request_uri );
 		$path       = preg_replace( '`^' . $site_regex . '`', '', $req_uri );
 
 		$wp_admin_bar->add_menu( array(
 					'parent' => '',
 					'id' => 'delete-cache',
 					'title' => __( 'Delete Cache', 'wp-super-cache' ),
-					'meta' => array( 'title' => __( 'Delete cache of the current page', 'wp-super-cache' ) ),
-					'href' => wp_nonce_url( admin_url( 'index.php?action=delcachepage&path=' . rawurlencode( $path ) ), 'delete-cache' )
+				    'meta' => array( 'title' => __( 'Delete cache of the current page', 'wp-super-cache' ) ),
+					
+					/**
+					 * Modified by @aaron (@diazoxide)
+					 * */
+					'href' => wp_nonce_url( admin_url( 'index.php?action=delcachepage&path=' . wp_supercache_get_uri_cache_dir( $path) ), 'delete-cache' )
 					) );
 	}
 
@@ -3807,7 +3829,7 @@ function wpsc_admin_bar_render( $wp_admin_bar ) {
 					'parent' => '',
 					'id' => 'delete-cache',
 					'title' => __( 'Delete Cache', 'wp-super-cache' ),
-					'meta' => array( 'title' => __( 'Delete Super Cache cached files (opens in new window)', 'wp-super-cache' ), 'target' => '_blank' ),
+					'meta' => array( 'title' => __( 'Delete Super Cache cached files', 'wp-super-cache' ) ),
 					'href' => wp_nonce_url( admin_url( 'options-general.php?page=wpsupercache&tab=contents&wp_delete_cache=1' ), 'wp-cache' )
 					) );
 	}
@@ -4232,3 +4254,43 @@ function wpsc_get_extra_cookies() {
 		return '';
 	}
 }
+
+/**
+ * Add possibility to prevent auth cookies sending
+ * @return bool
+ */
+function wpsc_can_send_auth_cookies() {
+    return (bool)apply_filters( 'wpsc_send_auth_cookies', true );
+}
+
+// region @rufus87 Fork stuff
+/**
+ * Callback to setup "wpsc_role" cookie with authenticated user's role
+ * @hooked in "set_logged_in_cookie" action
+ *
+ * @param string $logged_in_cookie The logged-in cookie.
+ * @param int    $expire           The time the login grace period expires as a UNIX timestamp.
+ *                                 Default is 12 hours past the cookie's expiration time.
+ * @param int    $expiration       The time when the logged-in authentication cookie expires as a UNIX timestamp.
+ *                                 Default is 14 days from now.
+ * @param int    $user_id          User ID.
+ * @param string $scheme           Authentication scheme. Default 'logged_in'.
+ */
+function wpsc_on_auth_cookie_setup( $logged_in_cookie, $expire, $expiration, $user_id, $scheme ) {
+    if ( ( $user = get_userdata( $user_id ) ) && wpsc_can_send_auth_cookies() ) {
+        setcookie( 'wpsc_role', $user->roles[0], $expire, COOKIEPATH, COOKIE_DOMAIN, ( $scheme == 'secure_auth' ), true );
+    }
+}
+add_action( 'set_logged_in_cookie', 'wpsc_on_auth_cookie_setup', 10, 5 );
+
+/**
+ * Callback to remove "wpsc_role" cookie
+ * @hooked in "clear_auth_cookie" action
+ */
+function wp_cache_on_auth_cookie_clean() {
+    if( wpsc_can_send_auth_cookies() ) {
+        setcookie( 'wpsc_role', ' ', time() - YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+    }
+}
+add_action( 'clear_auth_cookie', 'wp_cache_on_auth_cookie_clean' );
+// endregion
