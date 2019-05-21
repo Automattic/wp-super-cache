@@ -364,7 +364,8 @@ function wp_cache_get_cookies_values() {
 	reset($_COOKIE);
 
 	// for guests we need to implement caching based on user agents with some conditions
-	if( ! $authenticated ) {
+	// temporary commented due @gegham request
+	if( false && ! $authenticated ) {
 
 		$google_bots = array(
 
