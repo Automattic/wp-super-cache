@@ -57,6 +57,11 @@ function wp_cache_serve_cache_file() {
 		return false;
 	}
 
+	if ( defined( 'DONT_SERVE_CACHE_FILE' ) && DONT_SERVE_CACHE_FILE ) {
+		wp_cache_debug( 'The DONT_SERVE_CACHE_FILE is defined. Cache serving will not be done by PHP.', 5 );
+		return false;
+	}
+
 	extract( wp_super_cache_init() ); // $key, $cache_filename, $meta_file, $cache_file, $meta_pathname
 
 	if ( $wp_cache_object_cache && wp_cache_get_cookies_values() == '' ) {
