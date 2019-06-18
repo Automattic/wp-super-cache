@@ -1262,19 +1262,19 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 }
 
 function wpsc_shutdown_message() {
-	 static $did_wp_footer = false;
-	 global $wp_super_cache_comments;
+	static $did_wp_footer = false;
+	global $wp_super_cache_comments;
 
-	 if ( ! defined( 'WPSCSHUTDOWNMESSAGE' ) || ( isset( $wp_super_cache_comments) && ! $wp_super_cache_comments ) ) {
-		 return;
-	 }
+	if ( ! defined( 'WPSCSHUTDOWNMESSAGE' ) || ( isset( $wp_super_cache_comments) && ! $wp_super_cache_comments ) ) {
+		return;
+	}
 
-	 if ( ! $did_wp_footer ) {
-		 $did_wp_footer = true;
-		 register_shutdown_function( 'wpsc_shutdown_message' );
-	 } else {
-		 echo PHP_EOL . '<!-- WP Super Cache: ' . esc_html( constant( 'WPSCSHUTDOWNMESSAGE' ) ) . ' -->' . PHP_EOL;
-	 }
+	if ( ! $did_wp_footer ) {
+		$did_wp_footer = true;
+		register_shutdown_function( 'wpsc_shutdown_message' );
+	} else {
+		echo PHP_EOL . '<!-- WP Super Cache: ' . esc_html( constant( 'WPSCSHUTDOWNMESSAGE' ) ) . ' -->' . PHP_EOL;
+	}
 }
 
 function wp_cache_phase2() {
