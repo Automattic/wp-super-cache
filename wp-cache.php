@@ -1080,10 +1080,10 @@ table.wpsc-settings-table {
 				<td>
 					<fieldset>
 					<legend class="hidden">Miscellaneous</legend>
-					<?php echo __( 'Don&#8217;t cache pages for some visitors:', 'wp-super-cache' ); ?><br />
-					<label><input type='radio' name='wp_cache_not_logged_in' <?php checked( $wp_cache_not_logged_in, 0 ); ?> value='0'> <?php echo __( 'Cache pages for all visitors.', 'wp-super-cache' ); ?></label><br />
-					<label><input type='radio' name='wp_cache_not_logged_in' <?php checked( $wp_cache_not_logged_in, 1 ); ?> value='1'> <?php echo __( 'All visitors who have a cookie set in their browser.', 'wp-super-cache' ); ?></label><br />
-					<label><input type='radio' name='wp_cache_not_logged_in' <?php checked( $wp_cache_not_logged_in, 2 ); ?> value='2'> <?php echo __( 'Only logged in visitors.', 'wp-super-cache' ) . ' <em>(' . esc_html__( 'Recommended', 'wp-super-cache' ) . ')</em>'; ?></label><br /><br />
+					<strong><?php echo __( 'Cache Restrictions', 'wp-super-cache' ); ?></strong><br />
+					<label><input type='radio' name='wp_cache_not_logged_in' <?php checked( $wp_cache_not_logged_in, 0 ); ?> value='0'> <?php echo __( 'Enable caching for all visitors.', 'wp-super-cache' ); ?></label><br />
+					<label><input type='radio' name='wp_cache_not_logged_in' <?php checked( $wp_cache_not_logged_in, 1 ); ?> value='1'> <?php echo __( 'Disable caching for visitors who have a cookie set in their browser.', 'wp-super-cache' ); ?></label><br />
+					<label><input type='radio' name='wp_cache_not_logged_in' <?php checked( $wp_cache_not_logged_in, 2 ); ?> value='2'> <?php echo __( 'Disable caching for logged in visitors.', 'wp-super-cache' ) . ' <em>(' . esc_html__( 'Recommended', 'wp-super-cache' ) . ')</em>'; ?></label><br /><br />
 					<label><input type='checkbox' name='wp_cache_no_cache_for_get' <?php checked( $wp_cache_no_cache_for_get ); ?> value='1'> <?php _e( 'Don&#8217;t cache pages with GET parameters. (?x=y at the end of a url)', 'wp-super-cache' ); ?></label><br />
 					<?php if ( ! defined( 'WPSC_DISABLE_COMPRESSION' ) ) : ?>
 						<?php if ( ! function_exists( 'gzencode' ) ) : ?>
