@@ -2,7 +2,7 @@
 * Contributors: donncha, automattic, kraftbj
 * Tags: performance, caching, wp-cache, wp-super-cache, cache
 * Tested up to: 5.2.2
-* Stable tag: 1.6.8
+* Stable tag: 1.6.9
 * Requires at least: 3.1
 * Requires PHP: 5.2.4
 * License: GPLv2 or later
@@ -265,6 +265,12 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 ## Changelog ##
+
+### 1.6.9 ###
+* Improve the variables and messaging used by advanced-cache.php code. #687
+* Add a warning message to the debug log viewer. #688
+* Disable raw viewing of the debug log. #691
+* Clean up the debug log. #692 #694
 
 ### 1.6.8 ###
 * Added new constants, WPSC_SERVE_DISABLED (disable serving of cached files) and WPSC_SUPERCACHE_ONLY (only serve supercache cache files). #682 and #672
