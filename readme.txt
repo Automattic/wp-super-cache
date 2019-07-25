@@ -271,6 +271,7 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 * Add a warning message to the debug log viewer. #688
 * Disable raw viewing of the debug log. #691
 * Clean up the debug log. #692 #694
+* Added wpsc_update_check() in 9659af156344a77ae247dc582d52053d95c79b93.
 
 ### 1.6.8 ###
 * Added new constants, WPSC_SERVE_DISABLED (disable serving of cached files) and WPSC_SUPERCACHE_ONLY (only serve supercache cache files). #682 and #672
@@ -735,4 +736,4 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 ## Upgrade Notice ##
-Bug fixes and changes to settings page.
+Fix security issue with debug log.
