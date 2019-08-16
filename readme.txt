@@ -272,6 +272,7 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 * Disable settings that don't work in Expert mode. #699
 * Don't enable mobile support by default, but it can still be enabled manually. #700
 * Change "admin bar" to "Toolbar". Props @garrett-eclipse. #701
+* Show settings enabled by "easy" settings page. #703
 
 ### 1.6.9 ###
 * Improve the variables and messaging used by advanced-cache.php code. #687
