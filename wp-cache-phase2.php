@@ -2402,6 +2402,7 @@ function prune_super_cache( $directory, $force = false, $rename = false ) {
 				}
 			}
 			closedir($dh);
+			do_action( 'wp_cache_cleared' );
 		}
 	} elseif( is_file($directory) && ($force || @filemtime( $directory ) + $cache_max_time <= $now ) ) {
 		$oktodelete = true;
