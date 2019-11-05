@@ -2662,7 +2662,7 @@ function wp_cache_check_global_config() {
 		$global_config_file = dirname( ABSPATH ) . '/wp-config.php';
 	}
 
-	$line = 'define(\'WP_CACHE\', true);';
+	$line = apply_filters('supercache_wp_config_line', 'define(\'WP_CACHE\', true);');
 	if (
 		! is_writeable_ACLSafe( $global_config_file ) ||
 		! wp_cache_replace_line( 'define *\( *\'WP_CACHE\'', $line, $global_config_file )
