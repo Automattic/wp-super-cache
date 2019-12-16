@@ -96,12 +96,18 @@ $file_expired           = false;
 $cache_filename         = '';
 $meta_file              = '';
 $wp_cache_gzip_encoding = '';
+$wp_cache_br_encoding   = '';
 
 $gzipped = 0;
 $gzsize  = 0;
+$brotlied = 0;
+$brsize   = 0;
 
 if ( $cache_compression ) {
 	$wp_cache_gzip_encoding = gzip_accepted();
+}
+if ( $cache_compression_br ) {
+	$wp_cache_br_encoding   = br_accepted();
 }
 
 add_cacheaction( 'supercache_filename_str', 'wp_cache_check_mobile' );
