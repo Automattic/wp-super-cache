@@ -30,14 +30,13 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 	 * @param array $status
 	 */
 	protected function add_preload_status( & $status ) {
-		global $wp_cache_config_file;
 
-		include( $wp_cache_config_file );
+		wpsc_load_config();
 
-		if ( false == $cache_enabled ) {
+		if ( false == $GLOBALS['wpsc_config']['cache_enabled'] ) {
 			$status[ 'preload_disabled_cache_off' ] = true;
 		}
-		if ( false == $super_cache_enabled ) {
+		if ( false == $GLOBALS['wpsc_config']['super_cache_enabled'] ) {
 			$status[ 'preload_disabled_supercache_off' ] = true;
 		}
 		if ( true === defined( 'DISABLESUPERCACHEPRELOADING' ) ) {
@@ -49,11 +48,10 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 	 * @param array $status
 	 */
 	protected function add_php_mod_rewrite_status( & $status ) {
-		global $wp_cache_config_file;
 
-		include( $wp_cache_config_file );
+		wpsc_load_config();
 
-		if ( $cache_enabled && !$wp_cache_mod_rewrite ) {
+		if ( $GLOBALS['wpsc_config']['cache_enabled'] && ! $GLOBALS['wpsc_config']['wp_cache_mod_rewrite'] ) {
 			$scrules = trim( implode( "\n", extract_from_markers( trailingslashit( get_home_path() ) . '.htaccess', 'WPSuperCache' ) ) );
 			if ( $scrules != '' ) {
 				$status[ 'php_mod_rewrite' ] = true;
@@ -87,12 +85,12 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 	 * @param array $status
 	 */
 	protected function add_rewrite_status( & $status ) {
-		global $home_path, $wp_cache_config_file;
+		global $home_path;
 
-		include( $wp_cache_config_file );
+		wpsc_load_config();
 
 		// Return if the rewrite caching is disabled.
-		if ( ! $cache_enabled || ! $super_cache_enabled || ! $wp_cache_mod_rewrite ) {
+		if ( ! $GLOBALS['wpsc_config']['cache_enabled'] || ! $GLOBALS['wpsc_config']['super_cache_enabled'] || ! $GLOBALS['wpsc_config']['wp_cache_mod_rewrite'] ) {
 			return;
 		}
 
@@ -103,7 +101,7 @@ class WP_Super_Cache_Rest_Get_Status extends WP_REST_Controller {
 			$status[ 'mod_rewrite_rules' ] = true;
 		}
 		$got_rewrite = apache_mod_loaded( 'mod_rewrite', true );
-		if ( $wp_cache_mod_rewrite && false == apply_filters( 'got_rewrite', $got_rewrite ) ) {
+		if ( $GLOBALS['wpsc_config']['wp_cache_mod_rewrite'] && false == apply_filters( 'got_rewrite', $got_rewrite ) ) {
 			$status[ 'mod_rewrite_missing' ] = true;
 		}
 
