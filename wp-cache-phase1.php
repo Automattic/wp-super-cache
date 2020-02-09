@@ -2,6 +2,8 @@
 
 if ( ! function_exists( 'wp_cache_phase2' ) ) {
 	require_once dirname( __FILE__ ) . '/wp-cache-phase2.php';
+	require_once dirname( __FILE__ ) . '/includes/pre-wp-functions.php';
+	wpsc_load_config();
 }
 
 // error_reporting(E_ERROR | E_PARSE); // uncomment to debug this file!
@@ -15,7 +17,7 @@ if ( ! defined( 'WPCACHEHOME' ) ) {
 
 if ( defined( 'DISABLE_SUPERCACHE' ) ) {
 	wp_cache_debug( 'DISABLE_SUPERCACHE set, super_cache disabled.' );
-	$super_cache_enabled = 0;
+	$GLOBALS['wpsc_config']['super_cache_enabled'] = false;
 }
 
 require WPCACHEHOME . 'wp-cache-base.php';
@@ -36,7 +38,7 @@ if ( ! isset( $wp_cache_plugins_dir ) ) {
 }
 
 if ( isset( $_GET['donotcachepage'] ) && isset( $cache_page_secret ) && $_GET['donotcachepage'] == $cache_page_secret ) {
-	$cache_enabled = false;
+	$GLOBALS['wpsc_config']['cache_enabled'] = false;
 	define( 'DONOTCACHEPAGE', 1 );
 }
 
@@ -88,7 +90,7 @@ if ( isset( $wp_cache_make_known_anon ) && $wp_cache_make_known_anon ) {
 
 do_cacheaction( 'cache_init' );
 
-if ( ! $cache_enabled || ( isset( $_SERVER['REQUEST_METHOD'] ) && in_array( $_SERVER['REQUEST_METHOD'], array( 'POST', 'PUT', 'DELETE' ) ) ) || isset( $_GET['customize_changeset_uuid'] ) ) {
+if ( ! $GLOBALS['wpsc_config']['cache_enabled'] || ( isset( $_SERVER['REQUEST_METHOD'] ) && in_array( $_SERVER['REQUEST_METHOD'], array( 'POST', 'PUT', 'DELETE' ) ) ) || isset( $_GET['customize_changeset_uuid'] ) ) {
 	return true;
 }
 

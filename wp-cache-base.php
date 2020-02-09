@@ -1,5 +1,5 @@
 <?php
-global $WPSC_HTTP_HOST, $cache_enabled, $cache_path, $blogcacheid, $blog_cache_dir;
+global $wpsc_config, $WPSC_HTTP_HOST, $cache_path, $blogcacheid, $blog_cache_dir;
 
 if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 	$WPSC_HTTP_HOST = function_exists( 'mb_strtolower' ) ? mb_strtolower( $_SERVER['HTTP_HOST'] ) : strtolower( $_SERVER['HTTP_HOST'] );
@@ -7,7 +7,7 @@ if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 } elseif ( PHP_SAPI === 'cli' && function_exists( 'get_option' ) ) {
 	$WPSC_HTTP_HOST = (string) parse_url( get_option( 'home' ), PHP_URL_HOST );
 } else {
-	$cache_enabled  = false;
+	$GLOBALS['wpsc_config']['cache_enabled']  = false;
 	$WPSC_HTTP_HOST = '';
 }
 

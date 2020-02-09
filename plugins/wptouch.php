@@ -41,8 +41,7 @@ function wp_super_cache_wptouch_admin() {
 add_cacheaction( 'cache_admin_page', 'wp_super_cache_wptouch_admin' );
 
 function wp_super_cache_wptouch_notice() {
-	global $cache_enabled;
-	if ( $cache_enabled ) {
+	if ( $GLOBALS['wpsc_config']['cache_enabled'] ) {
 		echo '<div class="error"><p><strong>' . __( 'WPTouch plugin detected! Please go to the Supercache plugins page and enable the WPTouch helper plugin.', 'wp-super-cache' ) . '</strong></p></div>';
 	}
 }
