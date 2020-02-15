@@ -2567,8 +2567,12 @@ function wp_cache_create_advanced_cache() {
 	global $wpsc_advanced_cache_filename, $wpsc_advanced_cache_dist_filename;
 	if ( file_exists( ABSPATH . 'wp-config.php') ) {
 		$global_config_file = ABSPATH . 'wp-config.php';
-	} else {
+	} else if (file_exists(dirname(ABSPATH) . '/wp-config.php')) {
 		$global_config_file = dirname(ABSPATH) . '/wp-config.php';
+	} else if (defined('DEBIAN_FILE')) {
+		$global_config_file = DEBIAN_FILE;
+	} else {
+		die('Cannot locate wp-config.php');
 	}
 
 	$line = 'define( \'WPCACHEHOME\', \'' . dirname( __FILE__ ) . '/\' );';
