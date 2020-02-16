@@ -73,7 +73,7 @@ wpsc_init();
  * It's minimal list of global variables.
  */
 global $wpsc_config;
-global $sem_id, $wp_super_cache_late_init;
+global $wp_super_cache_late_init;
 global $cache_compression, $cache_max_time, $wp_cache_shutdown_gc, $cache_rebuild_files;
 global $wp_super_cache_debug, $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
 global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
@@ -2510,7 +2510,7 @@ function wp_cache_verify_cache_dir() {
 }
 
 function wp_cache_verify_config_file() {
-	global $wp_cache_config_file, $wp_cache_config_file_sample, $sem_id;
+	global $wp_cache_config_file, $wp_cache_config_file_sample;
 	global $WPSC_HTTP_HOST;
 
 	$new = false;
@@ -2545,9 +2545,9 @@ function wp_cache_verify_config_file() {
 		}
 		$new = true;
 	}
-	if ( $sem_id == 5419 && $GLOBALS['wpsc_config']['cache_path'] != '' && $WPSC_HTTP_HOST != '' ) {
-		$sem_id = crc32( $WPSC_HTTP_HOST . $GLOBALS['wpsc_config']['cache_path'] ) & 0x7fffffff;
-		wp_cache_replace_line('sem_id', '$sem_id = ' . $sem_id . ';', $wp_cache_config_file);
+	if ( $GLOBALS['wpsc_config']['sem_id'] == 5419 && $GLOBALS['wpsc_config']['cache_path'] != '' && $WPSC_HTTP_HOST != '' ) {
+		$GLOBALS['wpsc_config']['sem_id'] = crc32( $WPSC_HTTP_HOST . $GLOBALS['wpsc_config']['cache_path'] ) & 0x7fffffff;
+		wp_cache_setting( 'sem_id', $GLOBALS['wpsc_config']['sem_id'] );
 	}
 	if ( $new ) {
 		require($wp_cache_config_file);

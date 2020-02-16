@@ -1614,7 +1614,7 @@ function wp_cache_is_rejected($uri) {
 }
 
 function wp_cache_mutex_init() {
-	global $mutex, $use_flock, $blog_cache_dir, $sem_id;
+	global $mutex, $use_flock, $blog_cache_dir;
 	$mutex_filename = 'wp_cache_mutex.lock';
 
 	if ( defined( 'WPSC_DISABLE_LOCKING' ) || ( isset( $GLOBALS['wpsc_config']['wp_cache_mutex_disabled'] ) && $GLOBALS['wpsc_config']['wp_cache_mutex_disabled'] ) )
@@ -1633,8 +1633,8 @@ function wp_cache_mutex_init() {
 		wp_cache_debug( "Created mutex lock on filename: {$blog_cache_dir}{$mutex_filename}", 5 );
 		$mutex = @fopen( $blog_cache_dir . $mutex_filename, 'w' );
 	} else {
-		wp_cache_debug( "Created mutex lock on semaphore: {$sem_id}", 5 );
-		$mutex = @sem_get( $sem_id, 1, 0666, 1 );
+		wp_cache_debug( "Created mutex lock on semaphore: {$GLOBALS['wpsc_config']['sem_id']}", 5 );
+		$mutex = @sem_get( $GLOBALS['wpsc_config']['sem_id'], 1, 0666, 1 );
 	}
 }
 
