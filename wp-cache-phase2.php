@@ -29,21 +29,21 @@ function get_wp_cache_key( $url = false ) {
 }
 
 function wp_super_cache_init() {
-	global $wp_cache_key, $key, $blogcacheid, $file_prefix, $blog_cache_dir, $meta_file, $cache_file, $cache_filename, $meta_pathname;
+	global $wp_cache_key, $key, $blogcacheid, $blog_cache_dir, $meta_file, $cache_file, $cache_filename, $meta_pathname;
 
 	$wp_cache_key = get_wp_cache_key();
 	$key = $blogcacheid . md5( $wp_cache_key );
 	$wp_cache_key = $blogcacheid . $wp_cache_key;
 
-	$cache_filename = $file_prefix . $key . '.php';
-	$meta_file = $file_prefix . $key . '.php';
+	$cache_filename = $GLOBALS['wpsc_config']['file_prefix'] . $key . '.php';
+	$meta_file = $GLOBALS['wpsc_config']['file_prefix'] . $key . '.php';
 	$cache_file = wpsc_get_realpath( $blog_cache_dir ) . '/' . $cache_filename;
 	$meta_pathname = wpsc_get_realpath( $blog_cache_dir . 'meta/' ) . '/' . $meta_file;
 	return compact( 'key', 'cache_filename', 'meta_file', 'cache_file', 'meta_pathname' );
 }
 
 function wp_cache_serve_cache_file() {
-	global $key, $blogcacheid, $wp_cache_request_uri, $file_prefix, $blog_cache_dir, $meta_file, $cache_file, $cache_filename, $meta_pathname, $wp_cache_gzip_encoding, $meta;
+	global $key, $blogcacheid, $wp_cache_request_uri, $blog_cache_dir, $meta_file, $cache_file, $cache_filename, $meta_pathname, $wp_cache_gzip_encoding, $meta;
 	global $cache_compression, $wp_cache_slash_check, $wp_supercache_304, $wp_cache_no_cache_for_get;
 	global $wp_cache_disable_utf8, $wp_cache_mfunc_enabled, $wpsc_served_header;
 
@@ -2297,7 +2297,7 @@ function wp_cache_get_ob(&$buffer) {
 	}
 }
 
-function wp_cache_phase2_clean_cache($file_prefix) {
+function wp_cache_phase2_clean_cache( $file_prefix ) {
 	global $wpdb, $blog_cache_dir;
 
 	if( !wp_cache_writers_entry() )
@@ -2424,7 +2424,7 @@ function prune_super_cache( $directory, $force = false, $rename = false ) {
 }
 
 function wp_cache_rebuild_or_delete( $file ) {
-	global $cache_rebuild_files, $file_prefix;
+	global $cache_rebuild_files;
 
 
 	if ( strpos( $file, '?' ) !== false )
@@ -2452,13 +2452,13 @@ function wp_cache_rebuild_or_delete( $file ) {
 		return false;
 	}
 
-	if ( substr( basename( $file ), 0, mb_strlen( $file_prefix ) ) == $file_prefix ) {
+	if ( substr( basename( $file ), 0, mb_strlen( $GLOBALS['wpsc_config']['file_prefix'] ) ) == $GLOBALS['wpsc_config']['file_prefix'] ) {
 		@unlink( $file );
 		wp_cache_debug( "rebuild_or_gc: deleted non-anonymous file: $file" );
 		return false;
 	}
 
-	if ( substr( basename( $file ), 0, 5 + mb_strlen( $file_prefix ) ) == 'meta-' . $file_prefix ) {
+	if ( substr( basename( $file ), 0, 5 + mb_strlen( $GLOBALS['wpsc_config']['file_prefix'] ) ) == 'meta-' . $GLOBALS['wpsc_config']['file_prefix'] ) {
 		@unlink( $file );
 		wp_cache_debug( "rebuild_or_gc: deleted meta file: $file" );
 		return false;
@@ -2942,7 +2942,7 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 }
 
 function wp_cache_post_change( $post_id ) {
-	global $file_prefix, $blog_id, $blog_cache_dir, $wp_cache_refresh_single_only;
+	global $blog_id, $blog_cache_dir, $wp_cache_refresh_single_only;
 	static $last_processed = -1;
 
 	if ( $post_id == $last_processed ) {
@@ -3029,7 +3029,7 @@ function wp_cache_post_change( $post_id ) {
 	$supercache_files_deleted = false;
 	if ( $handle = @opendir( $blog_cache_dir ) ) {
 		while ( false !== ($file = readdir($handle))) {
-			if ( strpos( $file, $file_prefix ) !== false ) {
+			if ( strpos( $file, $GLOBALS['wpsc_config']['file_prefix'] ) !== false ) {
 				if ( strpos( $file, '.html' ) ) {
 					// delete old wpcache files immediately
 					wp_cache_debug( "wp_cache_post_change: Deleting obsolete wpcache cache+meta files: $file" );
@@ -3114,7 +3114,7 @@ function get_gc_flag() {
 }
 
 function wp_cache_gc_cron() {
-	global $file_prefix, $cache_max_time, $cache_gc_email_me, $cache_time_interval;
+	global $cache_max_time, $cache_gc_email_me, $cache_time_interval;
 
 	$msg = '';
 	if ( $cache_max_time == 0 ) {
@@ -3140,7 +3140,7 @@ function wp_cache_gc_cron() {
 
 	$start = time();
 	$num = 0;
-	if( false === ( $num = wp_cache_phase2_clean_expired( $file_prefix ) ) ) {
+	if( false === ( $num = wp_cache_phase2_clean_expired( $GLOBALS['wpsc_config']['file_prefix'] ) ) ) {
 		wp_cache_debug( 'Cache Expiry cron job failed. Probably mutex locked.', 1 );
 		update_option( 'wpsupercache_gc_time', time() - ( $cache_time_interval - 10 ) ); // if GC failed then run it again in one minute
 		$msg .= __( 'Cache expiry cron job failed. Job will run again in 10 seconds.', 'wp-super-cache' ) . "\n";
