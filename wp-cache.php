@@ -73,7 +73,7 @@ wpsc_init();
  * It's minimal list of global variables.
  */
 global $wpsc_config;
-global $wp_cache_shutdown_gc, $cache_rebuild_files;
+global $cache_rebuild_files;
 global $wp_super_cache_debug, $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
 global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
 global $cache_time_interval, $cache_scheduled_time, $cache_schedule_interval, $cache_schedule_type, $cache_gc_email_me;
@@ -241,7 +241,7 @@ add_action( 'network_admin_menu', 'wp_cache_network_pages' );
 
 function wp_cache_manager_error_checks() {
 	global $wp_cache_debug, $wp_cache_cron_check, $wp_cache_config_file, $wp_cache_mobile_browsers, $wp_cache_mobile_prefixes, $wp_cache_mobile_browsers, $wp_cache_mobile_enabled;
-	global $dismiss_htaccess_warning, $dismiss_readable_warning, $dismiss_gc_warning, $wp_cache_shutdown_gc, $is_nginx;
+	global $dismiss_htaccess_warning, $dismiss_readable_warning, $dismiss_gc_warning, $is_nginx;
 	global $htaccess_path;
 
 	if ( ! wpsupercache_site_admin() ) {
@@ -366,7 +366,7 @@ function wp_cache_manager_error_checks() {
 	} elseif ( !isset( $dismiss_gc_warning ) ) {
 		$dismiss_gc_warning = 0;
 	}
-	if ( $GLOBALS['wpsc_config']['cache_enabled'] && ( ! isset( $wp_cache_shutdown_gc ) || $wp_cache_shutdown_gc == 0 ) && function_exists( 'get_gc_flag' ) ) {
+	if ( $GLOBALS['wpsc_config']['cache_enabled'] && ( ! isset( $GLOBALS['wpsc_config']['wp_cache_shutdown_gc'] ) || $GLOBALS['wpsc_config']['wp_cache_shutdown_gc'] == 0 ) && function_exists( 'get_gc_flag' ) ) {
 		$gc_flag = get_gc_flag();
 		if ( $dismiss_gc_warning == 0 ) {
 			if ( false == maybe_stop_gc( $gc_flag ) && false == wp_next_scheduled( 'wp_cache_gc' ) ) {
@@ -529,7 +529,7 @@ if ( 'delcachepage' === filter_input( INPUT_GET, 'action' ) ) {
 
 function wp_cache_manager_updates() {
 	global $wp_cache_mobile_enabled, $wp_cache_mfunc_enabled, $wp_supercache_cache_list, $wp_cache_config_file, $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_cache_refresh_single_only, $wp_supercache_304, $wp_cache_front_page_checks, $cache_page_secret, $wp_cache_disable_utf8, $wp_cache_no_cache_for_get;
-	global $cache_schedule_type, $cache_time_interval, $wp_cache_shutdown_gc, $wpsc_save_headers;
+	global $cache_schedule_type, $cache_time_interval, $wpsc_save_headers;
 
 	if ( !wpsupercache_site_admin() )
 		return false;
@@ -554,7 +554,7 @@ function wp_cache_manager_updates() {
 				$_POST[ 'wp_cache_location' ] = $GLOBALS['wpsc_config']['cache_path'];
 			//
 			// set up garbage collection with some default settings
-			if ( ( !isset( $wp_cache_shutdown_gc ) || $wp_cache_shutdown_gc == 0 ) && false == wp_next_scheduled( 'wp_cache_gc' ) ) {
+			if ( ( !isset( $GLOBALS['wpsc_config']['wp_cache_shutdown_gc'] ) || $GLOBALS['wpsc_config']['wp_cache_shutdown_gc'] == 0 ) && false == wp_next_scheduled( 'wp_cache_gc' ) ) {
 				if ( false == isset( $cache_schedule_type ) ) {
 					$cache_schedule_type = 'interval';
 					$cache_time_interval = 600;
@@ -3996,9 +3996,9 @@ function wpsc_is_preloading() {
 }
 
 function wpsc_set_default_gc( $force = false ) {
-	global $wp_cache_shutdown_gc, $cache_schedule_type;
+	global $cache_schedule_type;
 
-	if ( isset( $wp_cache_shutdown_gc ) && $wp_cache_shutdown_gc == 1 ) {
+	if ( isset( $GLOBALS['wpsc_config']['wp_cache_shutdown_gc'] ) && $GLOBALS['wpsc_config']['wp_cache_shutdown_gc'] == 1 ) {
 		return false;
 	}
 

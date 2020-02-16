@@ -442,7 +442,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @param bool $enabled
 	 */
 	protected function toggle_easy_caching( $enabled = true ) {
-		global $wp_cache_shutdown_gc, $cache_schedule_type;
+		global $cache_schedule_type;
 		if ( $enabled ) {
 			$settings = array(
 				'wp_cache_mobile_enabled' => 1,

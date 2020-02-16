@@ -3181,8 +3181,7 @@ function schedule_wp_gc( $forced = 0 ) {
 			$last_gc = get_option( "wpsupercache_gc_time" );
 		}
 		if ( $forced || ( $last_gc < ( time() - 60 ) ) ) { // Allow up to 60 seconds for the previous job to run
-			global $wp_cache_shutdown_gc;
-			if ( !isset( $wp_cache_shutdown_gc ) || $wp_cache_shutdown_gc == 0 ) {
+			if ( !isset( $GLOBALS['wpsc_config']['wp_cache_shutdown_gc'] ) || $GLOBALS['wpsc_config']['wp_cache_shutdown_gc'] == 0 ) {
 				if ( !($t = wp_next_scheduled( 'wp_cache_gc' ) ) ) {
 					wp_clear_scheduled_hook( 'wp_cache_gc' );
 					wp_schedule_single_event( time() + $cache_time_interval, 'wp_cache_gc' );
