@@ -523,7 +523,7 @@ function wp_cache_check_mobile( $cache_key ) {
  * @param $level   int
  */
 function wp_cache_debug( $message, $level = 1 ) {
-	global $wp_cache_debug_log, $wp_cache_debug_ip;
+	global $wp_cache_debug_ip;
 	static $last_message = '';
 
 	if ( $last_message == $message ) {
@@ -532,11 +532,11 @@ function wp_cache_debug( $message, $level = 1 ) {
 	$last_message = $message;
 
 	// If either of the debug or log globals aren't set, then we can stop
-	if ( ! isset( $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) || ! isset( $wp_cache_debug_log ) )
+	if ( ! isset( $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) || ! isset( $GLOBALS['wpsc_config']['wp_cache_debug_log'] ) )
 		return false;
 
 	// If either the debug or log globals are false or empty, we can stop
-	if ( $GLOBALS['wpsc_config']['wp_super_cache_debug'] == false || $wp_cache_debug_log == '' )
+	if ( $GLOBALS['wpsc_config']['wp_super_cache_debug'] == false || $GLOBALS['wpsc_config']['wp_cache_debug_log'] == '' )
 		return false;
 
 	// If the debug_ip has been set, but it doesn't match the ip of the requester
@@ -549,7 +549,7 @@ function wp_cache_debug( $message, $level = 1 ) {
 	// Log message: Date URI Message
 	$log_message = date('H:i:s') . " " . getmypid() . " {$_SERVER['REQUEST_URI']} {$message}" . PHP_EOL;
 	// path to the log file in the cache folder
-	$log_file = $GLOBALS['wpsc_config']['cache_path'] . str_replace('/', '', str_replace('..', '', $wp_cache_debug_log));
+	$log_file = $GLOBALS['wpsc_config']['cache_path'] . str_replace( '/', '', str_replace( '..', '', $GLOBALS['wpsc_config']['wp_cache_debug_log'] ) );
 
 	if ( ! file_exists( $log_file ) && function_exists( 'wpsc_create_debug_log' ) ) {
 		global $wp_cache_debug_username;
@@ -557,7 +557,7 @@ function wp_cache_debug( $message, $level = 1 ) {
 			$wp_cache_debug_username = '';
 		}
 
-		wpsc_create_debug_log( $wp_cache_debug_log, $wp_cache_debug_username );
+		wpsc_create_debug_log( $GLOBALS['wpsc_config']['wp_cache_debug_log'], $wp_cache_debug_username );
 	}
 
 	error_log( $log_message, 3, $log_file );
@@ -1013,11 +1013,11 @@ function wpsc_debug_username() {
 	return $wp_cache_debug_username;
 }
 function wpsc_create_debug_log( $filename = '', $username = '' ) {
-	global $wp_cache_debug_username, $wp_cache_debug_log;
+	global $wp_cache_debug_username;
 	if ( $filename != '' ) {
-		$wp_cache_debug_log = $filename;
+		$GLOBALS['wpsc_config']['wp_cache_debug_log'] = $filename;
 	} else {
-		$wp_cache_debug_log = md5( time() + mt_rand() ) . ".php";
+		$GLOBALS['wpsc_config']['wp_cache_debug_log'] = md5( time() + mt_rand() ) . ".php";
 	}
 	if ( $username != '' ) {
 		$wp_cache_debug_username = $username;
@@ -1026,14 +1026,14 @@ function wpsc_create_debug_log( $filename = '', $username = '' ) {
 	}
 
 	$msg = 'die( "Please use the viewer" );' . PHP_EOL;
-	$fp = fopen( $GLOBALS['wpsc_config']['cache_path'] . $wp_cache_debug_log, 'w' );
+	$fp = fopen( $GLOBALS['wpsc_config']['cache_path'] . $GLOBALS['wpsc_config']['wp_cache_debug_log'], 'w' );
 	if ( $fp ) {
 		fwrite( $fp, '<' . "?php\n" );
 		fwrite( $fp, $msg );
 		fwrite( $fp, '?' . "><pre>" . PHP_EOL );
 		fwrite( $fp, '<' . '?php // END HEADER ?' . '>' . PHP_EOL );
 		fclose( $fp );
-		wp_cache_setting( 'wp_cache_debug_log', $wp_cache_debug_log );
+		wp_cache_setting( 'wp_cache_debug_log', $GLOBALS['wpsc_config']['wp_cache_debug_log'] );
 		wp_cache_setting( 'wp_cache_debug_username', $wp_cache_debug_username );
 	}
 
@@ -1045,10 +1045,10 @@ if ( !isset( $_SERVER[ "PHP_AUTH_USER" ] ) || ( $_SERVER[ "PHP_AUTH_USER" ] != "
 	exit;
 }' . PHP_EOL;
 
-	$fp = fopen( $GLOBALS['wpsc_config']['cache_path'] . 'view_' . $wp_cache_debug_log, 'w' );
+	$fp = fopen( $GLOBALS['wpsc_config']['cache_path'] . 'view_' . $GLOBALS['wpsc_config']['wp_cache_debug_log'], 'w' );
 	if ( $fp ) {
 		fwrite( $fp, '<' . "?php" . PHP_EOL );
-		$msg .= '$debug_log = file( "./' . $wp_cache_debug_log . '" );
+		$msg .= '$debug_log = file( "./' . $GLOBALS['wpsc_config']['wp_cache_debug_log'] . '" );
 $start_log = 1 + array_search( "<" . "?php // END HEADER ?" . ">" . PHP_EOL, $debug_log );
 if ( $start_log > 1 ) {
 	$debug_log = array_slice( $debug_log, $start_log );
@@ -1112,7 +1112,7 @@ foreach( $debug_log as $line ) {
 		fclose( $fp );
 	}
 
-	return array( 'wp_cache_debug_log' => $wp_cache_debug_log, 'wp_cache_debug_username' => $wp_cache_debug_username );
+	return array( 'wp_cache_debug_log' => $GLOBALS['wpsc_config']['wp_cache_debug_log'], 'wp_cache_debug_username' => $wp_cache_debug_username );
 }
 
 function wpsc_delete_url_cache( $url ) {

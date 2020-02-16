@@ -74,7 +74,7 @@ wpsc_init();
  */
 global $wpsc_config;
 global $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
-global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
+global $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
 global $cache_time_interval, $cache_scheduled_time, $cache_schedule_interval, $cache_schedule_type, $cache_gc_email_me;
 global $wp_cache_preload_on, $wp_cache_preload_interval, $wp_cache_preload_posts, $wp_cache_preload_taxonomies;
 global $wp_cache_preload_email_me, $wp_cache_preload_email_volume;
@@ -2028,7 +2028,7 @@ function wp_cache_edit_accepted() {
 }
 
 function wpsc_update_debug_settings() {
-	global $wp_cache_debug_log, $wp_cache_debug_ip, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
+	global $wp_cache_debug_ip, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
 	global $wp_super_cache_front_page_check, $wp_super_cache_front_page_clear, $wp_super_cache_front_page_text, $wp_super_cache_front_page_notification, $wp_super_cache_advanced_debug;
 	global $wp_cache_debug_username;
 
@@ -2040,7 +2040,7 @@ function wpsc_update_debug_settings() {
 	if ( false == $valid_nonce ) {
 		return array (
 			'wp_super_cache_debug' => $GLOBALS['wpsc_config']['wp_super_cache_debug'],
-			'wp_cache_debug_log' => $wp_cache_debug_log,
+			'wp_cache_debug_log' => $GLOBALS['wpsc_config']['wp_cache_debug_log'],
 			'wp_cache_debug_ip' => $wp_cache_debug_ip,
 			'wp_super_cache_comments' => $wp_super_cache_comments,
 			'wp_super_cache_front_page_check' => $wp_super_cache_front_page_check,
@@ -2052,22 +2052,22 @@ function wpsc_update_debug_settings() {
 		);
 	}
 
-	if ( isset( $_POST[ 'wpsc_delete_log' ] ) && $_POST[ 'wpsc_delete_log' ] == 1 && $wp_cache_debug_log != '' ) {
-		@unlink( $GLOBALS['wpsc_config']['cache_path'] . $wp_cache_debug_log );
-		extract( wpsc_create_debug_log( $wp_cache_debug_log, $wp_cache_debug_username ) ); // $wp_cache_debug_log, $wp_cache_debug_username
+	if ( isset( $_POST[ 'wpsc_delete_log' ] ) && $_POST[ 'wpsc_delete_log' ] == 1 && $GLOBALS['wpsc_config']['wp_cache_debug_log'] != '' ) {
+		@unlink( $GLOBALS['wpsc_config']['cache_path'] . $GLOBALS['wpsc_config']['wp_cache_debug_log'] );
+		extract( wpsc_create_debug_log( $GLOBALS['wpsc_config']['wp_cache_debug_log'], $wp_cache_debug_username ) ); // $wp_cache_debug_log, $wp_cache_debug_username
 	}
 
-	if ( ! isset( $wp_cache_debug_log ) || $wp_cache_debug_log == '' ) {
+	if ( ! isset( $GLOBALS['wpsc_config']['wp_cache_debug_log'] ) || $GLOBALS['wpsc_config']['wp_cache_debug_log'] == '' ) {
 		extract( wpsc_create_debug_log() ); // $wp_cache_debug_log, $wp_cache_debug_username
-	} elseif ( ! file_exists( $GLOBALS['wpsc_config']['cache_path'] . $wp_cache_debug_log ) ) { // make sure debug log exists before toggling debugging
-		extract( wpsc_create_debug_log( $wp_cache_debug_log, $wp_cache_debug_username ) ); // $wp_cache_debug_log, $wp_cache_debug_username
+	} elseif ( ! file_exists( $GLOBALS['wpsc_config']['cache_path'] . $GLOBALS['wpsc_config']['wp_cache_debug_log'] ) ) { // make sure debug log exists before toggling debugging
+		extract( wpsc_create_debug_log( $GLOBALS['wpsc_config']['wp_cache_debug_log'], $wp_cache_debug_username ) ); // $wp_cache_debug_log, $wp_cache_debug_username
 	}
 	$GLOBALS['wpsc_config']['wp_super_cache_debug'] = ( isset( $_POST[ 'wp_super_cache_debug' ] ) && $_POST[ 'wp_super_cache_debug' ] == 1 ) ? 1 : 0;
 	wp_cache_setting( 'wp_super_cache_debug', $GLOBALS['wpsc_config']['wp_super_cache_debug'] );
 
 	if ( isset( $_POST[ 'wp_cache_debug' ] ) ) {
 		wp_cache_setting( 'wp_cache_debug_username', $wp_cache_debug_username );
-		wp_cache_setting( 'wp_cache_debug_log', $wp_cache_debug_log );
+		wp_cache_setting( 'wp_cache_debug_log', $GLOBALS['wpsc_config']['wp_cache_debug_log'] );
 		$wp_super_cache_comments = isset( $_POST[ 'wp_super_cache_comments' ] ) ? 1 : 0;
 		wp_cache_setting( 'wp_super_cache_comments', $wp_super_cache_comments );
 		if ( isset( $_POST[ 'wp_cache_debug_ip' ] ) ) {
@@ -2096,7 +2096,7 @@ function wpsc_update_debug_settings() {
 
 	return array (
 		'wp_super_cache_debug' => $GLOBALS['wpsc_config']['wp_super_cache_debug'],
-		'wp_cache_debug_log' => $wp_cache_debug_log,
+		'wp_cache_debug_log' => $GLOBALS['wpsc_config']['wp_cache_debug_log'],
 		'wp_cache_debug_ip' => $wp_cache_debug_ip,
 		'wp_super_cache_comments' => $wp_super_cache_comments,
 		'wp_super_cache_front_page_check' => $wp_super_cache_front_page_check,
@@ -2119,11 +2119,11 @@ function wp_cache_debug_settings() {
 	echo '<a name="debug"></a>';
 	echo '<fieldset class="options">';
 	echo '<p>' . __( 'Fix problems with the plugin by debugging it here. It will log to a file in your cache directory.', 'wp-super-cache' ) . '</p>';
-	if ( ! isset( $wp_cache_debug_log ) || $wp_cache_debug_log == '' ) {
+	if ( ! isset( $GLOBALS['wpsc_config']['wp_cache_debug_log'] ) || $GLOBALS['wpsc_config']['wp_cache_debug_log'] == '' ) {
 		extract( wpsc_create_debug_log() ); // $wp_cache_debug_log, $wp_cache_debug_username
 	}
 
-	$log_file_link = "<a href='" . site_url( str_replace( ABSPATH, '', "{$GLOBALS['wpsc_config']['cache_path']}view_{$wp_cache_debug_log}?wp-admin=1&wp-json=1&filter=" ) ) . "'>$wp_cache_debug_log</a>";
+	$log_file_link = "<a href='" . site_url( str_replace( ABSPATH, '', "{$GLOBALS['wpsc_config']['cache_path']}view_{$GLOBALS['wpsc_config']['wp_cache_debug_log']}?wp-admin=1&wp-json=1&filter=" ) ) . "'>{$GLOBALS['wpsc_config']['wp_cache_debug_log']}</a>";
 
 	if ( $GLOBALS['wpsc_config']['wp_super_cache_debug'] == 1 ) {
 		echo "<p>" . sprintf( __( 'Currently logging to: %s', 'wp-super-cache' ), $log_file_link ) . "</p>";
@@ -4281,7 +4281,7 @@ function wpsc_update_check() {
 	) {
 		wp_cache_setting( 'wpsc_version', 169 );
 		global $wp_cache_debug_log;
-		$log_file = $GLOBALS['wpsc_config']['cache_path'] . str_replace('/', '', str_replace('..', '', $wp_cache_debug_log));
+		$log_file = $GLOBALS['wpsc_config']['cache_path'] . str_replace( '/', '', str_replace( '..', '', $GLOBALS['wpsc_config']['wp_cache_debug_log'] ) );
 		if ( ! file_exists( $log_file ) ) {
 			return false;
 		}
