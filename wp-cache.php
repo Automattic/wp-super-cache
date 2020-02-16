@@ -73,7 +73,7 @@ wpsc_init();
  * It's minimal list of global variables.
  */
 global $wpsc_config;
-global $cache_max_time, $wp_cache_shutdown_gc, $cache_rebuild_files;
+global $wp_cache_shutdown_gc, $cache_rebuild_files;
 global $wp_super_cache_debug, $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
 global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
 global $cache_time_interval, $cache_scheduled_time, $cache_schedule_interval, $cache_schedule_type, $cache_gc_email_me;
@@ -529,7 +529,7 @@ if ( 'delcachepage' === filter_input( INPUT_GET, 'action' ) ) {
 
 function wp_cache_manager_updates() {
 	global $wp_cache_mobile_enabled, $wp_cache_mfunc_enabled, $wp_supercache_cache_list, $wp_cache_config_file, $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_cache_refresh_single_only, $wp_supercache_304, $wp_cache_front_page_checks, $cache_page_secret, $wp_cache_disable_utf8, $wp_cache_no_cache_for_get;
-	global $cache_schedule_type, $cache_max_time, $cache_time_interval, $wp_cache_shutdown_gc, $wpsc_save_headers;
+	global $cache_schedule_type, $cache_time_interval, $wp_cache_shutdown_gc, $wpsc_save_headers;
 
 	if ( !wpsupercache_site_admin() )
 		return false;
@@ -558,10 +558,10 @@ function wp_cache_manager_updates() {
 				if ( false == isset( $cache_schedule_type ) ) {
 					$cache_schedule_type = 'interval';
 					$cache_time_interval = 600;
-					$cache_max_time = 1800;
+					$GLOBALS['wpsc_config']['cache_max_time'] = 1800;
 					wp_cache_replace_line('^ *\$cache_schedule_type', "\$cache_schedule_type = '$cache_schedule_type';", $wp_cache_config_file);
 					wp_cache_replace_line('^ *\$cache_time_interval', "\$cache_time_interval = '$cache_time_interval';", $wp_cache_config_file);
-					wp_cache_replace_line('^ *\$cache_max_time', "\$cache_max_time = '$cache_max_time';", $wp_cache_config_file);
+					wp_cache_setting( 'cache_max_time', $GLOBALS['wpsc_config']['cache_max_time'] );
 				}
 				wp_schedule_single_event( time() + 600, 'wp_cache_gc' );
 			}
@@ -1723,7 +1723,7 @@ function RecursiveFolderDelete ( $folderPath ) { // from http://www.php.net/manu
 }
 
 function wp_cache_time_update() {
-	global $cache_max_time, $wp_cache_config_file, $valid_nonce, $cache_schedule_type, $cache_scheduled_time, $cache_schedule_interval, $cache_time_interval, $cache_gc_email_me;
+	global $wp_cache_config_file, $valid_nonce, $cache_schedule_type, $cache_scheduled_time, $cache_schedule_interval, $cache_time_interval, $cache_gc_email_me;
 	if ( isset( $_POST[ 'action' ] ) && $_POST[ 'action' ] == 'expirytime' ) {
 
 		if ( false == $valid_nonce )
@@ -1739,19 +1739,20 @@ function wp_cache_time_update() {
 			wp_cache_replace_line('^ *\$cache_scheduled_time', "\$cache_scheduled_time = '$cache_scheduled_time';", $wp_cache_config_file);
 		}
 
-		if( !isset( $cache_max_time ) ) {
-			$cache_max_time = 3600;
-			wp_cache_replace_line('^ *\$cache_max_time', "\$cache_max_time = $cache_max_time;", $wp_cache_config_file);
+		if( !isset( $GLOBALS['wpsc_config']['cache_max_time'] ) ) {
+			$GLOBALS['wpsc_config']['cache_max_time'] = 3600;
+			wp_cache_setting( 'cache_max_time', $GLOBALS['wpsc_config']['cache_max_time'] );
 		}
 
 		if ( !isset( $cache_time_interval ) ) {
-			$cache_time_interval = $cache_max_time;
+			$cache_time_interval = $GLOBALS['wpsc_config']['cache_max_time'];
 			wp_cache_replace_line('^ *\$cache_time_interval', "\$cache_time_interval = '$cache_time_interval';", $wp_cache_config_file);
+			wp_cache_setting( 'cache_time_interval', $GLOBALS['wpsc_config']['cache_time_interval'] );
 		}
 
 		if ( isset( $_POST['wp_max_time'] ) ) {
-			$cache_max_time = (int)$_POST['wp_max_time'];
-			wp_cache_replace_line('^ *\$cache_max_time', "\$cache_max_time = $cache_max_time;", $wp_cache_config_file);
+			$GLOBALS['wpsc_config']['cache_max_time'] = (int)$_POST['wp_max_time'];
+			wp_cache_setting( 'cache_max_time', $GLOBALS['wpsc_config']['cache_max_time'] );
 			// schedule gc watcher
 			if ( false == wp_next_scheduled( 'wp_cache_gc_watcher' ) )
 				wp_schedule_event( time()+600, 'hourly', 'wp_cache_gc_watcher' );
@@ -1798,7 +1799,7 @@ function wp_cache_time_update() {
 }
 
 function wp_cache_edit_max_time() {
-	global $cache_max_time, $wp_cache_config_file, $valid_nonce, $cache_schedule_type, $cache_scheduled_time, $cache_schedule_interval, $cache_time_interval, $cache_gc_email_me, $wp_cache_preload_on;
+	global $wp_cache_config_file, $valid_nonce, $cache_schedule_type, $cache_scheduled_time, $cache_schedule_interval, $cache_time_interval, $cache_gc_email_me, $wp_cache_preload_on;
 
 	$admin_url = admin_url( 'options-general.php?page=wpsupercache' );
 	$timezone_format = _x('Y-m-d G:i:s', 'timezone date format');
@@ -1839,7 +1840,7 @@ function wp_cache_edit_max_time() {
 	echo '<input name="action" value="expirytime" type="hidden" />';
 	echo '<table class="form-table">';
 	echo '<tr><td><label for="wp_max_time"><strong>' . __( 'Cache Timeout', 'wp-super-cache' ) . '</strong></label></td>';
-	echo "<td><input type='text' id='wp_max_time' size=6 name='wp_max_time' value='" . esc_attr( $cache_max_time ) . "' /> " . __( "seconds", 'wp-super-cache' ) . "</td></tr>\n";
+	echo "<td><input type='text' id='wp_max_time' size=6 name='wp_max_time' value='" . esc_attr( $GLOBALS['wpsc_config']['cache_max_time'] ) . "' /> " . __( "seconds", 'wp-super-cache' ) . "</td></tr>\n";
 	echo "<tr><td></td><td>" . __( 'How long should cached pages remain fresh? Set to 0 to disable garbage collection. A good starting point is 3600 seconds.', 'wp-super-cache' ) . "</td></tr>\n";
 	echo '<tr><td valign="top"><strong>' . __( 'Scheduler', 'wp-super-cache' ) . '</strong></td><td><table cellpadding=0 cellspacing=0><tr><td valign="top"><input type="radio" id="schedule_interval" name="cache_schedule_type" value="interval" ' . checked( 'interval', $cache_schedule_type, false ) . ' /></td><td valign="top"><label for="cache_interval_time">' . __( 'Timer:', 'wp-super-cache' ) . '</label></td>';
 	echo "<td><input type='text' id='cache_interval_time' size=6 name='cache_time_interval' value='" . esc_attr( $cache_time_interval ) . "' /> " . __( "seconds", 'wp-super-cache' ) . '<br />' . __( 'Check for stale cached files every <em>interval</em> seconds.', 'wp-super-cache' ) . "</td></tr>";
@@ -2701,7 +2702,7 @@ function wp_cache_format_fsize( $fsize ) {
 }
 
 function wp_cache_regenerate_cache_file_stats() {
-	global $supercachedir, $wp_cache_preload_on, $cache_max_time;
+	global $supercachedir, $wp_cache_preload_on;
 
 	if ( $supercachedir == '' )
 		$supercachedir = get_supercache_dir();
@@ -2740,7 +2741,7 @@ function wp_cache_regenerate_cache_file_stats() {
 }
 
 function wp_cache_files() {
-	global $cache_max_time, $valid_nonce, $supercachedir, $blog_cache_dir;
+	global $valid_nonce, $supercachedir, $blog_cache_dir;
 	global $wp_cache_preload_on;
 
 	if ( '/' != substr($GLOBALS['wpsc_config']['cache_path'], -1)) {
@@ -2812,14 +2813,14 @@ function wp_cache_files() {
 					$meta[ 'age' ] = $age;
 					foreach( $meta as $key => $val )
 						$meta[ $key ] = esc_html( $val );
-					if ( $cache_max_time > 0 && $age > $cache_max_time ) {
+					if ( $GLOBALS['wpsc_config']['cache_max_time'] > 0 && $age > $GLOBALS['wpsc_config']['cache_max_time'] ) {
 						$expired_list[ $age ][] = $meta;
 					} else {
 						$cached_list[ $age ][] = $meta;
 					}
 				}
 
-				if ( $cache_max_time > 0 && $age > $cache_max_time ) {
+				if ( $GLOBALS['wpsc_config']['cache_max_time'] > 0 && $age > $GLOBALS['wpsc_config']['cache_max_time'] ) {
 					$expired++;
 				} else {
 					$count++;
@@ -2904,8 +2905,8 @@ function wp_cache_files() {
 		} else {
 			echo "<p><a href='" . wp_nonce_url( add_query_arg( array( 'page' => 'wpsupercache', 'listfiles' => '1' ) ), 'wp-cache' ) . "#listfiles'>" . __( 'List all cached files', 'wp-super-cache' ) . "</a></p>";
 		}
-		if ( $cache_max_time > 0 )
-			echo "<p>" . sprintf( __( 'Expired files are files older than %s seconds. They are still used by the plugin and are deleted periodically.', 'wp-super-cache' ), $cache_max_time ) . "</p>";
+		if ( $GLOBALS['wpsc_config']['cache_max_time'] > 0 )
+			echo "<p>" . sprintf( __( 'Expired files are files older than %s seconds. They are still used by the plugin and are deleted periodically.', 'wp-super-cache' ), $GLOBALS['wpsc_config']['cache_max_time'] ) . "</p>";
 		if ( $wp_cache_preload_on )
 			echo "<p>" . __( 'Preload mode is enabled. Supercache files will never be expired.', 'wp-super-cache' ) . "</p>";
 	} // cache_stats
@@ -2954,7 +2955,7 @@ function delete_cache_dashboard() {
 //add_action( 'dashmenu', 'delete_cache_dashboard' );
 
 function wpsc_dirsize($directory, $sizes) {
-	global $cache_max_time, $valid_nonce, $wp_cache_preload_on;
+	global $valid_nonce, $wp_cache_preload_on;
 	$now = time();
 
 	if (is_dir($directory)) {
@@ -2977,7 +2978,7 @@ function wpsc_dirsize($directory, $sizes) {
 			if ( $cache_type == 'supercache' && $wp_cache_preload_on )
 				$keep_fresh = true;
 			$filem = filemtime( $directory );
-			if ( $keep_fresh == false && $cache_max_time > 0 && $filem + $cache_max_time <= $now ) {
+			if ( $keep_fresh == false && $GLOBALS['wpsc_config']['cache_max_time'] > 0 && $filem + $GLOBALS['wpsc_config']['cache_max_time'] <= $now ) {
 				$cache_status = 'expired';
 			} else {
 				$cache_status = 'cached';
@@ -3089,9 +3090,9 @@ function wp_cache_clean_legacy_files( $dir, $file_prefix ) {
 }
 
 function wp_cache_clean_expired( $file_prefix ) {
-	global $cache_max_time, $blog_cache_dir, $wp_cache_preload_on;
+	global $blog_cache_dir, $wp_cache_preload_on;
 
-	if ( $cache_max_time == 0 ) {
+	if ( $GLOBALS['wpsc_config']['cache_max_time'] == 0 ) {
 		return false;
 	}
 
@@ -3116,7 +3117,7 @@ function wp_cache_clean_expired( $file_prefix ) {
 				if ( strpos( $file, '.html' ) ) {
 					@unlink( $blog_cache_dir . $file);
 					@unlink( $blog_cache_dir . 'meta/' . str_replace( '.html', '.meta', $file ) );
-				} elseif ( ( filemtime( $blog_cache_dir . $file ) + $cache_max_time ) <= $now ) {
+				} elseif ( ( filemtime( $blog_cache_dir . $file ) + $GLOBALS['wpsc_config']['cache_max_time'] ) <= $now ) {
 					@unlink( $blog_cache_dir . $file );
 					@unlink( $blog_cache_dir . 'meta/' . $file );
 				}
@@ -3657,15 +3658,14 @@ function wp_cron_preload_cache() {
 			wp_cache_debug( "wp_cron_preload_cache: no more posts. scheduling next preload in $wp_cache_preload_interval minutes.", 5 );
 			wp_schedule_single_event( time() + ( (int)$wp_cache_preload_interval * 60 ), 'wp_cache_full_preload_hook' );
 		}
-		global $cache_max_time;
 		if ( $wp_cache_preload_interval > 0 ) {
-			$cache_max_time = (int)$wp_cache_preload_interval * 60; // fool the GC into expiring really old files
+			$GLOBALS['wpsc_config']['cache_max_time'] = (int)$wp_cache_preload_interval * 60; // fool the GC into expiring really old files
 		} else {
-			$cache_max_time = 86400; // fool the GC into expiring really old files
+			$GLOBALS['wpsc_config']['cache_max_time'] = 86400; // fool the GC into expiring really old files
 		}
 		if ( $wp_cache_preload_email_me )
 			wp_mail( get_option( 'admin_email' ), sprintf( __( '[%s] Cache Preload Completed', 'wp-super-cache' ), home_url() ), __( "Cleaning up old supercache files.", 'wp-super-cache' ) . "\n" . $msg );
-		if ( $cache_max_time > 0 ) { // GC is NOT disabled
+		if ( $GLOBALS['wpsc_config']['cache_max_time'] > 0 ) { // GC is NOT disabled
 			wp_cache_debug( "wp_cron_preload_cache: clean expired cache files older than $cache_max_time seconds.", 5 );
 			wp_cache_phase2_clean_expired( $GLOBALS['wpsc_config']['file_prefix'], true ); // force cleanup of old files.
 		}
@@ -4014,12 +4014,12 @@ function wpsc_set_default_gc( $force = false ) {
 	if ( false == isset( $cache_schedule_type ) && false == wp_next_scheduled( 'wp_cache_gc' ) ) {
 		$cache_schedule_type     = 'interval';
 		$cache_time_interval     = 600;
-		$cache_max_time          = 1800;
+		$GLOBALS['wpsc_config']['cache_max_time'] = 1800;
 		$cache_schedule_interval = 'hourly';
 		$cache_gc_email_me       = 0;
 		wp_cache_setting( 'cache_schedule_type', $cache_schedule_type );
 		wp_cache_setting( 'cache_time_interval', $cache_time_interval );
-		wp_cache_setting( 'cache_max_time', $cache_max_time );
+		wp_cache_setting( 'cache_max_time', $GLOBALS['wpsc_config']['cache_max_time'] );
 		wp_cache_setting( 'cache_schedule_interval', $cache_schedule_interval );
 		wp_cache_setting( 'cache_gc_email_me', $cache_gc_email_me );
 
