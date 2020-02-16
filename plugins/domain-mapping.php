@@ -1,8 +1,6 @@
 <?php
 
 function domain_mapping_gc_cache( $function, $directory ) {
-	global $cache_path;
-
 	if ( ! function_exists( 'domain_mapping_warning' ) ) {
 		return;
 	}
@@ -20,17 +18,15 @@ function domain_mapping_gc_cache( $function, $directory ) {
 
 	switch ( $function ) {
 		case 'rebuild':
-			wpsc_rebuild_files( $cache_path . 'supercache/' . $sitedir . $directory );
+			wpsc_rebuild_files( $GLOBALS['wpsc_config']['cache_path'] . 'supercache/' . $sitedir . $directory );
 			break;
 		case 'prune':
-			wpsc_delete_files( $cache_path . 'supercache/' . $sitedir . $directory );
+			wpsc_delete_files( $GLOBALS['wpsc_config']['cache_path'] . 'supercache/' . $sitedir . $directory );
 			break;
 	}
 }
 
 function domain_mapping_supercachedir( $dir ) {
-	global $cache_path;
-
 	if ( ! function_exists( 'domain_mapping_warning' ) ) {
 		return $dir;
 	}
@@ -42,7 +38,7 @@ function domain_mapping_supercachedir( $dir ) {
 
 	$sitedir = trailingslashit( preg_replace( '`^(https?:)?//`', '', $siteurl ) );
 
-	return trailingslashit( $cache_path . 'supercache/' . $sitedir );
+	return trailingslashit( $GLOBALS['wpsc_config']['cache_path'] . 'supercache/' . $sitedir );
 }
 
 function domain_mapping_actions() {

@@ -23,9 +23,9 @@ if ( defined( 'DISABLE_SUPERCACHE' ) ) {
 require WPCACHEHOME . 'wp-cache-base.php';
 
 if ( $blogcacheid != '' ) {
-	$blog_cache_dir = str_replace( '//', '/', $cache_path . 'blogs/' . $blogcacheid . '/' );
+	$blog_cache_dir = str_replace( '//', '/', $GLOBALS['wpsc_config']['cache_path'] . 'blogs/' . $blogcacheid . '/' );
 } else {
-	$blog_cache_dir = $cache_path;
+	$blog_cache_dir = $GLOBALS['wpsc_config']['cache_path'];
 }
 
 $wp_cache_phase1_loaded = true;

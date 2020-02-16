@@ -139,9 +139,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @param mixed $value
 	 */
 	protected function set_wp_cache_location( $value ) {
-		global $cache_path;
-
-		if ( $value != '' && ( ! isset( $cache_path ) || $value != $cache_path ) ) {
+		if ( $value != '' && ( ! isset( $GLOBALS['wpsc_config']['cache_path'] ) || $value != $GLOBALS['wpsc_config']['cache_path'] ) ) {
 			$dir = realpath( trailingslashit( dirname( $value ) ) );
 			if ( $dir == false ) {
 				$dir = WP_CONTENT_DIR . '/cache/';
@@ -159,13 +157,13 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			$new_cache_path = WP_CONTENT_DIR . '/cache/';
 		}
 
-		if ( $new_cache_path != $cache_path ) {
+		if ( $new_cache_path != $GLOBALS['wpsc_config']['cache_path'] ) {
 			if ( file_exists( $new_cache_path ) == false ) {
-				rename( $cache_path, $new_cache_path );
+				rename( $GLOBALS['wpsc_config']['cache_path'], $new_cache_path );
 			}
 
-			$cache_path = $new_cache_path;
-			wp_cache_setting( 'cache_path', $cache_path );
+			$GLOBALS['wpsc_config']['cache_path'] = $new_cache_path;
+			wp_cache_setting( 'cache_path', $GLOBALS['wpsc_config']['cache_path'] );
 		}
 	}
 
@@ -230,11 +228,11 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @param mixed $value
 	 */
 	protected function set_wp_cache_not_logged_in( $value ) {
-		global $wp_cache_not_logged_in, $cache_path;
+		global $wp_cache_not_logged_in;
 
 		if ( 0 != $value ) {
 			if ( 0 == $wp_cache_not_logged_in && function_exists( 'prune_super_cache' ) ) {
-				prune_super_cache( $cache_path, true );
+				prune_super_cache( $GLOBALS['wpsc_config']['cache_path'], true );
 			}
 
 			$wp_cache_not_logged_in = (int) $value;
@@ -250,11 +248,11 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @param mixed $value
 	 */
 	protected function set_wp_cache_make_known_anon( $value ) {
-		global $wp_cache_make_known_anon, $cache_path;
+		global $wp_cache_make_known_anon;
 
 		if ( 1 == $value ) {
 			if ( $wp_cache_make_known_anon == 0 && function_exists( 'prune_super_cache' ) ) {
-				prune_super_cache( $cache_path, true );
+				prune_super_cache( $GLOBALS['wpsc_config']['cache_path'], true );
 			}
 
 			$wp_cache_make_known_anon = 1;
@@ -270,7 +268,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @param mixed $value
 	 */
 	protected function set_wp_cache_object_cache( $value ) {
-		global $_wp_using_ext_object_cache, $wp_cache_object_cache, $cache_path;
+		global $_wp_using_ext_object_cache, $wp_cache_object_cache;
 
 		if ( ! $_wp_using_ext_object_cache ) {
 			return;
@@ -278,7 +276,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 
 		if ( $value == 0 ) {
 			if ( function_exists( 'prune_super_cache' ) ) {
-				prune_super_cache( $cache_path, true );
+				prune_super_cache( $GLOBALS['wpsc_config']['cache_path'], true );
 			}
 
 			$wp_cache_object_cache = 1;
@@ -296,7 +294,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @return null|string
 	 */
 	protected function set_cache_compression( $value ) {
-		global $cache_compression, $cache_path;
+		global $cache_compression;
 
 		$new_cache_compression = 0;
 		if ( defined( 'WPSC_DISABLE_COMPRESSION' ) ) {
@@ -316,7 +314,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 				$cache_compression = $new_cache_compression;
 				wp_cache_setting( 'cache_compression', $cache_compression );
 				if ( function_exists( 'prune_super_cache' ) ) {
-					prune_super_cache( $cache_path, true );
+					prune_super_cache( $GLOBALS['wpsc_config']['cache_path'], true );
 				}
 
 				delete_option( 'super_cache_meta' );
@@ -446,7 +444,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @param bool $enabled
 	 */
 	protected function toggle_easy_caching( $enabled = true ) {
-		global $cache_path, $wp_cache_shutdown_gc, $cache_schedule_type;
+		global $wp_cache_shutdown_gc, $cache_schedule_type;
 		if ( $enabled ) {
 			$settings = array(
 				'wp_cache_mobile_enabled' => 1,
@@ -474,8 +472,8 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			$this->set_value_by_key( $value, $key );
 		}
 
-		if ( $cache_path != WP_CONTENT_DIR . '/cache/' ) {
-			$this->set_value_by_key( $cache_path, 'wp_cache_location' );
+		if ( $GLOBALS['wpsc_config']['cache_path'] != WP_CONTENT_DIR . '/cache/' ) {
+			$this->set_value_by_key( $GLOBALS['wpsc_config']['cache_path'], 'wp_cache_location' );
 		}
 
 		$advanced_settings = array(
