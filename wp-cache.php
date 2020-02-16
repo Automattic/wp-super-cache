@@ -73,7 +73,7 @@ wpsc_init();
  * It's minimal list of global variables.
  */
 global $wpsc_config;
-global $wp_super_cache_debug, $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
+global $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
 global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
 global $cache_time_interval, $cache_scheduled_time, $cache_schedule_interval, $cache_schedule_type, $cache_gc_email_me;
 global $wp_cache_preload_on, $wp_cache_preload_interval, $wp_cache_preload_posts, $wp_cache_preload_taxonomies;
@@ -2028,7 +2028,7 @@ function wp_cache_edit_accepted() {
 }
 
 function wpsc_update_debug_settings() {
-	global $wp_super_cache_debug, $wp_cache_debug_log, $wp_cache_debug_ip, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
+	global $wp_cache_debug_log, $wp_cache_debug_ip, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
 	global $wp_super_cache_front_page_check, $wp_super_cache_front_page_clear, $wp_super_cache_front_page_text, $wp_super_cache_front_page_notification, $wp_super_cache_advanced_debug;
 	global $wp_cache_debug_username;
 
@@ -2109,7 +2109,7 @@ function wpsc_update_debug_settings() {
 }
 
 function wp_cache_debug_settings() {
-	global $wp_super_cache_debug, $wp_cache_debug_log, $wp_cache_debug_ip, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
+	global $wp_cache_debug_log, $wp_cache_debug_ip, $valid_nonce, $wp_cache_config_file, $wp_super_cache_comments;
 	global $wp_super_cache_front_page_check, $wp_super_cache_front_page_clear, $wp_super_cache_front_page_text, $wp_super_cache_front_page_notification, $wp_super_cache_advanced_debug;
 	global $wp_cache_debug_username;
 
