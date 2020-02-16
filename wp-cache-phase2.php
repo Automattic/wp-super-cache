@@ -1614,7 +1614,8 @@ function wp_cache_is_rejected($uri) {
 }
 
 function wp_cache_mutex_init() {
-	global $mutex, $use_flock, $blog_cache_dir, $mutex_filename, $sem_id;
+	global $mutex, $use_flock, $blog_cache_dir, $sem_id;
+	$mutex_filename = 'wp_cache_mutex.lock';
 
 	if ( defined( 'WPSC_DISABLE_LOCKING' ) || ( isset( $GLOBALS['wpsc_config']['wp_cache_mutex_disabled'] ) && $GLOBALS['wpsc_config']['wp_cache_mutex_disabled'] ) )
 		return true;

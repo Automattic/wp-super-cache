@@ -73,7 +73,7 @@ wpsc_init();
  * It's minimal list of global variables.
  */
 global $wpsc_config;
-global $mutex_filename, $sem_id, $wp_super_cache_late_init;
+global $sem_id, $wp_super_cache_late_init;
 global $cache_compression, $cache_max_time, $wp_cache_shutdown_gc, $cache_rebuild_files;
 global $wp_super_cache_debug, $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
 global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
