@@ -1282,7 +1282,7 @@ function wpsc_shutdown_message() {
 }
 
 function wp_cache_phase2() {
-	global $wp_cache_gzip_encoding, $cache_rebuild_files, $wp_cache_gmt_offset, $wp_cache_blog_charset;
+	global $wp_cache_gzip_encoding, $wp_cache_gmt_offset, $wp_cache_blog_charset;
 
 	if ( $GLOBALS['wpsc_config']['cache_enabled'] == false ) {
 		wp_cache_debug( 'wp_cache_phase2: Caching disabled! Exit' );
@@ -1337,7 +1337,7 @@ function wp_cache_phase2() {
 	wp_cache_debug( 'Created output buffer', 4 );
 
 	// restore old supercache file temporarily
-	if ( ( $_SERVER['REQUEST_METHOD'] !== 'POST' && empty( $_POST ) ) && $GLOBALS['wpsc_config']['super_cache_enabled'] && $cache_rebuild_files ) {
+	if ( ( $_SERVER['REQUEST_METHOD'] !== 'POST' && empty( $_POST ) ) && $GLOBALS['wpsc_config']['super_cache_enabled'] && $GLOBALS['wpsc_config']['cache_rebuild_files'] ) {
 		$user_info = wp_cache_get_cookies_values();
 
 		if( empty( $user_info )
@@ -2420,9 +2420,6 @@ function prune_super_cache( $directory, $force = false, $rename = false ) {
 }
 
 function wp_cache_rebuild_or_delete( $file ) {
-	global $cache_rebuild_files;
-
-
 	if ( strpos( $file, '?' ) !== false )
 		$file = substr( $file, 0, strpos( $file, '?' ) );
 
@@ -2464,7 +2461,7 @@ function wp_cache_rebuild_or_delete( $file ) {
 		wp_cache_debug( "rebuild_or_gc: file has disappeared: $file" );
 		return false;
 	}
-	if( $cache_rebuild_files && substr( $file, -14 ) != '.needs-rebuild' ) {
+	if ( $GLOBALS['wpsc_config']['cache_rebuild_files'] && substr( $file, -14 ) != '.needs-rebuild' ) {
 		if( @rename($file, $file . '.needs-rebuild') ) {
 			@touch( $file . '.needs-rebuild' );
 			wp_cache_debug( "rebuild_or_gc: rename file to {$file}.needs-rebuild", 2 );

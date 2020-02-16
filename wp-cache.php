@@ -73,7 +73,6 @@ wpsc_init();
  * It's minimal list of global variables.
  */
 global $wpsc_config;
-global $cache_rebuild_files;
 global $wp_super_cache_debug, $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
 global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
 global $cache_time_interval, $cache_scheduled_time, $cache_schedule_interval, $cache_schedule_type, $cache_gc_email_me;
@@ -528,7 +527,7 @@ if ( 'delcachepage' === filter_input( INPUT_GET, 'action' ) ) {
 }
 
 function wp_cache_manager_updates() {
-	global $wp_cache_mobile_enabled, $wp_cache_mfunc_enabled, $wp_supercache_cache_list, $wp_cache_config_file, $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_cache_refresh_single_only, $wp_supercache_304, $wp_cache_front_page_checks, $cache_page_secret, $wp_cache_disable_utf8, $wp_cache_no_cache_for_get;
+	global $wp_cache_mobile_enabled, $wp_cache_mfunc_enabled, $wp_supercache_cache_list, $wp_cache_config_file, $wp_cache_clear_on_post_edit, $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_cache_refresh_single_only, $wp_supercache_304, $wp_cache_front_page_checks, $cache_page_secret, $wp_cache_disable_utf8, $wp_cache_no_cache_for_get;
 	global $cache_schedule_type, $cache_time_interval, $wpsc_save_headers;
 
 	if ( !wpsupercache_site_admin() )
@@ -685,11 +684,11 @@ function wp_cache_manager_updates() {
 		wp_cache_replace_line('^ *\$wp_cache_clear_on_post_edit', "\$wp_cache_clear_on_post_edit = " . $wp_cache_clear_on_post_edit . ";", $wp_cache_config_file);
 
 		if( isset( $_POST[ 'cache_rebuild_files' ] ) ) {
-			$cache_rebuild_files = 1;
+			$GLOBALS['wpsc_config']['cache_rebuild_files'] = 1;
 		} else {
-			$cache_rebuild_files = 0;
+			$GLOBALS['wpsc_config']['cache_rebuild_files'] = 0;
 		}
-		wp_cache_replace_line('^ *\$cache_rebuild_files', "\$cache_rebuild_files = " . $cache_rebuild_files . ";", $wp_cache_config_file);
+		wp_cache_setting( 'cache_rebuild_files', $GLOBALS['wpsc_config']['cache_rebuild_files'] );
 
 		if ( isset( $_POST[ 'wpsc_save_headers' ] ) ) {
 			$wpsc_save_headers = 1;
@@ -762,7 +761,7 @@ if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'wpsupercache' )
 
 function wp_cache_manager() {
 	global $wp_cache_config_file, $valid_nonce, $supercachedir;
-	global $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_mobile_enabled, $wp_cache_mobile_browsers, $wp_cache_no_cache_for_get;
+	global $wp_cache_clear_on_post_edit, $wp_cache_mobile_enabled, $wp_cache_mobile_browsers, $wp_cache_no_cache_for_get;
 	global $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_supercache_cache_list, $cache_page_secret;
 	global $wp_super_cache_front_page_check, $wp_cache_refresh_single_only, $wp_cache_mobile_prefixes;
 	global $wp_supercache_304, $wp_cache_front_page_checks, $wp_cache_disable_utf8, $wp_cache_mfunc_enabled;
@@ -804,8 +803,8 @@ function wp_cache_manager() {
 		$supercachedir = get_supercache_dir();
 	if( get_option( 'gzipcompression' ) == 1 )
 		update_option( 'gzipcompression', 0 );
-	if( !isset( $cache_rebuild_files ) )
-		$cache_rebuild_files = 0;
+	if( !isset( $GLOBALS['wpsc_config']['cache_rebuild_files'] ) )
+		$GLOBALS['wpsc_config']['cache_rebuild_files'] = 0;
 
 	$valid_nonce = isset($_REQUEST['_wpnonce']) ? wp_verify_nonce($_REQUEST['_wpnonce'], 'wp-cache') : false;
 	/* http://www.netlobo.com/div_hiding.html */
@@ -1095,7 +1094,7 @@ table.wpsc-settings-table {
 							<em><?php esc_html_e( 'Compression is disabled by default because some hosts have problems with compressed files. Switching it on and off clears the cache.', 'wp-super-cache' ); ?></em><br />
 						<?php endif; ?>
 					<?php endif; ?>
-					<label><input type='checkbox' name='cache_rebuild_files' <?php checked( $cache_rebuild_files ); ?> value='1'> <?php echo esc_html__( 'Cache rebuild. Serve a supercache file to anonymous users while a new file is being generated.', 'wp-super-cache' ) . ' <em>(' . esc_html__( 'Recommended', 'wp-super-cache' ) . ')</em>'; ?></label><br />
+					<label><input type='checkbox' name='cache_rebuild_files' <?php checked( $GLOBALS['wpsc_config']['cache_rebuild_files'] ); ?> value='1'> <?php echo esc_html__( 'Cache rebuild. Serve a supercache file to anonymous users while a new file is being generated.', 'wp-super-cache' ) . ' <em>(' . esc_html__( 'Recommended', 'wp-super-cache' ) . ')</em>'; ?></label><br />
 					<?php if ( $GLOBALS['wpsc_config']['wp_cache_mod_rewrite'] ) { ?>
 						<br />
 						<p><strong><?php esc_html_e( 'Warning! The following settings are disabled because Expert caching is enabled.', 'wp-super-cache' ); ?></strong></p>
