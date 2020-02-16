@@ -73,7 +73,6 @@ wpsc_init();
  * It's minimal list of global variables.
  */
 global $wpsc_config;
-global $wp_super_cache_late_init;
 global $cache_compression, $cache_max_time, $wp_cache_shutdown_gc, $cache_rebuild_files;
 global $wp_super_cache_debug, $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
 global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
@@ -529,7 +528,7 @@ if ( 'delcachepage' === filter_input( INPUT_GET, 'action' ) ) {
 }
 
 function wp_cache_manager_updates() {
-	global $wp_cache_mobile_enabled, $wp_cache_mfunc_enabled, $wp_supercache_cache_list, $wp_cache_config_file, $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_cache_refresh_single_only, $cache_compression, $wp_supercache_304, $wp_super_cache_late_init, $wp_cache_front_page_checks, $cache_page_secret, $wp_cache_disable_utf8, $wp_cache_no_cache_for_get;
+	global $wp_cache_mobile_enabled, $wp_cache_mfunc_enabled, $wp_supercache_cache_list, $wp_cache_config_file, $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_cache_refresh_single_only, $cache_compression, $wp_supercache_304, $wp_cache_front_page_checks, $cache_page_secret, $wp_cache_disable_utf8, $wp_cache_no_cache_for_get;
 	global $cache_schedule_type, $cache_max_time, $cache_time_interval, $wp_cache_shutdown_gc, $wpsc_save_headers;
 
 	if ( !wpsupercache_site_admin() )
@@ -601,11 +600,11 @@ function wp_cache_manager_updates() {
 		}
 
 		if( isset( $_POST[ 'wp_super_cache_late_init' ] ) ) {
-			$wp_super_cache_late_init = 1;
+			$GLOBALS['wpsc_config']['wp_super_cache_late_init'] = 1;
 		} else {
-			$wp_super_cache_late_init = 0;
+			$GLOBALS['wpsc_config']['wp_super_cache_late_init'] = 0;
 		}
-		wp_cache_replace_line('^ *\$wp_super_cache_late_init', "\$wp_super_cache_late_init = " . $wp_super_cache_late_init . ";", $wp_cache_config_file);
+		wp_cache_setting( 'wp_super_cache_late_init', $GLOBALS['wpsc_config']['wp_super_cache_late_init'] );
 
 		if( isset( $_POST[ 'wp_cache_disable_utf8' ] ) ) {
 			$wp_cache_disable_utf8 = 1;
@@ -766,7 +765,7 @@ function wp_cache_manager() {
 	global $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_mobile_enabled, $wp_cache_mobile_browsers, $wp_cache_no_cache_for_get;
 	global $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_supercache_cache_list, $cache_page_secret;
 	global $wp_super_cache_front_page_check, $wp_cache_refresh_single_only, $wp_cache_mobile_prefixes;
-	global $wp_supercache_304, $wp_super_cache_late_init, $wp_cache_front_page_checks, $wp_cache_disable_utf8, $wp_cache_mfunc_enabled;
+	global $wp_supercache_304, $wp_cache_front_page_checks, $wp_cache_disable_utf8, $wp_cache_mfunc_enabled;
 	global $wp_super_cache_comments, $wpsc_save_headers, $is_nginx;
 
 	if ( !wpsupercache_site_admin() )
@@ -1128,7 +1127,7 @@ table.wpsc-settings-table {
 			<?php if( false == defined( 'WPSC_DISABLE_LOCKING' ) ) { ?>
 				<label><input type='checkbox' name='wp_cache_mutex_disabled' <?php if( ! $GLOBALS['wpsc_config']['wp_cache_mutex_disabled'] ) echo "checked"; ?> value='0'> <?php _e( 'Coarse file locking. You do not need this as it will slow down your website.', 'wp-super-cache' ); ?></label><br />
 			<?php } ?>
-				<label><input type='checkbox' name='wp_super_cache_late_init' <?php if( $wp_super_cache_late_init ) echo "checked"; ?> value='1'> <?php _e( 'Late init. Display cached files after WordPress has loaded.', 'wp-super-cache' ); ?></label><br />
+				<label><input type='checkbox' name='wp_super_cache_late_init' <?php if ( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) echo "checked"; ?> value='1'> <?php _e( 'Late init. Display cached files after WordPress has loaded.', 'wp-super-cache' ); ?></label><br />
 			<?php printf( __( '<strong>DO NOT CACHE PAGE</strong> secret key: <a href="%s">%s</a>', 'wp-super-cache' ), trailingslashit( get_bloginfo( 'url' ) ) . "?donotcachepage={$cache_page_secret}", $cache_page_secret ); ?>
 				</fieldset>
 			</td>

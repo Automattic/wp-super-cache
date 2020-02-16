@@ -265,13 +265,11 @@ function wp_cache_get_legacy_cache( $cache_file ) {
 }
 
 function wp_cache_postload() {
-	global $wp_super_cache_late_init;
-
 	if ( ! $GLOBALS['wpsc_config']['cache_enabled'] ) {
 		return true;
 	}
 
-	if ( isset( $wp_super_cache_late_init ) && true == $wp_super_cache_late_init ) {
+	if ( isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) && true == $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) {
 		wp_cache_debug( 'Supercache Late Init: add wp_cache_serve_cache_file to init', 3 );
 		add_action( 'init', 'wp_cache_late_loader', 9999 );
 	} else {
@@ -2052,8 +2050,7 @@ function wp_cache_get_ob(&$buffer) {
 		wp_cache_writers_exit();
 		wp_cache_add_to_buffer( $buffer, "Page not cached by WP Super Cache. Check your settings page. $cache_error" );
 		if ( $wp_cache_mfunc_enabled == 1 ) {
-			global $wp_super_cache_late_init;
-			if ( false == isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && $wp_super_cache_late_init == 0 ) )
+			if ( false == isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) || ( isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) && $GLOBALS['wpsc_config']['wp_super_cache_late_init'] == 0 ) )
 				wp_cache_add_to_buffer( $buffer, 'Super Cache dynamic page detected but $wp_super_cache_late_init not set. See the readme.txt for further details.' );
 		}
 
@@ -2143,8 +2140,7 @@ function wp_cache_get_ob(&$buffer) {
 			wp_cache_add_to_buffer( $buffer, "Warning! Obsolete mfunc/mclude/dynamic-cached-content tags found. Please update your theme. See http://ocaoimh.ie/y/5b for more information." );
 		}
 
-		global $wp_super_cache_late_init;
-		if ( false == isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && $wp_super_cache_late_init == 0 ) )
+		if ( false == isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) || ( isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) && $GLOBALS['wpsc_config']['wp_super_cache_late_init'] == 0 ) )
 			wp_cache_add_to_buffer( $buffer, 'Super Cache dynamic page detected but late init not set. See the readme.txt for further details.' );
 
 		if ( $fr ) { // wpcache caching

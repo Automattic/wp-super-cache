@@ -117,6 +117,12 @@ if ( defined( 'DOING_CRON' ) ) {
 	return true;
 }
 
-if ( ! isset( $wp_super_cache_late_init ) || ( isset( $wp_super_cache_late_init ) && false == $wp_super_cache_late_init ) ) {
+if (
+	! isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) ||
+	(
+		isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) &&
+		false == $GLOBALS['wpsc_config']['wp_super_cache_late_init'] 
+	)
+) {
 	wp_cache_serve_cache_file();
 }
