@@ -2039,7 +2039,7 @@ function wpsc_update_debug_settings() {
 
 	if ( false == $valid_nonce ) {
 		return array (
-			'wp_super_cache_debug' => $wp_super_cache_debug,
+			'wp_super_cache_debug' => $GLOBALS['wpsc_config']['wp_super_cache_debug'],
 			'wp_cache_debug_log' => $wp_cache_debug_log,
 			'wp_cache_debug_ip' => $wp_cache_debug_ip,
 			'wp_super_cache_comments' => $wp_super_cache_comments,
@@ -2062,8 +2062,8 @@ function wpsc_update_debug_settings() {
 	} elseif ( ! file_exists( $GLOBALS['wpsc_config']['cache_path'] . $wp_cache_debug_log ) ) { // make sure debug log exists before toggling debugging
 		extract( wpsc_create_debug_log( $wp_cache_debug_log, $wp_cache_debug_username ) ); // $wp_cache_debug_log, $wp_cache_debug_username
 	}
-	$wp_super_cache_debug = ( isset( $_POST[ 'wp_super_cache_debug' ] ) && $_POST[ 'wp_super_cache_debug' ] == 1 ) ? 1 : 0;
-	wp_cache_setting( 'wp_super_cache_debug', $wp_super_cache_debug );
+	$GLOBALS['wpsc_config']['wp_super_cache_debug'] = ( isset( $_POST[ 'wp_super_cache_debug' ] ) && $_POST[ 'wp_super_cache_debug' ] == 1 ) ? 1 : 0;
+	wp_cache_setting( 'wp_super_cache_debug', $GLOBALS['wpsc_config']['wp_super_cache_debug'] );
 
 	if ( isset( $_POST[ 'wp_cache_debug' ] ) ) {
 		wp_cache_setting( 'wp_cache_debug_username', $wp_cache_debug_username );
@@ -2095,7 +2095,7 @@ function wpsc_update_debug_settings() {
 	}
 
 	return array (
-		'wp_super_cache_debug' => $wp_super_cache_debug,
+		'wp_super_cache_debug' => $GLOBALS['wpsc_config']['wp_super_cache_debug'],
 		'wp_cache_debug_log' => $wp_cache_debug_log,
 		'wp_cache_debug_ip' => $wp_cache_debug_ip,
 		'wp_super_cache_comments' => $wp_super_cache_comments,
@@ -2125,7 +2125,7 @@ function wp_cache_debug_settings() {
 
 	$log_file_link = "<a href='" . site_url( str_replace( ABSPATH, '', "{$GLOBALS['wpsc_config']['cache_path']}view_{$wp_cache_debug_log}?wp-admin=1&wp-json=1&filter=" ) ) . "'>$wp_cache_debug_log</a>";
 
-	if ( $wp_super_cache_debug == 1 ) {
+	if ( $GLOBALS['wpsc_config']['wp_super_cache_debug'] == 1 ) {
 		echo "<p>" . sprintf( __( 'Currently logging to: %s', 'wp-super-cache' ), $log_file_link ) . "</p>";
 	} else {
 		echo "<p>" . sprintf( __( 'Last Logged to: %s', 'wp-super-cache' ), $log_file_link ) . "</p>";
@@ -2139,7 +2139,7 @@ function wp_cache_debug_settings() {
 	echo "</form>";
 
 	echo '<form name="wpsc_delete" action="' . esc_url_raw( add_query_arg( 'tab', 'debug', $admin_url ) ) . '" method="post">';
-	if ( ! isset( $wp_super_cache_debug ) || $wp_super_cache_debug == 0 ) {
+	if ( ! isset( $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) || $GLOBALS['wpsc_config']['wp_super_cache_debug'] == 0 ) {
 		$debug_status_message = __( 'Enable Logging', 'wp-super-cache' );
 		$not_status = 1;
 	} else {

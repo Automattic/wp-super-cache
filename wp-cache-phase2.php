@@ -523,7 +523,7 @@ function wp_cache_check_mobile( $cache_key ) {
  * @param $level   int
  */
 function wp_cache_debug( $message, $level = 1 ) {
-	global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_super_cache_debug;
+	global $wp_cache_debug_log, $wp_cache_debug_ip;
 	static $last_message = '';
 
 	if ( $last_message == $message ) {
@@ -532,13 +532,11 @@ function wp_cache_debug( $message, $level = 1 ) {
 	$last_message = $message;
 
 	// If either of the debug or log globals aren't set, then we can stop
-	if ( !isset($wp_super_cache_debug)
-		 || !isset($wp_cache_debug_log) )
+	if ( ! isset( $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) || ! isset( $wp_cache_debug_log ) )
 		return false;
 
 	// If either the debug or log globals are false or empty, we can stop
-	if ( $wp_super_cache_debug == false
-		 || $wp_cache_debug_log == '' )
+	if ( $GLOBALS['wpsc_config']['wp_super_cache_debug'] == false || $wp_cache_debug_log == '' )
 		return false;
 
 	// If the debug_ip has been set, but it doesn't match the ip of the requester
@@ -1971,7 +1969,7 @@ function wp_cache_get_ob(&$buffer) {
 	 * we avoid caching incomplete files */
 	if ( $buffer == '' ) {
 		$new_cache = false;
-		if ( isset( $GLOBALS[ 'wp_super_cache_debug' ] ) && $GLOBALS[ 'wp_super_cache_debug' ] ) {
+		if ( isset( $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) && $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) {
 			wp_cache_debug( "Buffer is blank. Output buffer may have been corrupted by another plugin or this is a redirected URL. Look for text 'ob_start' in the files of your plugins directory.", 2 );
 			wp_cache_add_to_buffer( $buffer, "Page not cached by WP Super Cache. Blank Page. Check output buffer usage by plugins." );
 		}
@@ -1979,7 +1977,7 @@ function wp_cache_get_ob(&$buffer) {
 
 	if ( isset( $wp_super_cache_query[ 'is_404' ] ) && false == apply_filters( 'wpsupercache_404', false ) ) {
 		$new_cache = false;
-		if ( isset( $GLOBALS[ 'wp_super_cache_debug' ] ) && $GLOBALS[ 'wp_super_cache_debug' ] ) {
+		if ( isset( $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) && $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) {
 			wp_cache_debug( '404 file not found not cached', 2 );
 			wp_cache_add_to_buffer( $buffer, "Page not cached by WP Super Cache. 404." );
 		}
@@ -1987,7 +1985,7 @@ function wp_cache_get_ob(&$buffer) {
 
 	if ( !preg_match( apply_filters( 'wp_cache_eof_tags', '/(<\/html>|<\/rss>|<\/feed>|<\/urlset|<\?xml)/i' ), $buffer ) ) {
 		$new_cache = false;
-		if ( isset( $GLOBALS[ 'wp_super_cache_debug' ] ) && $GLOBALS[ 'wp_super_cache_debug' ] ) {
+		if ( isset( $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) && $GLOBALS['wpsc_config']['wp_super_cache_debug'] ) {
 			wp_cache_debug( 'No closing html tag. Not caching.', 2 );
 			wp_cache_add_to_buffer( $buffer, "Page not cached by WP Super Cache. No closing HTML tag. Check your theme." );
 		}
