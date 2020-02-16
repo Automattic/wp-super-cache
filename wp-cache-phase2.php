@@ -552,12 +552,11 @@ function wp_cache_debug( $message, $level = 1 ) {
 	$log_file = $GLOBALS['wpsc_config']['cache_path'] . str_replace( '/', '', str_replace( '..', '', $GLOBALS['wpsc_config']['wp_cache_debug_log'] ) );
 
 	if ( ! file_exists( $log_file ) && function_exists( 'wpsc_create_debug_log' ) ) {
-		global $wp_cache_debug_username;
-		if ( ! isset( $wp_cache_debug_username ) ) {
-			$wp_cache_debug_username = '';
+		if ( ! isset( $GLOBALS['wpsc_config']['wp_cache_debug_username'] ) ) {
+			$GLOBALS['wpsc_config']['wp_cache_debug_username'] = '';
 		}
 
-		wpsc_create_debug_log( $GLOBALS['wpsc_config']['wp_cache_debug_log'], $wp_cache_debug_username );
+		wpsc_create_debug_log( $GLOBALS['wpsc_config']['wp_cache_debug_log'], $GLOBALS['wpsc_config']['wp_cache_debug_username'] );
 	}
 
 	error_log( $log_message, 3, $log_file );
@@ -1005,24 +1004,22 @@ function wpsc_get_protected_directories() {
 }
 
 function wpsc_debug_username() {
-	global $wp_cache_debug_username;
-	if ( ! isset( $wp_cache_debug_username ) || $wp_cache_debug_username == '' ) {
-		$wp_cache_debug_username = md5( time() + mt_rand() );
-		wp_cache_setting( 'wp_cache_debug_username', $wp_cache_debug_username );
+	if ( ! isset( $GLOBALS['wpsc_config']['wp_cache_debug_username'] ) || $GLOBALS['wpsc_config']['wp_cache_debug_username'] == '' ) {
+		$GLOBALS['wpsc_config']['wp_cache_debug_username'] = md5( time() + mt_rand() );
+		wp_cache_setting( 'wp_cache_debug_username', $GLOBALS['wpsc_config']['wp_cache_debug_username'] );
 	}
-	return $wp_cache_debug_username;
+	return $GLOBALS['wpsc_config']['wp_cache_debug_username'];
 }
 function wpsc_create_debug_log( $filename = '', $username = '' ) {
-	global $wp_cache_debug_username;
 	if ( $filename != '' ) {
 		$GLOBALS['wpsc_config']['wp_cache_debug_log'] = $filename;
 	} else {
 		$GLOBALS['wpsc_config']['wp_cache_debug_log'] = md5( time() + mt_rand() ) . ".php";
 	}
 	if ( $username != '' ) {
-		$wp_cache_debug_username = $username;
+		$GLOBALS['wpsc_config']['wp_cache_debug_username'] = $username;
 	} else {
-		$wp_cache_debug_username = wpsc_debug_username();
+		$GLOBALS['wpsc_config']['wp_cache_debug_username'] = wpsc_debug_username();
 	}
 
 	$msg = 'die( "Please use the viewer" );' . PHP_EOL;
@@ -1034,11 +1031,11 @@ function wpsc_create_debug_log( $filename = '', $username = '' ) {
 		fwrite( $fp, '<' . '?php // END HEADER ?' . '>' . PHP_EOL );
 		fclose( $fp );
 		wp_cache_setting( 'wp_cache_debug_log', $GLOBALS['wpsc_config']['wp_cache_debug_log'] );
-		wp_cache_setting( 'wp_cache_debug_username', $wp_cache_debug_username );
+		wp_cache_setting( 'wp_cache_debug_username', $GLOBALS['wpsc_config']['wp_cache_debug_username'] );
 	}
 
 	$msg = '
-if ( !isset( $_SERVER[ "PHP_AUTH_USER" ] ) || ( $_SERVER[ "PHP_AUTH_USER" ] != "' . $wp_cache_debug_username . '" && $_SERVER[ "PHP_AUTH_PW" ] != "' . $wp_cache_debug_username . '" ) ) {
+if ( !isset( $_SERVER[ "PHP_AUTH_USER" ] ) || ( $_SERVER[ "PHP_AUTH_USER" ] != "' . $GLOBALS['wpsc_config']['wp_cache_debug_username'] . '" && $_SERVER[ "PHP_AUTH_PW" ] != "' . $GLOBALS['wpsc_config']['wp_cache_debug_username'] . '" ) ) {
 	header( "WWW-Authenticate: Basic realm=\"WP-Super-Cache Debug Log\"" );
 	header( $_SERVER[ "SERVER_PROTOCOL" ] . " 401 Unauthorized" );
 	echo "You must login to view the debug log";
@@ -1112,7 +1109,7 @@ foreach( $debug_log as $line ) {
 		fclose( $fp );
 	}
 
-	return array( 'wp_cache_debug_log' => $GLOBALS['wpsc_config']['wp_cache_debug_log'], 'wp_cache_debug_username' => $wp_cache_debug_username );
+	return array( 'wp_cache_debug_log' => $GLOBALS['wpsc_config']['wp_cache_debug_log'], 'wp_cache_debug_username' => $GLOBALS['wpsc_config']['wp_cache_debug_username'] );
 }
 
 function wpsc_delete_url_cache( $url ) {
