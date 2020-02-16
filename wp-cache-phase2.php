@@ -44,7 +44,7 @@ function wp_super_cache_init() {
 
 function wp_cache_serve_cache_file() {
 	global $key, $blogcacheid, $wp_cache_request_uri, $blog_cache_dir, $meta_file, $cache_file, $cache_filename, $meta_pathname, $wp_cache_gzip_encoding, $meta;
-	global $cache_compression, $wp_cache_slash_check, $wp_supercache_304, $wp_cache_no_cache_for_get;
+	global $wp_cache_slash_check, $wp_supercache_304, $wp_cache_no_cache_for_get;
 	global $wp_cache_disable_utf8, $wp_cache_mfunc_enabled, $wpsc_served_header;
 
 	if ( wpsc_is_backend() ) {
@@ -208,7 +208,7 @@ function wp_cache_serve_cache_file() {
 
 	$cache_file = do_cacheaction( 'wp_cache_served_cache_file', $cache_file );
 	// Sometimes the gzip headers are lost. Make sure html returned isn't compressed!
-	if ( $cache_compression && $wp_cache_gzip_encoding && !in_array( 'Content-Encoding: ' . $wp_cache_gzip_encoding, $meta[ 'headers' ] ) ) {
+	if ( $GLOBALS['wpsc_config']['cache_compression'] && $wp_cache_gzip_encoding && !in_array( 'Content-Encoding: ' . $wp_cache_gzip_encoding, $meta[ 'headers' ] ) ) {
 		$ungzip = true;
 		wp_cache_debug( 'GZIP headers not found. Force uncompressed output.', 1 );
 	} else {
@@ -1955,7 +1955,7 @@ function wp_cache_maybe_dynamic( &$buffer ) {
 
 function wp_cache_get_ob(&$buffer) {
 	global $cache_filename, $wp_start_time, $supercachedir;
-	global $new_cache, $wp_cache_meta, $cache_compression, $wp_super_cache_query;
+	global $new_cache, $wp_cache_meta, $wp_super_cache_query;
 	global $wp_cache_gzip_encoding;
 	global $gzsize, $supercacheonly;
 	global $blog_cache_dir, $wp_supercache_cache_list;
@@ -2104,7 +2104,7 @@ function wp_cache_get_ob(&$buffer) {
 				wp_cache_writers_exit();
 				return wp_cache_maybe_dynamic( $buffer );
 			} elseif (
-				$cache_compression &&
+				$GLOBALS['wpsc_config']['cache_compression'] &&
 				(
 					! isset( $wp_cache_mfunc_enabled ) ||
 					$wp_cache_mfunc_enabled == 0
@@ -2157,7 +2157,7 @@ function wp_cache_get_ob(&$buffer) {
 			$buffer = do_cacheaction( 'wpsc_cachedata', $buffer ); // dynamic content for display
 		}
 
-		if ( $cache_compression && $wp_cache_gzip_encoding ) {
+		if ( $GLOBALS['wpsc_config']['cache_compression'] && $wp_cache_gzip_encoding ) {
 			wp_cache_debug( 'Gzipping dynamic buffer for display.', 5 );
 			wp_cache_add_to_buffer( $buffer, "Compression = gzip" );
 			$gzdata = gzencode( $buffer, 6, FORCE_GZIP );

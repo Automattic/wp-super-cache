@@ -294,12 +294,10 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 	 * @return null|string
 	 */
 	protected function set_cache_compression( $value ) {
-		global $cache_compression;
-
 		$new_cache_compression = 0;
 		if ( defined( 'WPSC_DISABLE_COMPRESSION' ) ) {
-			$cache_compression = 0;
-			wp_cache_setting( 'cache_compression', $cache_compression );
+			$GLOBALS['wpsc_config']['cache_compression'] = 0;
+			wp_cache_setting( 'cache_compression', $GLOBALS['wpsc_config']['cache_compression'] );
 
 		} else {
 			if ( 1 == $value ) {
@@ -310,9 +308,9 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 				return __( "You attempted to enable compression but `zlib.output_compression` is enabled. See #21 in the Troubleshooting section of the readme file.", 'wp-super-cache' );
 			}
 
-			if ( $new_cache_compression != $cache_compression ) {
-				$cache_compression = $new_cache_compression;
-				wp_cache_setting( 'cache_compression', $cache_compression );
+			if ( $new_cache_compression != $GLOBALS['wpsc_config']['cache_compression'] ) {
+				$GLOBALS['wpsc_config']['cache_compression'] = $new_cache_compression;
+				wp_cache_setting( 'cache_compression', $GLOBALS['wpsc_config']['cache_compression'] );
 				if ( function_exists( 'prune_super_cache' ) ) {
 					prune_super_cache( $GLOBALS['wpsc_config']['cache_path'], true );
 				}

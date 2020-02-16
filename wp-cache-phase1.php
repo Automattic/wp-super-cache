@@ -101,7 +101,7 @@ $wp_cache_gzip_encoding = '';
 $gzipped = 0;
 $gzsize  = 0;
 
-if ( $cache_compression ) {
+if ( $GLOBALS['wpsc_config']['cache_compression'] ) {
 	$wp_cache_gzip_encoding = gzip_accepted();
 }
 
@@ -121,7 +121,7 @@ if (
 	! isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) ||
 	(
 		isset( $GLOBALS['wpsc_config']['wp_super_cache_late_init'] ) &&
-		false == $GLOBALS['wpsc_config']['wp_super_cache_late_init'] 
+		false == $GLOBALS['wpsc_config']['wp_super_cache_late_init']
 	)
 ) {
 	wp_cache_serve_cache_file();
