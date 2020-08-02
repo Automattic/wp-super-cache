@@ -1141,6 +1141,14 @@ function wpsc_delete_url_cache( $url ) {
 // from legolas558 d0t users dot sf dot net at http://www.php.net/is_writable
 function is_writeable_ACLSafe( $path ) {
 
+	if (
+		( defined( 'PHP_OS_FAMILY' ) && constant( 'PHP_OS_FAMILY' ) !== 'Windows' ) ||
+		stristr( PHP_OS, 'DAR' ) ||
+		stristr( PHP_OS, 'LINUX' )
+	) {
+		return is_writeable( $path );
+	}
+
 	// PHP's is_writable does not work with Win32 NTFS
 
 	if ( $path[ strlen( $path ) - 1 ] == '/' ) { // recursively return a temporary file path
