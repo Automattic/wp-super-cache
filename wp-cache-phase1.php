@@ -1,6 +1,6 @@
 <?php
 
-if ( ! function_exists( 'wp_cache_phase2' ) ) {
+if ( ! function_exists( 'wpsc_load_config' ) ) {
 	require_once dirname( __FILE__ ) . '/wp-cache-phase2.php';
 	require_once dirname( __FILE__ ) . '/includes/pre-wp-functions.php';
 	wpsc_load_config();

@@ -30,7 +30,7 @@ Text Domain: wp-super-cache
 */
 
 if ( ! function_exists( 'wp_cache_phase2' ) ) {
-	require_once( dirname( __FILE__ ) . '/wp-cache-phase2.php');
+	require_once( dirname( __FILE__ ) . '/wp-cache-phase1.php');
 }
 
 if ( ! defined( 'PHP_VERSION_ID' ) ) {
@@ -87,7 +87,7 @@ if ( ! isset( $GLOBALS['wpsc_config']['cache_enabled'], $GLOBALS['wpsc_config'][
 	// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
 	! @include( $wp_cache_config_file )
 ) {
-	@include $wp_cache_config_file_sample; // phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+	include_once './wp-cache-phase1.php';
 }
 
 include(WPCACHEHOME . 'wp-cache-base.php');
