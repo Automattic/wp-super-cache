@@ -1142,7 +1142,7 @@ function wpsc_delete_url_cache( $url ) {
 function is_writeable_ACLSafe( $path ) {
 
 	if (
-		( defined( 'PHP_OS_FAMILY' ) && constant( 'PHP_OS_FAMILY' ) !== 'Windows' ) ||
+		( defined( 'PHP_OS_FAMILY' ) && 'Windows' !== constant( 'PHP_OS_FAMILY' ) ) ||
 		stristr( PHP_OS, 'DAR' ) ||
 		! stristr( PHP_OS, 'WIN' )
 	) {
