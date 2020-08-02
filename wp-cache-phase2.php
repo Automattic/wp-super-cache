@@ -1144,7 +1144,7 @@ function is_writeable_ACLSafe( $path ) {
 	if (
 		( defined( 'PHP_OS_FAMILY' ) && constant( 'PHP_OS_FAMILY' ) !== 'Windows' ) ||
 		stristr( PHP_OS, 'DAR' ) ||
-		stristr( PHP_OS, 'LINUX' )
+		! stristr( PHP_OS, 'WIN' )
 	) {
 		return is_writeable( $path );
 	}
