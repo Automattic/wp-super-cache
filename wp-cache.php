@@ -2569,7 +2569,7 @@ function wp_cache_create_advanced_cache() {
 		$global_config_file = ABSPATH . 'wp-config.php';
 	} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config.php' ) ) {
 		$global_config_file = dirname( ABSPATH ) . '/wp-config.php';
-	} elseif ( defined( 'DEBIAN_FILE' ) ) {
+	} elseif ( defined( 'DEBIAN_FILE' ) && file_exists( DEBIAN_FILE ) ) {
 		$global_config_file = DEBIAN_FILE;
 	} else {
 		die('Cannot locate wp-config.php');
