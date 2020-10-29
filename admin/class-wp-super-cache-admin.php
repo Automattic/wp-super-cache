@@ -183,6 +183,10 @@ class Wp_Super_Cache_Admin {
 			$setup_done = $this->setup->add_wp_cache_constant();
 		}
 
+		if ( ! $this->setup->is_wpcachehome_constant_defined() ) {
+			$setup_done = $this->setup->add_wpcachehome_constant();
+		}
+
 		if ( $setup_done && ! $this->setup->advanced_cache_exists() ) {
 			$setup_done = $this->setup->create_advanced_cache();
 		}

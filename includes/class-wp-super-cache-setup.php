@@ -67,41 +67,48 @@ class Wp_Super_Cache_Setup {
 		// Old plugin loads wp-cache-phase1.php, we load includes/pre-wp-functions.php includes/pre-wp-cache.php.
 
 		// phpcs:disable
-		$code = '<?php' .
-		"\r\n" . '// WP SUPER CACHE 1.2' .
-		"\r\n" . 'function wpcache_broken_message() {' .
-		"\r\n" . '	global $wp_cache_config_file;' .
-		"\r\n" . '	if ( isset( $wp_cache_config_file ) == false ) {' .
-		"\r\n" . '		return \'\';' .
-		"\r\n" . '	}' .
-		"\r\n" . '' .
-		"\r\n" . '	$doing_ajax     = defined( \'DOING_AJAX\' ) && DOING_AJAX;' .
-		"\r\n" . '	$xmlrpc_request = defined( \'XMLRPC_REQUEST\' ) && XMLRPC_REQUEST;' .
-		"\r\n" . '	$rest_request   = defined( \'REST_REQUEST\' ) && REST_REQUEST;' .
-		"\r\n" . '	$robots_request = strpos( $_SERVER[\'REQUEST_URI\'], \'robots.txt\' ) != false;' .
-		"\r\n" . '' .
-		"\r\n" . '	$skip_output = ( $doing_ajax || $xmlrpc_request || $rest_request || $robots_request );' .
-		"\r\n" . '	if ( false == strpos( $_SERVER[\'REQUEST_URI\'], \'wp-admin\' ) && ! $skip_output ) {' .
-		"\r\n" . '		echo \'<!-- WP Super Cache is installed but broken. The constant WPCACHEHOME must be set in the file wp-config.php and point at the WP Super Cache plugin directory. -->\';' .
-		"\r\n" . '	}' .
-		"\r\n" . '}' .
-		"\r\n" . '' .
-		"\r\n" . 'defined( \'ABSPATH\' ) || exit;' .
-		"\r\n" . 'if ( is_admin() ) {' .
-		"\r\n" . '	return;' .
-		"\r\n" . '}' .
-		"\r\n" . '' .
-		"\r\n" . 'if ( false == defined( \'WPCACHEHOME\' ) ) {' .
-		"\r\n" . '	define( \'ADVANCEDCACHEPROBLEM\', 1 );' .
-		"\r\n" . '} elseif ( ! file_exists( WPCACHEHOME . \'includes/pre-wp-functions.php\' ) ) {' .
-		"\r\n" . '		define( \'ADVANCEDCACHEPROBLEM\', 1 );' .
-		"\r\n" . '}' .
-		"\r\n" . 'if ( defined( \'ADVANCEDCACHEPROBLEM\' ) ) {' .
-		"\r\n" . '	register_shutdown_function( \'wpcache_broken_message\' );' .
-		"\r\n" . '	exit;' .
-		"\r\n" . '}' .
-		"\r\n" . 'include_once WPCACHEHOME . \'/includes/pre-wp-functions.php\';' .
-		"\r\n" . 'include_once WPCACHEHOME . \'/includes/pre-wp-cache.php\';';
+		$code = <<<ADVANCEDCACHE
+<?php
+// WP SUPER CACHE 1.2
+function wpcache_broken_message() {
+	global \$wp_cache_config_file;
+	if ( isset( \$wp_cache_config_file ) == false ) {
+		return '';
+	}
+
+	\$doing_ajax     = defined( 'DOING_AJAX' ) && DOING_AJAX;
+	\$xmlrpc_request = defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST;
+	\$rest_request   = defined( 'REST_REQUEST' ) && REST_REQUEST;
+	\$robots_request = strpos( \$_SERVER['REQUEST_URI'], 'robots.txt' ) !== false;
+
+	\$skip_output = ( \$doing_ajax || \$xmlrpc_request || \$rest_request || \$robots_request );
+
+	if ( false === strpos( \$_SERVER['REQUEST_URI'], 'wp-admin' ) && ! \$skip_output ) {
+		echo '<!-- WP Super Cache is installed but broken. The constant WPCACHEHOME must be set in the file wp-config.php and point at the WP Super Cache plugin directory. -->';
+	}
+}
+
+defined( 'ABSPATH' ) || exit;
+if ( is_admin() ) {
+	return;
+}
+
+if ( ! defined( "WPCACHEHOME" ) ) {
+	define( "WPCACHEHOME", ABSPATH . "wp-content/plugins/wp-super-cache/" );
+}
+
+if ( false === defined( 'WPCACHEHOME' ) ) {
+	define( 'ADVANCEDCACHEPROBLEM', 1 );
+} elseif ( ! file_exists( WPCACHEHOME . 'includes/pre-wp-functions.php' ) ) {
+		define( 'ADVANCEDCACHEPROBLEM', 1 );
+}
+if ( defined( 'ADVANCEDCACHEPROBLEM' ) ) {
+	register_shutdown_function( 'wpcache_broken_message' );
+	exit;
+}
+include_once WPCACHEHOME . '/includes/pre-wp-functions.php';
+include_once WPCACHEHOME . '/includes/pre-wp-cache.php';
+ADVANCEDCACHE;
 		// phpcs:enable
 
 		if ( ! file_put_contents( $this->advanced_cache_filename, $code ) ) {
@@ -126,6 +133,19 @@ class Wp_Super_Cache_Setup {
 	}
 
 	/**
+	 * Add WPCACHEHOME to wp-config.php
+	 *
+	 * @since    2.0.0
+	 */
+	public function add_wpcachehome_constant() {
+		if ( ! defined( 'WPCACHEHOME' ) ) {
+			define( 'WPCACHEHOME', trailingslashit( dirname( __FILE__ ) ) );
+		}
+		$line = "define( 'WPCACHEHOME', '" . trailingslashit( dirname( dirname( __FILE__ ) ) ) . "' );";
+		return $this->config->replace_line_in_file( 'define *\( *\'WPCACHEHOME\'', $line, $this->config_filename );
+	}
+
+	/**
 	 * Check if WP_CACHE defined in wp-config.php
 	 *
 	 * @since    2.0.0
@@ -135,6 +155,22 @@ class Wp_Super_Cache_Setup {
 			return false;
 		}
 		if ( ! strpos( file_get_contents( $this->config_filename ), 'WP_CACHE' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check if WPCACHEHOME defined in wp-config.php
+	 *
+	 * @since    2.0.0
+	 */
+	public function is_wpcachehome_constant_defined() {
+		if ( ! defined( 'WPCACHEHOME' ) ) {
+			return false;
+		}
+		if ( ! strpos( file_get_contents( $this->config_filename ), 'WPCACHEHOME' ) ) {
 			return false;
 		}
 
