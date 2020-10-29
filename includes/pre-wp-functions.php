@@ -1,9 +1,6 @@
 <?php
 /**
- * The file that defines the core plugin class
- *
- * A class definition that includes attributes and functions used across both the
- * public-facing side of the site and the admin area.
+ * Functions used to create the cache file from the output buffer
  *
  * @link       https://automattic.com/
  * @since      2.0.0
@@ -40,11 +37,25 @@ function wp_super_cache_load_config() {
  * @since  2.0
  * @return string
  */
-function wpsc_get_cache_dir() {
+function wp_super_cache_get_cache_dir() {
 	$config = wp_super_cache_load_config();
 	if ( isset( $config['cache_path'] ) ) {
 		return $config['cache_path'];
 	} else {
 		return ( defined( 'WPSC_CACHE_DIR' ) ) ? rtrim( WPSC_CACHE_DIR, '/' ) : rtrim( WP_CONTENT_DIR, '/' ) . '/cache';
 	}
+}
+
+/**
+ * Create cache file from buffer
+ *
+ * @param string $buffer the output buffer containing the current page.
+ * @since  2.0
+ */
+function wp_super_cache_create_cache( $buffer ) {
+	if ( mb_strlen( $buffer ) < 255 ) {
+		return $buffer;
+	}
+
+	return $buffer;
 }
