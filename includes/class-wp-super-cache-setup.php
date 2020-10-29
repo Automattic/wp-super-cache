@@ -24,12 +24,38 @@ class Wp_Super_Cache_Setup {
 	private $config;
 
 	/**
+	 * Configuration filename
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string $config_filename
+	 */
+	private $config_filename;
+
+	/**
+	 * Filename of advanced-cache.php
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string $advanced_cache_filename
+	 */
+	private $advanced_cache_filename;
+
+	/**
 	 * Initialize the setup
 	 *
 	 * @since    2.0.0
 	 */
 	public function __construct() {
-		$this->config = Wp_Super_cache_Config::instance();
+		$this->advanced_cache_filename = untrailingslashit( WP_CONTENT_DIR ) . '/advanced-cache.php';
+		$this->config                  = Wp_Super_cache_Config::instance();
+
+		if ( file_exists( ABSPATH . 'wp-config.php' ) ) {
+			$this->config_filename = ABSPATH . 'wp-config.php';
+		} else {
+			$this->config_filename = dirname( ABSPATH ) . '/wp-config.php';
+		}
+
 	}
 
 	/**
@@ -78,9 +104,10 @@ class Wp_Super_Cache_Setup {
 		"\r\n" . 'include_once WPCACHEHOME . \'/includes/pre-wp-cache.php\';';
 		// phpcs:enable
 
-		$file = untrailingslashit( WP_CONTENT_DIR ) . '/advanced-cache.php';
-		if ( ! file_put_contents( $file, $code ) ) {
+		if ( ! file_put_contents( $this->advanced_cache_filename, $code ) ) {
 			return false;
+		} else {
+			return true;
 		}
 
 	}
@@ -90,7 +117,41 @@ class Wp_Super_Cache_Setup {
 	 *
 	 * @since    2.0.0
 	 */
-	public function add_wp_cache() {
+	public function add_wp_cache_constant() {
+		$line = "define( 'WP_CACHE', true );";
+		if ( ! defined( 'WP_CACHE' ) ) {
+			define( 'WP_CACHE', true );
+		}
+		return $this->config->replace_line_in_file( 'define *\( *\'WP_CACHE\'', $line, $this->config_filename );
+	}
+
+	/**
+	 * Check if WP_CACHE defined in wp-config.php
+	 *
+	 * @since    2.0.0
+	 */
+	public function is_wp_cache_constant_defined() {
+		if ( ! defined( 'WP_CACHE' ) ) {
+			return false;
+		}
+		if ( ! strpos( file_get_contents( $this->config_filename ), 'WP_CACHE' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check if advanced-cache.php created.
+	 *
+	 * @since    2.0.0
+	 */
+	public function advanced_cache_exists() {
+		if ( file_exists( $this->advanced_cache_filename ) ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
