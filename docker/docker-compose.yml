@@ -33,7 +33,7 @@ services:
     volumes:
       - "./wordpress:/var/www/html"
       - "./plugins:/var/www/html/wp-content/plugins"
-      - ..:/var/www/html/wp-content/plugins/wp-super-cache"
+      - ..:/var/www/html/wp-content/plugins/wp-super-cache
       - dockerdirectory:/var/www/html/wp-content/plugins/wp-super-cache/docker
       - ./mu-plugins:/var/www/html/wp-content/mu-plugins
       - ./logs/apache2/:/var/log/apache2
