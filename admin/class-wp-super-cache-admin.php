@@ -10,6 +10,12 @@
  */
 
 /**
+ * The class responsible for setting up required files for caching.
+ */
+require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-super-cache-setup.php';
+
+
+/**
  * The admin-specific functionality of the plugin.
  *
  * Defines the plugin name, version, and two examples hooks for how to
@@ -49,6 +55,15 @@ class Wp_Super_Cache_Admin {
 	private $config;
 
 	/**
+	 * Setup object
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      object $config.
+	 */
+	private $setup;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    2.0.0
@@ -60,6 +75,7 @@ class Wp_Super_Cache_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 		$this->config      = Wp_Super_cache_Config::instance();
+		$this->setup       = Wp_Super_cache_Setup::instance();
 	}
 
 	/**
@@ -162,7 +178,20 @@ class Wp_Super_Cache_Admin {
 	public function screen_options() {
 		$config = $this->config->get();
 		// TODO - setup screen to create cache dir.
-		include_once 'partials/wp-super-cache-admin-screen.php';
+		$setup_done = true;
+		if ( ! $this->setup->is_wp_cache_constant_defined() ) {
+			$setup_done = $this->setup->add_wp_cache_constant();
+		}
+
+		if ( $setup_done && ! $this->setup->advanced_cache_exists() ) {
+			$setup_done = $this->setup->create_advanced_cache();
+		}
+
+		if ( ! $setup_done ) {
+			include_once 'partials/wp-super-cache-admin-setup.php';
+		} else {
+			include_once 'partials/wp-super-cache-admin-screen.php';
+		}
 	}
 
 	/**
