@@ -69,16 +69,16 @@ class Wp_Super_Cache_Config {
 	public function update_setting( $field, $value ) {
 		$this->config[ $field ] = $value;
 		if ( is_numeric( $value ) ) {
-			return $this->replace_line_in_file( '^ *\$' . $field, "\$$field = $value;" );
+			return $this->replace_line_in_file( '^ *\$' . $field, "\$$field = $value;", $this->config_filename );
 		} elseif ( is_bool( $value ) ) {
-			$output_value = $value === true ? 'true' : 'false';
-			return $this->replace_line_in_file( '^ *\$' . $field, "\$$field = $output_value;" );
+			$output_value = true === $value ? 'true' : 'false';
+			return $this->replace_line_in_file( '^ *\$' . $field, "\$$field = $output_value;", $this->config_filename );
 		} elseif ( is_object( $value ) || is_array( $value ) ) {
-			$text = var_export( $value, true );
+			$text = var_export( $value, true ); // phpcs:ignore
 			$text = preg_replace( '/[\s]+/', ' ', $text );
-			return $this->replace_line_in_file( '^ *\$' . $field, "\$$field = $text;" );
+			return $this->replace_line_in_file( '^ *\$' . $field, "\$$field = $text;", $this->config_filename );
 		} else {
-			return $this->replace_line_in_file( '^ *\$' . $field, "\$$field = '$value';" );
+			return $this->replace_line_in_file( '^ *\$' . $field, "\$$field = '$value';", $this->config_filename );
 		}
 	}
 
@@ -87,32 +87,29 @@ class Wp_Super_Cache_Config {
 	 *
 	 * @param string $old the old line in the file.
 	 * @param string $new the new line to replace it.
+	 * @param string $filename the filename of the file to write to.
 	 * @since 2.0
 	 */
-	private function replace_line_in_file( $old, $new ) {
-		error_log( "replace_line_in_file: *$old* *$new*");
-		error_log( "config file: " . $this->config_filename );
-		if ( is_file( $this->config_filename ) === false ) {
+	public function replace_line_in_file( $old, $new, $filename ) {
+		if ( is_file( $filename ) === false ) {
 			if ( function_exists( 'set_transient' ) ) {
 				set_transient( 'wpsc_config_error', 'config_file_missing', 10 );
 			}
 			return false;
 		}
-		if ( ! $this->is_writeable( $this->config_filename ) ) {
-		error_log( "replace_line_in_file: config file RO");
+		if ( ! $this->is_writeable( $filename ) ) {
 			if ( function_exists( 'set_transient' ) ) {
 				set_transient( 'wpsc_config_error', 'config_file_ro', 10 );
 			}
 			return false;
 		}
-		error_log( "replace_line_in_file: blah");
 
 		$found  = false;
 		$loaded = false;
 		$c      = 0;
 		$lines  = array();
 		while ( ! $loaded ) {
-			$lines = file( $this->config_filename );
+			$lines = file( $filename );
 			if ( ! empty( $lines ) && is_array( $lines ) ) {
 				$loaded = true;
 			} else {
@@ -161,12 +158,9 @@ class Wp_Super_Cache_Config {
 		} else {
 			$done = false;
 			foreach ( (array) $lines as $line ) {
-				error_log( "line: $line" );
 				if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
-					error_log( "writing line: $line");
 					fputs( $fd, $line );
 				} else {
-					error_log( "writing: $new");
 					fputs( $fd, "$new\n" );
 					fputs( $fd, $line );
 					$done = true;
@@ -174,11 +168,11 @@ class Wp_Super_Cache_Config {
 			}
 		}
 		fclose( $fd );
-		rename( $tmp_config_filename, $this->config_filename );
-		wp_cache_debug( 'replace_line_in_file: moved ' . $tmp_config_filename . ' to ' . $this->config_filename );
+		rename( $tmp_config_filename, $filename );
+		wp_cache_debug( 'replace_line_in_file: moved ' . $tmp_config_filename . ' to ' . $filename );
 
 		if ( function_exists( 'opcache_invalidate' ) ) {
-			@opcache_invalidate( $this->config_filename );
+			@opcache_invalidate( $filename );
 		}
 
 		return true;
