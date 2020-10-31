@@ -242,15 +242,3 @@ class Wp_Super_Cache {
 	}
 
 }
-
-/**
- * Retrieve the version number of the plugin.
- *
- * @since     2.0.0
- * @param     string $message The message to log.
- * @param     int    $num deprecated.
- */
-function wp_cache_debug( $message, $num = 0 ) {
-	// phpcs:ignore
-	error_log( $message );
-}

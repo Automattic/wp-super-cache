@@ -111,7 +111,7 @@ include_once WPCACHEHOME . '/includes/pre-wp-cache.php';
 ADVANCEDCACHE;
 		// phpcs:enable
 
-		if ( ! file_put_contents( $this->advanced_cache_filename, $code ) ) {
+		if ( ! file_put_contents( $this->advanced_cache_filename, $code ) ) { // phpcs:ignore
 			return false;
 		} else {
 			return true;
@@ -154,7 +154,7 @@ ADVANCEDCACHE;
 		if ( ! defined( 'WP_CACHE' ) ) {
 			return false;
 		}
-		if ( ! strpos( file_get_contents( $this->config_filename ), 'WP_CACHE' ) ) {
+		if ( ! strpos( file_get_contents( $this->config_filename ), 'WP_CACHE' ) ) { // phpcs:ignore
 			return false;
 		}
 
@@ -170,7 +170,7 @@ ADVANCEDCACHE;
 		if ( ! defined( 'WPCACHEHOME' ) ) {
 			return false;
 		}
-		if ( ! strpos( file_get_contents( $this->config_filename ), 'WPCACHEHOME' ) ) {
+		if ( ! strpos( file_get_contents( $this->config_filename ), 'WPCACHEHOME' ) ) { // phpcs:ignore
 			return false;
 		}
 

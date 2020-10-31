@@ -8,7 +8,7 @@
  */
 
 /**
- * Handles front admin page for Crowdsignal.
+ * Set and get the configuration for the plugin
  *
  * @since 2.0.0
  */
@@ -135,7 +135,10 @@ class Wp_Super_Cache_Config {
 			}
 		}
 
-		// $tmp_config_filename = tempnam( $GLOBALS['cache_path'], 'wpsc' );
+		/**
+		 * TODO: The tmp config filename must be put in the cache_path as not all servers have /tmp
+		 * $tmp_config_filename = tempnam( $GLOBALS['cache_path'], 'wpsc' );
+		 */
 		$tmp_config_filename = tempnam( '/tmp/', 'wpsc' );
 		rename( $tmp_config_filename, $tmp_config_filename . '.php' );
 		$tmp_config_filename .= '.php';
@@ -167,12 +170,12 @@ class Wp_Super_Cache_Config {
 				}
 			}
 		}
-		fclose( $fd );
+		fclose( $fd ); // phpcs:ignore
 		rename( $tmp_config_filename, $filename );
 		wp_cache_debug( 'replace_line_in_file: moved ' . $tmp_config_filename . ' to ' . $filename );
 
 		if ( function_exists( 'opcache_invalidate' ) ) {
-			@opcache_invalidate( $filename );
+			@opcache_invalidate( $filename ); // phpcs:ignore
 		}
 
 		return true;
@@ -197,11 +200,11 @@ class Wp_Super_Cache_Config {
 
 		// check tmp file for read/write capabilities.
 		$rm = file_exists( $path );
-		$f = @fopen( $path, 'a' );
+		$f = @fopen( $path, 'a' ); // phpcs:ignore
 		if ( false === $f ) {
 			return false;
 		}
-		fclose( $f );
+		fclose( $f ); // phpcs:ignore
 		if ( ! $rm ) {
 			unlink( $path );
 		}
