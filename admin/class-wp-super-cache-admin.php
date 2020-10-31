@@ -191,6 +191,10 @@ class Wp_Super_Cache_Admin {
 			$setup_done = $this->setup->create_advanced_cache();
 		}
 
+		if ( $setup_done && ! $this->setup->plugin_config_exists() ) {
+			$setup_done = $this->setup->create_config_file();
+		}
+
 		if ( ! $setup_done ) {
 			include_once 'partials/wp-super-cache-admin-setup.php';
 		} else {

@@ -42,12 +42,22 @@ class Wp_Super_Cache_Setup {
 	private $advanced_cache_filename;
 
 	/**
+	 * Filename of plugin config file.
+	 *
+	 * @since    2.0.0
+	 * @access   private
+	 * @var      string $advanced_cache_filename
+	 */
+	private $plugin_config_filename;
+
+	/**
 	 * Initialize the setup
 	 *
 	 * @since    2.0.0
 	 */
 	public function __construct() {
 		$this->advanced_cache_filename = untrailingslashit( WP_CONTENT_DIR ) . '/advanced-cache.php';
+		$this->plugin_config_filename  = untrailingslashit( WP_CONTENT_DIR ) . '/wp-cache-config.php';
 		$this->config                  = Wp_Super_cache_Config::instance();
 
 		if ( file_exists( ABSPATH . 'wp-config.php' ) ) {
@@ -120,6 +130,23 @@ ADVANCEDCACHE;
 	}
 
 	/**
+	 * Create WP_CONTENT/advanced_cache.php
+	 *
+	 * @since    2.0.0
+	 */
+	public function create_config_file() {
+		$code = <<<CONFIGFILE
+<?php
+
+CONFIGFILE;
+		if ( ! file_put_contents( $this->plugin_config_filename, $code ) ) { // phpcs:ignore
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	/**
 	 * Add WP_CACHE to wp-config.php
 	 *
 	 * @since    2.0.0
@@ -184,6 +211,19 @@ ADVANCEDCACHE;
 	 */
 	public function advanced_cache_exists() {
 		if ( file_exists( $this->advanced_cache_filename ) ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Check if wp-cache-config.php created.
+	 *
+	 * @since    2.0.0
+	 */
+	public function plugin_config_exists() {
+		if ( file_exists( $this->plugin_config_filename ) ) {
 			return true;
 		} else {
 			return false;
