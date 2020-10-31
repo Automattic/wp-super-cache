@@ -137,6 +137,7 @@ ADVANCEDCACHE;
 	public function create_config_file() {
 		$code = <<<CONFIGFILE
 <?php
+\$caching = 0;
 
 CONFIGFILE;
 		if ( ! file_put_contents( $this->plugin_config_filename, $code ) ) { // phpcs:ignore
