@@ -48,9 +48,8 @@ class Wp_Super_Cache_Admin {
 	/**
 	 * Configuration object
 	 *
-	 * @since    2.0.0
-	 * @access   private
-	 * @var      object $config.
+	 * @since 2.0.0
+	 * @var   object $config
 	 */
 	private $config;
 
@@ -74,7 +73,7 @@ class Wp_Super_Cache_Admin {
 
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
-		$this->config      = Wp_Super_cache_Config::instance();
+		$this->config      = Wp_Super_Cache_Config::instance();
 		$this->setup       = Wp_Super_cache_Setup::instance();
 	}
 
@@ -176,7 +175,6 @@ class Wp_Super_Cache_Admin {
 	 * @since 1.0
 	 */
 	public function screen_options() {
-		$config = $this->config->get();
 		// TODO - setup screen to create cache dir.
 		$setup_done = true;
 		if ( ! $this->setup->is_wp_cache_constant_defined() ) {
@@ -193,6 +191,10 @@ class Wp_Super_Cache_Admin {
 
 		if ( $setup_done && ! $this->setup->plugin_config_exists() ) {
 			$setup_done = $this->setup->create_config_file();
+		}
+
+		if ( $setup_done && ! $this->config->config['wp_cache_home_path'] ) {
+			$setup_done = $this->setup->set_home_path();
 		}
 
 		if ( ! $setup_done ) {
