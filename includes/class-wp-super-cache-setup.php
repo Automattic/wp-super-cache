@@ -58,7 +58,7 @@ class Wp_Super_Cache_Setup {
 	public function __construct() {
 		$this->advanced_cache_filename = untrailingslashit( WP_CONTENT_DIR ) . '/advanced-cache.php';
 		$this->plugin_config_filename  = untrailingslashit( WP_CONTENT_DIR ) . '/wp-cache-config.php';
-		$this->config                  = Wp_Super_cache_Config::instance();
+		$this->config                  = Wp_Super_Cache_Config::instance();
 
 		if ( file_exists( ABSPATH . 'wp-config.php' ) ) {
 			$this->config_filename = ABSPATH . 'wp-config.php';
@@ -245,6 +245,27 @@ CONFIGFILE;
 			return true;
 		}
 	}
+
+	/**
+	 * Set the homepath setting
+	 *
+	 * @since    2.0.0
+	 */
+	public function set_home_path() {
+		$home_path = wp_parse_url( site_url() );
+		$home_path = trailingslashit( array_key_exists( 'path', $home_path ) ? $home_path['path'] : '' );
+
+		if ( ! isset( $this->config->config['wp_cache_home_path'] ) ) {
+			$this->config->update_setting( 'wp_cache_home_path', '/' );
+		}
+
+		if ( "$home_path" !== "$wp_cache_home_path" ) {
+			$this->config->update_setting( 'wp_cache_home_path', $home_path );
+		}
+
+		return true;
+	}
+
 
 	/**
 	 * Add WP_CACHE to wp-config.php
