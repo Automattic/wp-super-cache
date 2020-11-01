@@ -228,8 +228,8 @@ class Wp_Super_Cache_Admin {
 		// TODO - switch to update settings for various pages.
 
 		$this->config->update_setting(
-			'caching',
-			isset( $_POST['caching'] ) ? 1 : 0
+			'cache_enabled',
+			isset( $_POST['cache_enabled'] ) ? 1 : 0
 		);
 
 		if ( false === isset( $this->config->config['cache_page_secret'] ) ) {

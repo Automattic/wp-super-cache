@@ -18,7 +18,7 @@
 	<h1><?php esc_html_e( 'WP Super Cache Settings', 'wp-super-cache' ); ?></h1>
 	<form action="" method="post">
 		<?php wp_nonce_field( 'wp-super-cache_update_settings', 'wp-super-cache_settings_nonce' ); ?>
-		<input type='checkbox' name='caching' value='1' <?php echo checked( $config['caching'] ); ?> /> <?php esc_html_e( 'Enable Caching', 'wp-super-cache' ); ?>
+		<input type='checkbox' name='cache_enabled' value='1' <?php echo checked( $config['cache_enabled'] ); ?> /> <?php esc_html_e( 'Enable Caching', 'wp-super-cache' ); ?>
 		<input type="hidden" name="action" value="wp-super-cache_update" />
 		<p class="submit">
 			<input type="submit" name="submit" id="submit" class="button button-primary" value="<?php esc_html_e( 'Save Changes', 'wp-super-cache' ); ?>">
