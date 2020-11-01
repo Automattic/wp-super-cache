@@ -143,7 +143,7 @@ class Wp_Super_Cache_Config {
 		rename( $tmp_config_filename, $tmp_config_filename . '.php' );
 		$tmp_config_filename .= '.php';
 		wp_cache_debug( 'replace_line_in_file: writing to ' . $tmp_config_filename );
-		$fd = fopen( $tmp_config_filename, 'w' );
+		$fd = fopen( $tmp_config_filename, 'w' ); // phpcs:ignore
 		if ( ! $fd ) {
 			if ( function_exists( 'set_transient' ) ) {
 				set_transient( 'wpsc_config_error', 'config_file_ro', 10 );
