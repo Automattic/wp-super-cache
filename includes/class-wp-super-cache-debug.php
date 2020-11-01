@@ -18,10 +18,9 @@ class Wp_Super_Cache_Debug {
 	 * Configuration variables
 	 *
 	 * @since 1.0.1
-	 * @var   array
+	 * @var   object
 	 */
-	public $config = array();
-
+	public $config;
 
 	/**
 	 * Constructor
