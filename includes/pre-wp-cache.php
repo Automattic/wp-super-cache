@@ -65,7 +65,7 @@ if ( wpsc_is_backend() ) {
 	return true;
 }
 
-if ( wpsc_is_caching_user_disabled() ) {
+if ( Wp_Super_cache_User::instance()->is_caching_disabled() ) {
 	wp_cache_debug( 'Caching disabled for logged in users on settings page.' );
 	return true;
 }
