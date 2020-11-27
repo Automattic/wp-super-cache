@@ -742,15 +742,21 @@ function wp_cache_manager_updates() {
 			wp_cache_replace_line('^ *\$cache_compression', "\$cache_compression = " . $cache_compression . ";", $wp_cache_config_file);
 			wp_cache_replace_line('^ *\$cache_compression_br', "\$cache_compression_br = " . $cache_compression_br . ";", $wp_cache_config_file);
 		} else {
+			if ( isset( $_POST[ 'cache_compression' ] ) ) {
+				$new_cache_compression = 1;
+			} else {
+				$new_cache_compression = 0;
+			}
+			// Brotli
+			if ( isset( $_POST[ 'cache_compression_br' ] ) ) {
+				$new_cache_compression_br = 1;
+			} else {
+				$new_cache_compression_br = 0;
+			}
+
 			if ( 1 == ini_get( 'zlib.output_compression' ) || "on" == strtolower( ini_get( 'zlib.output_compression' ) ) ) {
 				echo '<div class="notice notice-error">' . __( "<strong>Warning!</strong> You attempted to enable compression but <code>zlib.output_compression</code> is enabled. See #21 in the Troubleshooting section of the readme file.", 'wp-super-cache' ) . '</div>';
 			} else {
-				// Moved these here, no point in setting stuff if we're not gonna enter here anyway.
-				if ( isset( $_POST[ 'cache_compression' ] ) ) {
-					$new_cache_compression = 1;
-				} else {
-					$new_cache_compression = 0;
-				}
 				if ( $new_cache_compression != $cache_compression ) {
 					$cache_compression = $new_cache_compression;
 					wp_cache_replace_line('^ *\$cache_compression', "\$cache_compression = " . $cache_compression . ";", $wp_cache_config_file);
@@ -758,13 +764,7 @@ function wp_cache_manager_updates() {
 						prune_super_cache( $cache_path, true );
 					delete_option( 'super_cache_meta' );
 				}
-
 				// Brotli
-				if ( isset( $_POST[ 'cache_compression_br' ] ) ) {
-					$new_cache_compression_br = 1;
-				} else {
-					$new_cache_compression_br = 0;
-				}
 				if ( $new_cache_compression_br != $cache_compression_br ) {
 					$cache_compression_br = $new_cache_compression_br;
 					wp_cache_replace_line('^ *\$cache_compression_br', "\$cache_compression_br = " . $cache_compression_br . ";", $wp_cache_config_file);
