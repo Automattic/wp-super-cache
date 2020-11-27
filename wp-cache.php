@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: WP Super Cache
+Plugin Name: WP Super Cache - FASTPATH.GR
 Plugin URI: https://wordpress.org/plugins/wp-super-cache/
-Description: Very fast caching plugin for WordPress.
-Version: 1.7.1
-Author: Automattic
+Description: Very fast caching plugin force WordPress.
+Version: 200.1.7.1
+Author: Automattic and Stathis Oureilidis, FASTPATH IKE
 Author URI: https://automattic.com/
 License: GPL2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
