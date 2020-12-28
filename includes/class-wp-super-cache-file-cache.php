@@ -61,8 +61,14 @@ class Wp_Super_Cache_File_Cache {
 	 * @return string
 	 */
 	public function get_query_vars() {
+		global $wp_query;
+
 		if ( ! empty( $this->query_vars ) ) {
 			return $this->query_vars;
+		}
+
+		if ( ! is_object( $wp_query ) || ! method_exists( $wp_query, 'get' ) ) {
+			return false;
 		}
 
 		if ( is_search() ) {
@@ -199,7 +205,7 @@ class Wp_Super_Cache_File_Cache {
 	 * @since  2.0
 	 */
 	public function ob_handler( $buffer ) {
-		global $wp_query, $wp_super_cache_request_uri;
+		global $wp_super_cache_request_uri;
 
 		if ( mb_strlen( $buffer ) < 255 ) {
 			wp_cache_debug( 'ob_handler: not caching a small page.' );
@@ -209,7 +215,7 @@ class Wp_Super_Cache_File_Cache {
 		if ( $this->is_fatal_error() ) {
 			wp_cache_debug( 'ob_handler: PHP Fatal error occurred. Not caching incomplete page.' );
 			$cache_this_page = false;
-		} elseif ( empty( $this->query_vars ) && ! empty( $buffer ) && is_object( $wp_query ) && method_exists( $wp_query, 'get' ) ) {
+		} elseif ( empty( $this->query_vars ) && ! empty( $buffer ) ) {
 			$this->get_query_vars();
 		} elseif ( empty( $this->query_vars ) && function_exists( 'http_response_code' ) ) {
 			$this->catch_http_status_code( http_response_code() );
