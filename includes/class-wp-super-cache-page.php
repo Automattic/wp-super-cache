@@ -86,15 +86,11 @@ class Wp_Super_Cache_Page {
 			return false;
 		}
 
-		if ( ! $this->is_user_agent_rejected() ) {
+		if ( $this->is_user_agent_rejected() ) {
 			return false;
 		}
 
-		if ( $this->url_is_rejected() ) {
-			return false;
-		}
-
-		return false;
+		return true;
 	}
 
 	/**
@@ -309,7 +305,7 @@ class Wp_Super_Cache_Page {
 	 *
 	 * @since  2.0
 	 */
-	private function post_cache_checks() {
+	public function post_cache_checks() {
 
 		$cache_this_page = true;
 		$query_vars      = WP_Super_cache_File_Cache::instance()->get_query_vars();
