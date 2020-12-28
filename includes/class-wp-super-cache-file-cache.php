@@ -162,12 +162,18 @@ class Wp_Super_Cache_File_Cache {
 	 *
 	 * @since  2.0
 	 */
-	public function gzip_encoding(){
+	public function gzip_encoding() {
 		static $gzip_accepted = 1;
 
 		if ( 1 !== $gzip_accepted ) {
 			return $gzip_accepted;
 		}
+
+		if ( ! $this->config->config['cache_compression'] ) {
+			$gzip_accepted = false;
+			return $gzip_accepted;
+		}
+
 		if ( 1 === ini_get( 'zlib.output_compression' ) || 'on' === strtolower( ini_get( 'zlib.output_compression' ) ) ) { // Don't compress WP-Cache data files when PHP is already doing it.
 			$gzip_accepted = false;
 			return $gzip_accepted;
@@ -729,7 +735,7 @@ class Wp_Super_Cache_File_Cache {
 					$this->wp_cache_writers_exit();
 					return $this->wp_cache_maybe_dynamic( $buffer );
 				} elseif (
-					$cache_compression &&
+					$this->gzip_encoding() &&
 					0 === $wp_cache_mfunc_enabled
 				) { // don't want to store compressed files if using dynamic content.
 					$gz = @fopen( $tmp_cache_filename . '.gz', 'w' ); // phpcs:ignore
@@ -781,7 +787,7 @@ class Wp_Super_Cache_File_Cache {
 				$buffer = do_cacheaction( 'wpsc_cachedata', $buffer ); // dynamic content for display.
 			}
 
-			if ( $cache_compression && this->gzip_encoding() ) {
+			if ( this->gzip_encoding() ) {
 				wp_cache_debug( 'Gzipping dynamic buffer for display.', 5 );
 				$this->add_to_buffer( $buffer, 'Compression = gzip' );
 				$gzdata = gzencode( $buffer, 6, FORCE_GZIP );
