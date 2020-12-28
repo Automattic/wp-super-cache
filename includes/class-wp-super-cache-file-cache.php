@@ -216,7 +216,7 @@ class Wp_Super_Cache_File_Cache {
 		}
 		$buffer = apply_filters( 'ob_handler_filter', $buffer );
 
-		$cache_this_page = $this->is_page_to_be_cached();
+		$cache_this_page = WP_Super_cache_Page::instance()->post_cache_checks();
 
 		if ( isset( $this->config->config['wpsc_save_headers'] ) && $this->config->config['wpsc_save_headers'] ) {
 			$this->config->config['super_cache_enabled'] = false; // use standard caching to record headers.
@@ -959,8 +959,5 @@ class Wp_Super_Cache_File_Cache {
 function wp_super_cache_ob_handler( $buffer ) {
 	$caching = Wp_Super_cache_File_Cache::instance();
 	$buffer  = $caching->ob_handler();
-	if ( ! WP_Super_cache_Page::instance()->post_cache_checks() ) {
-			return buffer; // return cached page without recording it because checks failed.
-	}
 
 }
