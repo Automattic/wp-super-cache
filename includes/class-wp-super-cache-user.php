@@ -33,7 +33,7 @@ class Wp_Super_Cache_User {
 	}
 
 	/**
-	 *
+	 * Get authentication cookies for visitor.
 	 *
 	 * @since  2.0
 	 */
