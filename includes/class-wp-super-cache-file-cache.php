@@ -61,7 +61,7 @@ class Wp_Super_Cache_File_Cache {
 	 * @return string
 	 */
 	public function get_query_vars() {
-		if ( ! empty( $this->query_vars() ) ) {
+		if ( ! empty( $this->query_vars ) ) {
 			return $this->query_vars;
 		}
 
