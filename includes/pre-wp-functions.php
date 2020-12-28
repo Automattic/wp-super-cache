@@ -15,23 +15,10 @@
 require_once 'class-wp-super-cache-config.php';
 require_once 'class-wp-super-cache-debug.php';
 require_once 'class-wp-super-cache-user.php';
+require_once 'class-wp-super-cache-page.php';
+require_once 'class-wp-super-cache-file-cache.php';
 
-$wp_super_cache_config = Wp_Super_cache_Config::instance()->get();
-
-/**
- * Get cache directory
- *
- * @since  2.0
- * @return string
- */
-function wp_super_cache_get_cache_dir() {
-	global $wp_super_cache_config;
-	if ( isset( $wp_super_cache_config['cache_path'] ) ) {
-		return $wp_super_cache_config['cache_path'];
-	} else {
-		return ( defined( 'WPSC_CACHE_DIR' ) ) ? rtrim( WPSC_CACHE_DIR, '/' ) : rtrim( WP_CONTENT_DIR, '/' ) . '/cache';
-	}
-}
+$wp_super_cache_config = Wp_Super_Cache_Config::instance()->get();
 
 /**
  * Return true if in wp-admin or other admin non cacheable page.
@@ -66,15 +53,37 @@ function wpsc_is_backend() {
 }
 
 /**
- * Create cache file from buffer
+ * Actions for the pre-WordPress process.
  *
- * @param string $buffer the output buffer containing the current page.
+ * @param string $action The action to hook on to.
+ * @param string $func The function to hook on to the action.
  * @since  2.0
  */
-function wp_super_cache_create_cache( $buffer ) {
-	if ( mb_strlen( $buffer ) < 255 ) {
-		return $buffer;
+function add_cacheaction( $action, $func ) {
+	global $wp_supercache_actions;
+	$wp_supercache_actions[ $action ][] = $func;
+}
+
+/**
+ * Perform the action and fire off functions.
+ *
+ * @param string $action The action to fire.
+ * @param string $value The data to pass to functions hooked on toe $action.
+ * @since  2.0
+ */
+function do_cacheaction( $action, $value = '' ) {
+	global $wp_supercache_actions;
+
+	if ( ! isset( $wp_supercache_actions ) || ! is_array( $wp_supercache_actions ) ) {
+		return $value;
 	}
 
-	return $buffer;
+	if ( array_key_exists( $action, $wp_supercache_actions ) && is_array( $wp_supercache_actions[ $action ] ) ) {
+		$actions = $wp_supercache_actions[ $action ];
+		foreach ( $actions as $func ) {
+			$value = call_user_func_array( $func, array( $value ) );
+		}
+	}
+
+	return $value;
 }

@@ -130,7 +130,7 @@ ADVANCEDCACHE;
 	}
 
 	/**
-	 * Create WP_CONTENT/advanced_cache.php
+	 * Create WP_CONTENT/wp-cache-config.php
 	 *
 	 * @since    2.0.0
 	 */
@@ -149,7 +149,7 @@ if ( ! defined('WPCACHEHOME') ) { define( 'WPCACHEHOME', WP_PLUGIN_DIR . '/wp-su
 \$cache_enabled = false;
 \$super_cache_enabled = true;
 \$cache_max_time = 3600; //in seconds
-//$use_flock = true; // Set it true or false if you know what to use
+//\$use_flock = true; // Set it true or false if you know what to use
 \$cache_path = WP_CONTENT_DIR . '/cache/';
 \$file_prefix = 'wp-cache-';
 \$ossdlcdn = 0;

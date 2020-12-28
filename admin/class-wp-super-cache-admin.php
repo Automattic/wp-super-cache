@@ -234,6 +234,11 @@ class Wp_Super_Cache_Admin {
 			isset( $_POST['cache_enabled'] ) ? 1 : 0
 		);
 
+		$this->config->update_setting(
+			'wp_super_cache_debug',
+			isset( $_POST['wp_super_cache_debug'] ) ? 1 : 0
+		);
+
 		if ( false === isset( $this->config->config['cache_page_secret'] ) ) {
 			$cache_page_secret = md5( gmdate( 'H:i:s' ) . wp_rand() );
 			$this->config->update_setting( 'cache_page_secret', $cache_page_secret );
