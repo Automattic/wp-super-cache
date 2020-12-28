@@ -64,8 +64,12 @@ class Wp_Super_Cache_Page {
 	 * @return bool
 	 */
 	public function is_cacheable() {
-		if ( ! $cache_enabled ) {
-			return true;
+		if ( ! $this->config->config['cache_enabled'] ) {
+			return false;
+		}
+
+		if ( isset( $_GET['customize_changeset_uuid'] ) ) { //phpcs:ignore
+			return false;
 		}
 
 		if ( $this->is_backend() ) {
