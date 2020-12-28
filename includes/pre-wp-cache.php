@@ -129,6 +129,6 @@ do_cacheaction( 'cache_init' );
 
 if ( $wp_super_cache_page->is_cached() ) {
 	$wp_super_cache_page->serve_page();
-} elseif ( $wp_super_cache_page->ok_to_cache() ) {
+} elseif ( $wp_super_cache_page->is_cacheable() ) {
 	$wp_super_cache_page->cache_page();
 }

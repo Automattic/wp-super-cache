@@ -56,7 +56,7 @@ class Wp_Super_Cache_Page {
 	 * @since  2.0
 	 * @return bool
 	 */
-	public function ok_to_cache() {
+	public function is_cacheable() {
 		if ( ! $cache_enabled ) {
 			return true;
 		}
