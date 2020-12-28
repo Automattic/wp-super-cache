@@ -33,26 +33,7 @@ class Wp_Super_Cache_User {
 	}
 
 	/**
-	 * Check if caching is disabled for the current visitor based on their cookies
 	 *
-	 * @since  2.0
-	 */
-	public function is_caching_disabled() {
-		global $wp_super_cache_config;
-		if ( 2 === $wp_super_cache_config['wp_cache_not_logged_in'] && wpsc_get_auth_cookies() ) {
-			wp_cache_debug( 'wpsc_is_caching_user_disabled: true because logged in' );
-			return true;
-		} elseif ( 1 === $wp_super_cache_config['wp_cache_not_logged_in'] && ! empty( $_COOKIE ) ) {
-			wp_cache_debug( 'wpsc_is_caching_user_disabled: true because cookie found' );
-			return true;
-		} else {
-			wp_cache_debug( 'wpsc_is_caching_user_disabled: false' );
-			return false;
-		}
-	}
-
-	/**
-	 * Return auth cookies for the current user.
 	 *
 	 * @since  2.0
 	 */
@@ -129,16 +110,34 @@ class Wp_Super_Cache_User {
 		}
 
 		if ( empty( $auth_cookies ) ) {
-			wp_cache_debug( 'wpsc_get_auth_cookies: no auth cookies detected', 5 );
+			wp_cache_debug( 'get_auth_cookies: no auth cookies detected', 5 );
 		} else {
 			if ( $duplicate_cookies ) {
-				wp_cache_debug( 'wpsc_get_auth_cookies: duplicate cookies detected( ' . implode( ', ', $duplicate_cookies ) . ' )', 5 );
+				wp_cache_debug( 'get_auth_cookies: duplicate cookies detected( ' . implode( ', ', $duplicate_cookies ) . ' )', 5 );
 			} else {
-				wp_cache_debug( 'wpsc_get_auth_cookies: cookies detected: ' . implode( ', ', $auth_cookies ), 5 );
+				wp_cache_debug( 'get_auth_cookies: cookies detected: ' . implode( ', ', $auth_cookies ), 5 );
 			}
 		}
 
 		return $auth_cookies;
+	}
+
+	/**
+	 * Check if caching is disabled for the current visitor based on their cookies
+	 *
+	 * @since  2.0
+	 */
+	public function is_caching_disabled() {
+		if ( 2 === $this->config->config['wp_cache_not_logged_in'] && $this->get_auth_cookies() ) {
+			wp_cache_debug( 'User - is_caching_disabled: true because logged in' );
+			return true;
+		} elseif ( 1 === $this->config->config['wp_cache_not_logged_in'] && ! empty( $_COOKIE ) ) {
+			wp_cache_debug( 'User - is_caching_disabled: true because cookie found' );
+			return true;
+		} else {
+			wp_cache_debug( 'User - is_caching_disabled: false' );
+			return false;
+		}
 	}
 
 	/**
