@@ -134,12 +134,19 @@ class Wp_Super_Cache_Page {
 	public function make_anonymous() {
 
 		// Don't remove cookies for some requests.
-		if (
-			$this->is_backend() ||
-			'GET' !== $_SERVER['REQUEST_METHOD'] ||
-			isset( $_GET['preview'], $_GET['customize_changeset_uuid'] ) || // WPCS: CSRF ok.
-			strpos( stripslashes( $_SERVER['REQUEST_URI'] ), '/wp-json/' ) !== false // WPCS: sanitization ok.
-		) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' !== $_SERVER['REQUEST_METHOD'] ) {
+			return true;
+		}
+
+		if ( $this->is_backend() ) {
+			return true;
+		}
+
+		if ( isset( $_GET['preview'], $_GET['customize_changeset_uuid'] ) ) { // phpcs:ignore
+			return true;
+		}
+
+		if ( isset( $_SERVER['REQUEST_URI'] ) && strpos( stripslashes( $_SERVER['REQUEST_URI'] ), '/wp-json/' ) !== false ) { // WPCS: sanitization ok.
 			return true;
 		}
 
@@ -273,10 +280,10 @@ class Wp_Super_Cache_Page {
 		} elseif ( 'POST' === $_SERVER['REQUEST_METHOD'] || ! empty( $_POST ) || get_option( 'gzipcompression' ) ) { // phpcs:ignore
 			wp_cache_debug( 'Not caching POST request.' );
 			$cache_this_page = false;
-		} elseif ( 'PUT' === $_SERVER['REQUEST_METHOD'] ) { // phpcs:ignore
+		} elseif ( 'PUT' === $_SERVER['REQUEST_METHOD'] ) {
 			wp_cache_debug( 'Not caching PUT request.' );
 			$cache_this_page = false;
-		} elseif ( 'DELETE' === $_SERVER['REQUEST_METHOD'] ) { // phpcs:ignore
+		} elseif ( 'DELETE' === $_SERVER['REQUEST_METHOD'] ) {
 			wp_cache_debug( 'Not caching DELETE request.' );
 			$cache_this_page = false;
 		} elseif ( isset( $_GET['preview'] ) ) { // phpcs:ignore
@@ -286,7 +293,7 @@ class Wp_Super_Cache_Page {
 			wp_cache_debug( 'URI rejected. Not Caching' );
 			$cache_this_page = false;
 		} elseif ( $this->is_user_agent_rejected() ) {
-			wp_cache_debug( 'USER AGENT (' . esc_html( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) . ') rejected. Not Caching' ); // phpcs:ignore
+			wp_cache_debug( 'USER AGENT (' . esc_html( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) . ') rejected. Not Caching' );
 			$cache_this_page = false;
 		} elseif ( isset( $this->config->config['wp_cache_pages']['single'] ) && 1 === $this->config->config['wp_cache_pages']['single'] && isset( $this->query_vars['is_single'] ) ) {
 			wp_cache_debug( 'Not caching single post.' );
