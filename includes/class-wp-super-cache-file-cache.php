@@ -36,7 +36,8 @@ class Wp_Super_Cache_File_Cache {
 	 * @since    2.0.0
 	 */
 	public function __construct() {
-		$this->config = Wp_Super_Cache_Config::instance();
+		$this->config     = Wp_Super_Cache_Config::instance();
+		$this->query_vars = array();
 	}
 
 	/**
@@ -60,7 +61,9 @@ class Wp_Super_Cache_File_Cache {
 	 * @return string
 	 */
 	public function get_query_vars() {
-		global $wp_super_cache_query;
+		if ( ! empty( $this->query_vars() ) ) {
+			return $this->query_vars;
+		}
 
 		if ( is_search() ) {
 			$this->query_vars['is_search'] = 1;
