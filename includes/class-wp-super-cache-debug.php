@@ -37,7 +37,6 @@ class Wp_Super_Cache_Debug {
 	 * @param string $message The message that should be added to the log.
 	 */
 	public function log( $message ) {
-		global $wp_super_cache_config;
 		static $last_message = '';
 
 		if ( $last_message === $message ) {
@@ -46,21 +45,21 @@ class Wp_Super_Cache_Debug {
 		$last_message = $message;
 
 		// If either of the debug or log globals aren't set, then we can stop.
-		if ( ! isset( $wp_super_cache_config['wp_super_cache_debug'] ) || ! isset( $wp_super_cache_config['wp_cache_debug_log'] ) ) {
+		if ( ! isset( $this->config->config['wp_super_cache_debug'] ) || ! isset( $this->config->config['wp_cache_debug_log'] ) ) {
 			return false;
 		}
 
 		// If either the debug or log globals are false or empty, we can stop.
-		if ( false === $wp_super_cache_config['wp_super_cache_debug'] || '' === $wp_super_cache_config['wp_cache_debug_log'] ) {
+		if ( false === $this->config->config['wp_super_cache_debug'] || '' === $this->config->config['wp_cache_debug_log'] ) {
 			return false;
 		}
 
 		// If the debug_ip has been set, but it doesn't match the ip of the requester
 		// then we can stop.
 		if (
-			isset( $wp_super_cache_config['wp_cache_debug_ip'] )
-			&& '' !== $wp_super_cache_config['wp_cache_debug_ip']
-			&& $wp_super_cache_config['wp_cache_debug_ip'] !== $_SERVER['REMOTE_ADDR'] // phpcs:ignore
+			isset( $this->config->config['wp_cache_debug_ip'] )
+			&& '' !== $this->config->config['wp_cache_debug_ip']
+			&& $this->config->config['wp_cache_debug_ip'] !== $_SERVER['REMOTE_ADDR'] // phpcs:ignore
 		) {
 			return false;
 		}
@@ -68,14 +67,14 @@ class Wp_Super_Cache_Debug {
 		// Log message: Date URI Message.
 		$log_message = gmdate( 'H:i:s' ) . ' ' . getmypid() . ' ' . wp_unslash( $_SERVER['REQUEST_URI'] ) . ' ' . $message . PHP_EOL; // phpcs:ignore
 		// path to the log file in the cache folder.
-		$log_file = $wp_super_cache_config['cache_path'] . str_replace( '/', '', str_replace( '..', '', $wp_super_cache_config['wp_cache_debug_log'] ) );
+		$log_file = $this->config->config['cache_path'] . str_replace( '/', '', str_replace( '..', '', $this->config->config['wp_cache_debug_log'] ) );
 
-		if ( ! file_exists( $log_file ) && function_exists( 'wpsc_create_debug_log' ) ) {
-			if ( ! isset( $wp_super_cache_config['wp_cache_debug_username'] ) ) {
-				$wp_super_cache_config['wp_cache_debug_username'] = '';
+		if ( ! file_exists( $log_file ) ) {
+			if ( ! isset( $this->config->config['wp_cache_debug_username'] ) ) {
+				$this->config->config['wp_cache_debug_username'] = '';
 			}
 
-			wpsc_create_debug_log( $wp_super_cache_config['wp_cache_debug_log'], $wp_super_cache_config['wp_cache_debug_username'] );
+			$this->create_debug_log( $this->config->config['wp_cache_debug_log'], $this->config->config['wp_cache_debug_username'] );
 		}
 
 		error_log( $log_message, 3, $log_file ); // phpcs:ignore
@@ -84,12 +83,10 @@ class Wp_Super_Cache_Debug {
 	/**
 	 * Get a username to use for the debug log.
 	 */
-	private function wpsc_debug_username() {
-		global $wp_super_cache_config;
+	private function get_debug_username() {
 
-		if ( ! isset( $wp_super_cache_config['wp_cache_debug_username'] ) || '' === $wp_super_cache_config['wp_cache_debug_username'] ) {
-			$wp_super_cache_config['wp_cache_debug_username'] = md5( time() + wp_rand() );
-			wp_cache_setting( 'wp_cache_debug_username', $wp_super_cache_config['wp_cache_debug_username'] );
+		if ( ! isset( $this->config->config['wp_cache_debug_username'] ) || '' === $this->config->config['wp_cache_debug_username'] ) {
+			$this->config->update_setting( 'wp_cache_debug_username', md5( time() + wp_rand() ) );
 		}
 		return $wp_cache_debug_username;
 	}
@@ -100,49 +97,44 @@ class Wp_Super_Cache_Debug {
 	 * @param string $filename The name of the log file.
 	 * @param string $username username and password used to protect the log file.
 	 */
-	private function wpsc_create_debug_log( $filename = '', $username = '' ) {
+	private function create_debug_log( $filename = '', $username = '' ) {
 		global $wp_super_cache_config;
 
-		// Only allow the debug log to be created when WordPress is loaded.
-		if ( ! class_exists( 'Wp_Super_Cache_Config' ) ) {
-			return false;
-		}
-
 		if ( '' !== $filename ) {
-			$wp_super_cache_config['wp_cache_debug_log'] = $filename;
+			$this->config->update_setting( 'wp_cache_debug_log', $filename );
 		} else {
-			$wp_super_cache_config['wp_cache_debug_log'] = md5( time() + wp_rand() ) . '.php';
+			$this->config->update_setting( 'wp_cache_debug_log', md5( time() + wp_rand() ) . '.php' );
 		}
 		if ( '' !== $username ) {
-			$wp_super_cache_config['wp_cache_debug_username'] = $username;
+			$this->config->update_setting( 'wp_cache_debug_username', $username );
 		} else {
-			$wp_super_cache_config['wp_cache_debug_username'] = wpsc_debug_username();
+			$this->get_debug_username();
 		}
 		// phpcs:disable
 		$msg = 'die( "Please use the viewer" );' . PHP_EOL;
-		$fp = fopen( $wp_super_cache_config['cache_path'] . $wp_super_cache_config['wp_cache_debug_log'], 'w' );
+		$fp = fopen( $this->config->config['cache_path'] . $this->config->config['wp_cache_debug_log'], 'w' );
 		if ( $fp ) {
 			fwrite( $fp, '<' . "?php\n" );
 			fwrite( $fp, $msg );
 			fwrite( $fp, '?' . '><pre>' . PHP_EOL );
 			fwrite( $fp, '<' . '?php // END HEADER ?' . '>' . PHP_EOL );
 			fclose( $fp );
-			wp_cache_setting( 'wp_cache_debug_log', $wp_super_cache_config['wp_cache_debug_log'] );
-			wp_cache_setting( 'wp_cache_debug_username', $wp_super_cache_config['wp_cache_debug_username'] );
+			wp_cache_setting( 'wp_cache_debug_log', $this->config->config['wp_cache_debug_log'] );
+			wp_cache_setting( 'wp_cache_debug_username', $this->config->config['wp_cache_debug_username'] );
 		}
 
 		$msg = '
-if ( !isset( $_SERVER[ "PHP_AUTH_USER" ] ) || ( $_SERVER[ "PHP_AUTH_USER" ] != "' . $wp_super_cache_config['wp_cache_debug_username'] . '" && $_SERVER[ "PHP_AUTH_PW" ] != "' . $wp_super_cache_config['wp_cache_debug_username'] . '" ) ) {
+if ( !isset( $_SERVER[ "PHP_AUTH_USER" ] ) || ( $_SERVER[ "PHP_AUTH_USER" ] != "' . $this->config->config['wp_cache_debug_username'] . '" && $_SERVER[ "PHP_AUTH_PW" ] != "' . $this->config->config['wp_cache_debug_username'] . '" ) ) {
 	header( "WWW-Authenticate: Basic realm=\"WP-Super-Cache Debug Log\"" );
 	header( $_SERVER[ "SERVER_PROTOCOL" ] . " 401 Unauthorized" );
 	echo "You must login to view the debug log";
 	exit;
 }' . PHP_EOL;
 
-		$fp = fopen( $wp_super_cache_config['cache_path'] . 'view_' . $wp_super_cache_config['wp_cache_debug_log'], 'w' );
+		$fp = fopen( $this->config->config['cache_path'] . 'view_' . $this->config->config['wp_cache_debug_log'], 'w' );
 		if ( $fp ) {
 			fwrite( $fp, '<' . '?php' . PHP_EOL );
-			$msg .= '$debug_log = file( "./' . $wp_super_cache_config['wp_cache_debug_log'] . '" );
+			$msg .= '$debug_log = file( "./' . $this->config->config['wp_cache_debug_log'] . '" );
 $start_log = 1 + array_search( "<" . "?php // END HEADER ?" . ">" . PHP_EOL, $debug_log );
 if ( $start_log > 1 ) {
 	$debug_log = array_slice( $debug_log, $start_log );
@@ -208,8 +200,8 @@ foreach( $debug_log as $line ) {
 		// phpcs:enable
 
 		return array(
-			'wp_cache_debug_log'      => $wp_super_cache_config['wp_cache_debug_log'],
-			'wp_cache_debug_username' => $wp_super_cache_config['wp_cache_debug_username'],
+			'wp_cache_debug_log'      => $this->config->config['wp_cache_debug_log'],
+			'wp_cache_debug_username' => $this->config->config['wp_cache_debug_username'],
 		);
 	}
 
