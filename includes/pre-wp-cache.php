@@ -129,8 +129,6 @@ if ( isset( $_SERVER['REQUEST_URI'] ) ) {
 
 $wp_super_cache_page = Wp_Super_Cache_Page::instance();
 
-do_cacheaction( 'cache_init' );
-
 if ( $wp_super_cache_page->is_cached() ) {
 	$wp_super_cache_page->serve_page();
 } elseif ( $wp_super_cache_page->is_cacheable() ) {

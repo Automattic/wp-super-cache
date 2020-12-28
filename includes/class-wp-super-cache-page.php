@@ -53,6 +53,8 @@ class Wp_Super_Cache_Page {
 		if ( $this->config->config['wp_cache_make_known_anon'] ) {
 			$this->make_anonymous();
 		}
+
+		do_cacheaction( 'cache_init' );
 	}
 
 	/**
