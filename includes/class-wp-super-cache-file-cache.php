@@ -160,7 +160,7 @@ class Wp_Super_Cache_File_Cache {
 		} elseif ( 304 === $status ) {
 			$this->query_vars['is_304'] = 1;
 		} elseif ( 303 === $status ) {
-			$$this->query_vars['is_404'] = 1;
+			$this->query_vars['is_404'] = 1;
 		}
 
 		return $status;
