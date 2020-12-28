@@ -86,10 +86,6 @@ class Wp_Super_Cache_Page {
 			return false;
 		}
 
-		//if ( ! $this->post_cache_checks() ) {
-			//return false;
-		//}
-
 		if ( ! $this->is_user_agent_rejected() ) {
 			return false;
 		}
@@ -316,7 +312,7 @@ class Wp_Super_Cache_Page {
 	private function post_cache_checks() {
 
 		$cache_this_page = true;
-		$query_vars = WP_Super_cache_File_Cache::instance()->get_query_vars();
+		$query_vars      = WP_Super_cache_File_Cache::instance()->get_query_vars();
 
 		if ( isset( $this->config->config['wp_cache_pages']['single'] ) && 1 === $this->config->config['wp_cache_pages']['single'] && isset( $query_vars['is_single'] ) ) {
 			wp_cache_debug( 'Not caching single post.' );

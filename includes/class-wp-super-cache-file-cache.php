@@ -959,4 +959,8 @@ class Wp_Super_Cache_File_Cache {
 function wp_super_cache_ob_handler( $buffer ) {
 	$caching = Wp_Super_cache_File_Cache::instance();
 	$buffer  = $caching->ob_handler();
+	if ( ! WP_Super_cache_Page::instance()->post_cache_checks() ) {
+			return buffer; // return cached page without recording it because checks failed.
+	}
+
 }
