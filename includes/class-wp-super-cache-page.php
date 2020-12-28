@@ -48,6 +48,11 @@ class Wp_Super_Cache_Page {
 
 		// In the future we might have different caching engines.
 		$this->cache = WP_Super_Cache_File_Cache::instance();
+
+		// remove authentication cookies so page can be super cached for admin users.
+		if ( $this->config->config['wp_cache_make_known_anon'] ) {
+			$this->make_anonymous();
+		}
 	}
 
 	/**
@@ -117,6 +122,45 @@ class Wp_Super_Cache_Page {
 
 		return true;
 	}
+
+	/**
+	 * Make the current request anonymouse for every type of visitor.
+	 *
+	 * @since  2.0
+	 * @return bool
+	 */
+	public function make_anonymous() {
+
+		// Don't remove cookies for some requests.
+		if (
+			$this->is_backend() ||
+			'GET' !== $_SERVER['REQUEST_METHOD'] ||
+			isset( $_GET['preview'], $_GET['customize_changeset_uuid'] ) || // WPCS: CSRF ok.
+			strpos( stripslashes( $_SERVER['REQUEST_URI'] ), '/wp-json/' ) !== false // WPCS: sanitization ok.
+		) {
+			return true;
+		}
+
+		if ( false === do_cacheaction( 'wp_supercache_remove_cookies', true ) ) {
+			return true;
+		}
+
+		$this->removed_cookies = array();
+		foreach ( WP_Super_Cache_User::instance()->get_auth_cookies() as $cookie ) {
+
+			$cookies = is_array( $cookie ) ? $cookie : array( $cookie );
+
+			foreach ( $cookies as $cookie_key ) {
+				unset( $_COOKIE[ $cookie_key ] );
+				$this->removed_cookies[] = $cookie_key;
+			}
+		}
+
+		if ( ! empty( $this->removed_cookies ) ) {
+			wp_cache_debug( 'Removing auth from $_COOKIE to allow caching for logged in user ( ' . implode( ', ', $this->removed_cookies ) . ' )' );
+		}
+	}
+
 
 	/**
 	 * Return true if in wp-admin or other admin non cacheable page.
