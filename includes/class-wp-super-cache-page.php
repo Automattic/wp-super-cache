@@ -82,9 +82,13 @@ class Wp_Super_Cache_Page {
 			return false;
 		}
 
-		if ( ! $this->is_page_to_be_cached() ) {
+		if ( ! $this->pre_cache_checks() ) {
 			return false;
 		}
+
+		//if ( ! $this->post_cache_checks() ) {
+			//return false;
+		//}
 
 		if ( ! $this->is_user_agent_rejected() ) {
 			return false;
@@ -258,11 +262,11 @@ class Wp_Super_Cache_Page {
 	}
 
 	/**
-	 * Check if we can cache this page.
+	 * Check if we can cache this page. Runs before caching.
 	 *
 	 * @since  2.0
 	 */
-	private function is_page_to_be_cached() {
+	private function pre_cache_checks() {
 		global $wp_super_cache_request_uri;
 
 		$cache_this_page = true;
@@ -281,7 +285,7 @@ class Wp_Super_Cache_Page {
 		} elseif ( $this->config->config['wp_cache_no_cache_for_get'] && ! empty( $_GET ) ) { // phpcs:ignore
 			wp_cache_debug( 'Non empty GET request. Caching disabled on settings page. ' . wpsc_dump_get_request() );
 			$cache_this_page = false;
-		} elseif ( 'POST' === $_SERVER['REQUEST_METHOD'] || ! empty( $_POST ) || get_option( 'gzipcompression' ) ) { // phpcs:ignore
+		} elseif ( 'POST' === $_SERVER['REQUEST_METHOD'] || ! empty( $_POST ) ) { // phpcs:ignore
 			wp_cache_debug( 'Not caching POST request.' );
 			$cache_this_page = false;
 		} elseif ( 'PUT' === $_SERVER['REQUEST_METHOD'] ) {
@@ -299,50 +303,65 @@ class Wp_Super_Cache_Page {
 		} elseif ( $this->is_user_agent_rejected() ) {
 			wp_cache_debug( 'USER AGENT (' . esc_html( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) . ') rejected. Not Caching' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['single'] ) && 1 === $this->config->config['wp_cache_pages']['single'] && isset( $this->query_vars['is_single'] ) ) {
+		}
+
+		return $cache_this_page;
+	}
+
+	/**
+	 * Check if we can cache this page. Uses functions only available after WordPress is loaded.
+	 *
+	 * @since  2.0
+	 */
+	private function post_cache_checks() {
+
+		$cache_this_page = true;
+		$query_vars = WP_Super_cache_File_Cache::instance()->get_query_vars();
+
+		if ( isset( $this->config->config['wp_cache_pages']['single'] ) && 1 === $this->config->config['wp_cache_pages']['single'] && isset( $query_vars['is_single'] ) ) {
 			wp_cache_debug( 'Not caching single post.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['pages'] ) && 1 === $this->config->config['wp_cache_pages']['pages'] && isset( $this->query_vars['is_page'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['pages'] ) && 1 === $this->config->config['wp_cache_pages']['pages'] && isset( $query_vars['is_page'] ) ) {
 			wp_cache_debug( 'Not caching single page.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['archives'] ) && 1 === $this->config->config['wp_cache_pages']['archives'] && isset( $this->query_vars['is_archive'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['archives'] ) && 1 === $this->config->config['wp_cache_pages']['archives'] && isset( $query_vars['is_archive'] ) ) {
 			wp_cache_debug( 'Not caching archive page.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['tag'] ) && 1 === $this->config->config['wp_cache_pages']['tag'] && isset( $this->query_vars['is_tag'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['tag'] ) && 1 === $this->config->config['wp_cache_pages']['tag'] && isset( $query_vars['is_tag'] ) ) {
 			wp_cache_debug( 'Not caching tag page.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['category'] ) && 1 === $this->config->config['wp_cache_pages']['category'] && isset( $this->query_vars['is_category'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['category'] ) && 1 === $this->config->config['wp_cache_pages']['category'] && isset( $query_vars['is_category'] ) ) {
 			wp_cache_debug( 'Not caching category page.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['frontpage'] ) && 1 === $this->config->config['wp_cache_pages']['frontpage'] && isset( $this->query_vars['is_front_page'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['frontpage'] ) && 1 === $this->config->config['wp_cache_pages']['frontpage'] && isset( $query_vars['is_front_page'] ) ) {
 			wp_cache_debug( 'Not caching front page.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['home'] ) && 1 === $this->config->config['wp_cache_pages']['home'] && isset( $this->query_vars['is_home'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['home'] ) && 1 === $this->config->config['wp_cache_pages']['home'] && isset( $query_vars['is_home'] ) ) {
 			wp_cache_debug( 'Not caching home page.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['search'] ) && 1 === $this->config->config['wp_cache_pages']['search'] && isset( $this->query_vars['is_search'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['search'] ) && 1 === $this->config->config['wp_cache_pages']['search'] && isset( $query_vars['is_search'] ) ) {
 			wp_cache_debug( 'Not caching search page.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['author'] ) && 1 === $this->config->config['wp_cache_pages']['author'] && isset( $this->query_vars['is_author'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['author'] ) && 1 === $this->config->config['wp_cache_pages']['author'] && isset( $query_vars['is_author'] ) ) {
 			wp_cache_debug( 'Not caching author page.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->config->config['wp_cache_pages']['feed'] ) && 1 === $this->config->config['wp_cache_pages']['feed'] && isset( $this->query_vars['is_feed'] ) ) {
+		} elseif ( isset( $this->config->config['wp_cache_pages']['feed'] ) && 1 === $this->config->config['wp_cache_pages']['feed'] && isset( $query_vars['is_feed'] ) ) {
 			wp_cache_debug( 'Not caching feed.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->query_vars['is_rest'] ) ) {
+		} elseif ( isset( $query_vars['is_rest'] ) ) {
 			wp_cache_debug( 'REST API detected. Caching disabled.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->query_vars['is_robots'] ) ) {
+		} elseif ( isset( $query_vars['is_robots'] ) ) {
 			wp_cache_debug( 'robots.txt detected. Caching disabled.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->query_vars['is_redirect'] ) ) {
+		} elseif ( isset( $query_vars['is_redirect'] ) ) {
 			wp_cache_debug( 'Redirect detected. Caching disabled.' );
 			$cache_this_page = false;
-		} elseif ( isset( $this->query_vars['is_304'] ) ) {
+		} elseif ( isset( $query_vars['is_304'] ) ) {
 			wp_cache_debug( 'HTTP 304 (Not Modified) sent. Caching disabled.' );
 			$cache_this_page = false;
-		} elseif ( empty( $this->query_vars ) && ! empty( $buffer ) && apply_filters( 'wpsc_only_cache_known_pages', 1 ) ) {
-			wp_cache_debug( 'ob_handler: this->query_vars is empty. Not caching unknown page type. Return 0 to the wpsc_only_cache_known_pages filter to cache this page.' );
+		} elseif ( empty( $query_vars ) && apply_filters( 'wpsc_only_cache_known_pages', 1 ) ) {
+			wp_cache_debug( 'ob_handler: query_vars is empty. Not caching unknown page type. Return 0 to the wpsc_only_cache_known_pages filter to cache this page.' );
 			$cache_this_page = false;
 		} elseif ( Wp_Super_Cache_User::instance()->is_caching_disabled() ) {
 			wp_cache_debug( 'ob_handler: Caching disabled for known user. User logged in or cookie found.' );
