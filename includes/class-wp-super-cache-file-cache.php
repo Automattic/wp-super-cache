@@ -787,7 +787,7 @@ class Wp_Super_Cache_File_Cache {
 				$buffer = do_cacheaction( 'wpsc_cachedata', $buffer ); // dynamic content for display.
 			}
 
-			if ( this->gzip_encoding() ) {
+			if ( $this->gzip_encoding() ) {
 				wp_cache_debug( 'Gzipping dynamic buffer for display.', 5 );
 				$this->add_to_buffer( $buffer, 'Compression = gzip' );
 				$gzdata = gzencode( $buffer, 6, FORCE_GZIP );
@@ -806,13 +806,13 @@ class Wp_Super_Cache_File_Cache {
 			if ( $vary_header ) {
 				$wp_cache_meta['headers']['Vary'] = 'Vary: ' . $vary_header;
 			}
-			if ( $gz || this->gzip_encoding() ) {
+			if ( $gz || $this->gzip_encoding() ) {
 				wp_cache_debug( 'Gzipping buffer.' );
 				$this->add_to_buffer( $buffer, 'Compression = gzip' );
 				$gzdata = gzencode( $buffer, 6, FORCE_GZIP );
 				$gzsize = function_exists( 'mb_strlen' ) ? mb_strlen( $gzdata, '8bit' ) : strlen( $gzdata );
 
-				$wp_cache_meta['headers']['Content-Encoding'] = 'Content-Encoding: ' . this->gzip_encoding();
+				$wp_cache_meta['headers']['Content-Encoding'] = 'Content-Encoding: ' . $this->gzip_encoding();
 				// Return uncompressed data & store compressed for later use.
 				if ( $fr ) {
 					wp_cache_debug( 'Writing gzipped buffer to wp-cache cache file.', 5 );
@@ -905,9 +905,9 @@ class Wp_Super_Cache_File_Cache {
 			update_option( 'supercache_last_cached', $last_urls );
 		}
 		$this->wp_cache_writers_exit();
-		if ( ! headers_sent() && this->gzip_encoding() && $gzdata ) {
+		if ( ! headers_sent() && $this->gzip_encoding() && $gzdata ) {
 			wp_cache_debug( 'Writing gzip content headers. Sending buffer to browser', 5 );
-			header( 'Content-Encoding: ' . this->gzip_encoding() );
+			header( 'Content-Encoding: ' . $this->gzip_encoding() );
 			if ( defined( 'WPSC_VARY_HEADER' ) ) {
 				if ( '' !== WPSC_VARY_HEADER ) {
 					$vary_header = WPSC_VARY_HEADER;
