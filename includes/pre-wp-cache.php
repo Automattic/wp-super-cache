@@ -119,14 +119,6 @@ if (
 
 $wp_super_cache_start_time = microtime();
 
-// Cache this in case any plugin modifies it.
-// Used to be: wp_cache_request_uri.
-if ( isset( $_SERVER['REQUEST_URI'] ) ) {
-	$wp_super_cache_request_uri = $_SERVER['REQUEST_URI']; // phpcs:ignore
-} else {
-	$wp_super_cache_request_uri = '';
-}
-
 $wp_super_cache_page = Wp_Super_Cache_Page::instance();
 
 if ( $wp_super_cache_page->is_cached() ) {

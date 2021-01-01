@@ -30,6 +30,13 @@ class Wp_Super_Cache_Config {
 	 */
 	public $config = array();
 
+	/**
+	 * WordPress Query Vars
+	 *
+	 * @since 1.0.1
+	 * @var   array
+	 */
+	public $query_vars = array();
 
 	/**
 	 * Set config defaults

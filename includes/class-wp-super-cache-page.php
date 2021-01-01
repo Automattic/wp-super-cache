@@ -62,14 +62,78 @@ class Wp_Super_Cache_Page {
 	/**
 	 * Set up cached environment for caching during shutdown.
 	 * Caching for later use when wpdb is gone. https://wordpress.org/support/topic/224349
+	 * Details of the current blog being cached.
 	 *
 	 * @since  2.0
 	 */
 	public function set_env() {
+		// Cache this in case any plugin modifies it.
+		// Used to be: wp_cache_request_uri.
+		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
+			define( 'WPSC_URI', $_SERVER['REQUEST_URI'] ); // phpcs:ignore
+		} else {
+			define( 'WPSC_URI', '' );
+		}
+
+		if ( isset( $_SERVER['HTTP_HOST'] ) && ! empty( $_SERVER['HTTP_HOST'] ) ) {
+			$http_host = function_exists( 'mb_strtolower' ) ? mb_strtolower( $_SERVER['HTTP_HOST'] ) : strtolower( $_SERVER['HTTP_HOST'] );
+			define( 'WPSC_HTTP_HOST', htmlentities( $http_host ) );
+		} elseif ( PHP_SAPI === 'cli' && function_exists( 'get_option' ) ) {
+			define( 'WPSC_HTTP_HOST', (string) parse_url( get_option( 'home' ), PHP_URL_HOST ) );
+		} else {
+			$this->config->config['cache_enabled'] = false;
+			define( 'WPSC_HTTP_HOST', '' );
+		}
+
+		// We want to be able to identify each blog in a WordPress MU install.
+		$this->config->config['blogcacheid']    = '';
+		$this->config->config['blog_cache_dir'] = $this->config->config['cache_path'];
+
+		if ( is_multisite() ) {
+			global $current_blog;
+
+			if ( is_object( $current_blog ) && function_exists( 'is_subdomain_install' ) ) {
+				$this->config->config['blogcacheid'] = is_subdomain_install() ? $current_blog->domain : trim( $current_blog->path, '/' );
+			} elseif ( ( defined( 'SUBDOMAIN_INSTALL' ) && SUBDOMAIN_INSTALL ) || ( defined( 'VHOST' ) && VHOST === 'yes' ) ) {
+				$this->config->config['blogcacheid'] = constant( 'WPSC_HTTP_HOST' );
+			} else {
+				$request_uri = str_replace( '..', '', preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER['REQUEST_URI'] ) );
+				$request_uri = str_replace( '//', '/', $request_uri );
+
+				$wpsc_path_segs  = array_filter( explode( '/', trim( $request_uri, '/' ) ) );
+				$wpsc_base_count = defined( 'PATH_CURRENT_SITE' ) ? count( array_filter( explode( '/', trim( PATH_CURRENT_SITE, '/' ) ) ) ) : 0;
+				if ( '/' !== substr( $request_uri, -1 ) ) {
+					$wpsc_path_segs = array_slice( $wpsc_path_segs, 0, -1 );
+				}
+
+				if ( count( $wpsc_path_segs ) > $wpsc_base_count &&
+					( ! defined( 'PATH_CURRENT_SITE' ) || 0 === strpos( $request_uri, PATH_CURRENT_SITE ) )
+				) {
+					$this->config->config['blogcacheid'] = $wpsc_path_segs[ $wpsc_base_count ];
+				}
+			}
+
+			// If blogcacheid is empty then set it to main blog.
+			if ( empty( $this->config->config['blogcacheid'] ) ) {
+				$this->config->config['blogcacheid'] = 'blog';
+			}
+			$this->config->config['blog_cache_dir'] = str_replace( '//', '/', $this->config->config['cache_path'] . 'blogs/' . $this->config->config['blogcacheid'] . '/' );
+		}
+		add_action( 'init', array( $this, 'wp_set_env' ) );
+	}
+
+	/**
+	 * Setup environment with blog options. Must be run on "init" when WP has loaded.
+	 *
+	 * @since  2.0
+	 * @return bool
+	 */
+	private function wp_set_env() {
 		// $wp_cache_gmt_offset.
 		define( 'WPSC_GMT_OFFSET', get_option( 'gmt_offset' ) );
 		// $wp_cache_blog_charset.
 		define( 'WPSC_BLOG_CHARSET', get_option( 'blog_charset' ) );
+
 	}
 
 	/**
@@ -274,8 +338,6 @@ class Wp_Super_Cache_Page {
 	 * @since  2.0
 	 */
 	private function pre_cache_checks() {
-		global $wp_super_cache_request_uri;
-
 		$cache_this_page = true;
 
 		if ( ! isset( $_SERVER['REQUEST_METHOD'] ) ) {
@@ -304,7 +366,7 @@ class Wp_Super_Cache_Page {
 		} elseif ( isset( $_GET['preview'] ) ) { // phpcs:ignore
 			wp_cache_debug( 'Not caching preview post.' );
 			$cache_this_page = false;
-		} elseif ( ! in_array( $script, (array) $this->config->config['cache_acceptable_files'], true ) && $this->url_is_rejected( $wp_super_cache_request_uri ) ) {
+		} elseif ( ! in_array( $script, (array) $this->config->config['cache_acceptable_files'], true ) && $this->url_is_rejected( constant( 'WPSC_URI' ) ) ) {
 			wp_cache_debug( 'URI rejected. Not Caching' );
 			$cache_this_page = false;
 		} elseif ( $this->is_user_agent_rejected() ) {
