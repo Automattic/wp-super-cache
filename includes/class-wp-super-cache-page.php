@@ -54,7 +54,22 @@ class Wp_Super_Cache_Page {
 			$this->make_anonymous();
 		}
 
+		$this->set_env();
+
 		do_cacheaction( 'cache_init' );
+	}
+
+	/**
+	 * Set up cached environment for caching during shutdown.
+	 * Caching for later use when wpdb is gone. https://wordpress.org/support/topic/224349
+	 *
+	 * @since  2.0
+	 */
+	public function set_env() {
+		// $wp_cache_gmt_offset.
+		define( 'WPSC_GMT_OFFSET', get_option( 'gmt_offset' ) );
+		// $wp_cache_blog_charset.
+		define( 'WPSC_BLOG_CHARSET', get_option( 'blog_charset' ) );
 	}
 
 	/**
