@@ -188,6 +188,92 @@ class Wp_Super_Cache_File_Cache {
 		return $gzip_accepted;
 	}
 
+	public function get_response_headers() {
+		static $known_headers = array(
+			'Access-Control-Allow-Origin',
+			'Accept-Ranges',
+			'Age',
+			'Allow',
+			'Cache-Control',
+			'Connection',
+			'Content-Encoding',
+			'Content-Language',
+			'Content-Length',
+			'Content-Location',
+			'Content-MD5',
+			'Content-Disposition',
+			'Content-Range',
+			'Content-Type',
+			'Date',
+			'ETag',
+			'Expires',
+			'Last-Modified',
+			'Link',
+			'Location',
+			'P3P',
+			'Pragma',
+			'Proxy-Authenticate',
+			'Referrer-Policy',
+			'Refresh',
+			'Retry-After',
+			'Server',
+			'Status',
+			'Strict-Transport-Security',
+			'Trailer',
+			'Transfer-Encoding',
+			'Upgrade',
+			'Vary',
+			'Via',
+			'Warning',
+			'WWW-Authenticate',
+			'X-Frame-Options',
+			'Public-Key-Pins',
+			'X-XSS-Protection',
+			'Content-Security-Policy',
+			'X-Pingback',
+			'X-Content-Security-Policy',
+			'X-WebKit-CSP',
+			'X-Content-Type-Options',
+			'X-Powered-By',
+			'X-UA-Compatible',
+			'X-Robots-Tag',
+		);
+
+		if ( ! function_exists( 'headers_list' ) ) {
+			return array();
+		}
+
+		$known_headers = apply_filters( 'wpsc_known_headers', $known_headers );
+
+		if ( ! isset( $known_headers['age'] ) ) {
+			$known_headers = array_map( 'strtolower', $known_headers );
+		}
+
+		$headers = array();
+		foreach ( headers_list() as $hdr ) {
+			$ptr = strpos( $hdr, ':' );
+
+			if ( empty( $ptr ) ) {
+				continue;
+			}
+
+			$hdr_key = rtrim( substr( $hdr, 0, $ptr ) );
+
+			if ( in_array( strtolower( $hdr_key ), $known_headers, true ) ) {
+				$hdr_val = ltrim( substr( $hdr, $ptr + 1 ) );
+
+				if ( ! empty( $headers[ $hdr_key ] ) ) {
+					$hdr_val = $headers[ $hdr_key ] . ', ' . $hdr_val;
+				}
+
+				$headers[ $hdr_key ] = $hdr_val;
+			}
+		}
+
+		return $headers;
+	}
+
+
 	/**
 	 * Get meta information about new cache file.
 	 *
@@ -207,12 +293,12 @@ class Wp_Super_Cache_File_Cache {
 
 		$wp_cache_meta['uri']     = WPSC_HTTP_HOST . preg_replace('/[ <>\'\"\r\n\t\(\)]/', '', WPSC_URI ); // To avoid XSS attacks
 		$wp_cache_meta['blog_id'] = $blog_id;
-		$wp_cache_meta['post']    = wp_cache_post_id();
+		$wp_cache_meta['post']    = $this->config->config['post_id'];
 		$wp_cache_meta['key']     = $wp_cache_key;
 
 		$wp_cache_meta = apply_filters( 'wp_cache_meta', $wp_cache_meta );
 
-		$response = wp_cache_get_response_headers();
+		$response = $this->get_response_headers();
 		foreach( $response as $key => $value ) {
 			$wp_cache_meta['headers'][ $key ] = "$key: $value";
 		}

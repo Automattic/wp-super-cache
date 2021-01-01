@@ -119,21 +119,54 @@ class Wp_Super_Cache_Page {
 			}
 			$this->config->config['blog_cache_dir'] = str_replace( '//', '/', $this->config->config['cache_path'] . 'blogs/' . $this->config->config['blogcacheid'] . '/' );
 		}
-		add_action( 'init', array( $this, 'wp_set_env' ) );
+		add_action( 'template_redirect', array( $this, 'wp_set_env' ) );
 	}
 
 	/**
 	 * Setup environment with blog options. Must be run on "init" when WP has loaded.
 	 *
 	 * @since  2.0
-	 * @return bool
 	 */
-	private function wp_set_env() {
+	public function wp_set_env() {
 		// $wp_cache_gmt_offset.
 		define( 'WPSC_GMT_OFFSET', get_option( 'gmt_offset' ) );
 		// $wp_cache_blog_charset.
 		define( 'WPSC_BLOG_CHARSET', get_option( 'blog_charset' ) );
+		$this->config->config['post_id'] = $this->get_post_id();
 
+	}
+
+	/**
+	 * Return the post ID from the current page.
+	 * // used to be wp_cache_post_id
+	 *
+	 * @since  2.0
+	 * @return bool
+	 */
+	public function get_post_id() {
+		global $posts, $comment_post_ID, $post_ID;
+
+		if ( $post_ID > 0 ) {
+			return $post_ID;
+		}
+
+		if ( $comment_post_ID > 0 ) {
+			return $comment_post_ID;
+		}
+
+		if ( is_singular() && ! empty( $posts ) ) {
+			return $posts[0]->ID;
+		}
+
+		if ( isset( $_GET['p'] ) && $_GET['p'] > 0 ) {
+			return $_GET['p'];
+		}
+
+		if ( isset( $_POST['p'] ) && $_POST['p'] > 0 ) {
+			return $_POST['p'];
+		}
+
+		return 0;
 	}
 
 	/**
