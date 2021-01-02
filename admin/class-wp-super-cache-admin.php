@@ -201,13 +201,7 @@ class Wp_Super_Cache_Admin {
 		}
 
 		if ( $setup_done ) {
-			$directory_functions = array( 'create_cache_directory', 'create_supercache_directory', 'create_blogcache_directory' );
-			foreach ( $directory_functions as $dir_function ) {
-				$setup_done = $this->setup->$dir_function();
-				if ( ! $setup_done ) {
-					break;
-				}
-			}
+			$setup_done = $this->setup->create_cache_storage();
 		}
 
 		if ( ! $setup_done ) {

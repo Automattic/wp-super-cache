@@ -29,6 +29,62 @@ class Wp_Super_Cache_File_Cache {
 	 */
 	public function __construct() {
 		$this->config     = Wp_Super_Cache_Config::instance();
+		add_filter( 'wpsc_create_cache_storage', array( $this, 'create_cache_storage' ) );
+	}
+
+	/**
+	 * Create cache storage
+	 *
+	 * @since  2.0
+	 */
+	public function create_cache_storage( $setup_done ) {
+		$directory_functions = array( 'create_cache_directory', 'create_supercache_directory', 'create_blogcache_directory' );
+		foreach ( $directory_functions as $dir_function ) {
+			$setup_done = $this->$dir_function();
+			if ( ! $setup_done ) {
+				return false;
+			}
+		}
+		return $setup_done;
+	}
+
+	/**
+	 * Create WP_CONTENT/cache
+	 *
+	 * @since  2.0.0
+	 * @return bool if succeeded or not.
+	 */
+	public function create_cache_directory() {
+		if ( ! empty( $this->config->config['cache_path'] ) && ! is_dir( $this->config->config['cache_path'] ) ) {
+			@mkdir( $this->config->config['cache_path'] ); // phpcs:ignore
+		}
+		return is_dir( $this->config->config['cache_path'] ) ? true : false;
+	}
+
+	/**
+	 * Create WP_CONTENT/cache/supercache
+	 *
+	 * @since  2.0.0
+	 * @return bool if succeeded or not.
+	 */
+	public function create_supercache_directory() {
+		if ( ! empty( $this->config->config['cache_path'] ) && ! is_dir( $this->config->config['cache_path'] . '/supercache/' ) ) {
+			@mkdir( $this->config->config['cache_path'] . '/supercache/' ); // phpcs:ignore
+		}
+		return is_dir( $this->config->config['cache_path'] . '/supercache/' ) ? true : false;
+	}
+
+	/**
+	 * Create WP_CONTENT/cache/blogs
+	 *
+	 * @since  2.0.0
+	 * @return bool if succeeded or not.
+	 */
+	public function create_blogcache_directory() {
+		if ( ! empty( $this->config->config['blog_cache_dir'] ) && ! is_dir( $this->config->config['blog_cache_dir'] ) ) {
+			@mkdir( $this->config->config['blog_cache_dir'] ); // phpcs:ignore
+		}
+		return is_dir( $this->config->config['blog_cache_dir'] ) ? true : false;
 	}
 
 	/**

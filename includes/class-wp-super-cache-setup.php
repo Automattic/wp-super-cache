@@ -69,42 +69,12 @@ class Wp_Super_Cache_Setup {
 	}
 
 	/**
-	 * Create WP_CONTENT/cache
+	 * Create cache storage.
 	 *
 	 * @since  2.0.0
-	 * @return bool if succeeded or not.
 	 */
-	public function create_cache_directory() {
-		if ( ! empty( $this->config->config['cache_path'] ) && ! is_dir( $this->config->config['cache_path'] ) ) {
-			@mkdir( $this->config->config['cache_path'] ); // phpcs:ignore
-		}
-		return is_dir( $this->config->config['cache_path'] ) ? true : false;
-	}
-
-	/**
-	 * Create WP_CONTENT/cache/supercache
-	 *
-	 * @since  2.0.0
-	 * @return bool if succeeded or not.
-	 */
-	public function create_supercache_directory() {
-		if ( ! empty( $this->config->config['cache_path'] ) && ! is_dir( $this->config->config['cache_path'] . '/supercache/' ) ) {
-			@mkdir( $this->config->config['cache_path'] . '/supercache/' ); // phpcs:ignore
-		}
-		return is_dir( $this->config->config['cache_path'] . '/supercache/' ) ? true : false;
-	}
-
-	/**
-	 * Create WP_CONTENT/cache/blogs
-	 *
-	 * @since  2.0.0
-	 * @return bool if succeeded or not.
-	 */
-	public function create_blogcache_directory() {
-		if ( ! empty( $this->config->config['blog_cache_dir'] ) && ! is_dir( $this->config->config['blog_cache_dir'] ) ) {
-			@mkdir( $this->config->config['blog_cache_dir'] ); // phpcs:ignore
-		}
-		return is_dir( $this->config->config['blog_cache_dir'] ) ? true : false;
+	public function create_cache_storage() {
+		return apply_filters( 'wpsc_create_cache_storage', true );
 	}
 
 	/**
