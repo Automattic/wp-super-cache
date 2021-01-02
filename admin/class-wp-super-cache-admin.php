@@ -75,6 +75,9 @@ class Wp_Super_Cache_Admin {
 		$this->version     = $version;
 		$this->config      = Wp_Super_Cache_Config::instance();
 		$this->setup       = Wp_Super_cache_Setup::instance();
+
+		// Create page environment for cache info like blog_cache_dir.
+		$page = Wp_Super_Cache_Page::instance();
 	}
 
 	/**

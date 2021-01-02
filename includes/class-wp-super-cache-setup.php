@@ -101,10 +101,10 @@ class Wp_Super_Cache_Setup {
 	 * @return bool if succeeded or not.
 	 */
 	public function create_blogcache_directory() {
-		if ( ! empty( $this->config->config['cache_path'] ) && ! is_dir( $this->config->config['cache_path'] . '/blogs/' ) ) {
-			@mkdir( $this->config->config['cache_path'] . '/blogs/' ); // phpcs:ignore
+		if ( ! empty( $this->config->config['blog_cache_dir'] ) && ! is_dir( $this->config->config['blog_cache_dir'] ) ) {
+			@mkdir( $this->config->config['blog_cache_dir'] ); // phpcs:ignore
 		}
-		return is_dir( $this->config->config['cache_path'] . '/blogs/' ) ? true : false;
+		return is_dir( $this->config->config['blog_cache_dir'] ) ? true : false;
 	}
 
 	/**
