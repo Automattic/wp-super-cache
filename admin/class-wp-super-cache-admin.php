@@ -246,6 +246,18 @@ class Wp_Super_Cache_Admin {
 			isset( $_POST['wp_super_cache_debug'] ) ? 1 : 0
 		);
 
+		if ( $this->config->config['wp_super_cache_debug'] ) {
+			$debug = Wp_Super_Cache_Debug::instance();
+			if (
+				isset( $this->config->config['wp_super_cache_debug_log'] ) && $this->config->config['wp_super_cache_debug_log'] &&
+				isset( $this->config->config['wp_super_cache_debug_username'] ) && $this->config->config['wp_super_cache_debug_username']
+			) {
+				$debug->create_debug_log( $this->config->config['wp_super_cache_debug_log'], $this->config->config['wp_super_cache_debug_username'] );
+			} else {
+				$debug->create_debug_log();
+			}
+		}
+
 		if ( false === isset( $this->config->config['cache_page_secret'] ) ) {
 			$cache_page_secret = md5( gmdate( 'H:i:s' ) . wp_rand() );
 			$this->config->update_setting( 'cache_page_secret', $cache_page_secret );

@@ -97,7 +97,9 @@ class Wp_Super_Cache_Debug {
 	 * @param string $filename The name of the log file.
 	 * @param string $username username and password used to protect the log file.
 	 */
-	private function create_debug_log( $filename = '', $username = '' ) {
+	public function create_debug_log( $filename = '', $username = '' ) {
+		$debug_setting = $this->config->config['wp_super_cache_debug'];
+		$this->config->config['wp_super_cache_debug'] = false;
 
 		if ( '' !== $filename ) {
 			$this->config->update_setting( 'wp_cache_debug_log', $filename );
@@ -118,8 +120,8 @@ class Wp_Super_Cache_Debug {
 			fwrite( $fp, '?' . '><pre>' . PHP_EOL );
 			fwrite( $fp, '<' . '?php // END HEADER ?' . '>' . PHP_EOL );
 			fclose( $fp );
-			wp_cache_setting( 'wp_cache_debug_log', $this->config->config['wp_cache_debug_log'] );
-			wp_cache_setting( 'wp_cache_debug_username', $this->config->config['wp_cache_debug_username'] );
+			$this->config->update_setting( 'wp_cache_debug_log', $this->config->config['wp_cache_debug_log'] );
+			$this->config->update_setting( 'wp_cache_debug_username', $this->config->config['wp_cache_debug_username'] );
 		}
 
 		$msg = '
@@ -197,6 +199,7 @@ foreach( $debug_log as $line ) {
 			fclose( $fp );
 		}
 		// phpcs:enable
+		$this->config->config['wp_super_cache_debug'] = $debug_setting;
 
 		return array(
 			'wp_cache_debug_log'      => $this->config->config['wp_cache_debug_log'],
