@@ -186,6 +186,7 @@ class Wp_Super_Cache_Page {
 	 */
 	public function is_cacheable() {
 		if ( ! $this->config->config['cache_enabled'] ) {
+			wp_cache_debug( 'is_cacheable: Caching disabled.' );
 			return false;
 		}
 
@@ -194,12 +195,7 @@ class Wp_Super_Cache_Page {
 		}
 
 		if ( $this->is_backend() ) {
-			wp_cache_debug( 'Not caching backend request.' );
-			return false;
-		}
-
-		if ( $wp_super_cache_config['cache_enabled'] ) {
-			wp_cache_debug( 'Caching disabled.' );
+			wp_cache_debug( 'is_cacheable: Not caching backend request.' );
 			return false;
 		}
 
