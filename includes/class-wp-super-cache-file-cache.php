@@ -28,7 +28,7 @@ class Wp_Super_Cache_File_Cache {
 	 * @since    2.0.0
 	 */
 	public function __construct() {
-		$this->config     = Wp_Super_Cache_Config::instance();
+		$this->config = Wp_Super_Cache_Config::instance();
 		add_filter( 'wpsc_create_cache_storage', array( $this, 'create_cache_storage' ) );
 	}
 
