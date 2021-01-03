@@ -46,6 +46,15 @@ class Wp_Super_Cache_Page {
 	public function __construct() {
 		$this->config = Wp_Super_Cache_Config::instance();
 
+		if ( defined( 'DISABLE_SUPERCACHE' ) ) {
+			wp_cache_debug( 'DISABLE_SUPERCACHE set, super_cache disabled.' );
+			$this->config->config['super_cache_enabled'] = 0;
+		}
+
+		if ( ! defined( 'WPCACHEHOME' ) ) {
+			define( 'WPCACHEHOME', dirname( dirname( __FILE__ ) ) . '/' );
+		}
+
 		// In the future we might have different caching engines.
 		$this->cache = WP_Super_Cache_File_Cache::instance();
 

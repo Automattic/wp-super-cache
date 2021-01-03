@@ -18,40 +18,6 @@ require_once 'class-wp-super-cache-user.php';
 require_once 'class-wp-super-cache-page.php';
 require_once 'class-wp-super-cache-file-cache.php';
 
-$wp_super_cache_config = Wp_Super_Cache_Config::instance()->get();
-
-/**
- * Return true if in wp-admin or other admin non cacheable page.
- *
- * @since  2.0
- * @return bool
- */
-function wpsc_is_backend() {
-	static $is_backend;
-
-	if ( isset( $is_backend ) ) {
-		return $is_backend;
-	}
-
-	$is_backend = is_admin();
-	if ( $is_backend ) {
-		return $is_backend;
-	}
-
-	$script = isset( $_SERVER['PHP_SELF'] ) ? basename( $_SERVER['PHP_SELF'] ) : ''; // phpcs:ignore
-	if ( 'index.php' !== $script ) {
-		if ( in_array( $script, array( 'wp-login.php', 'xmlrpc.php', 'wp-cron.php' ), true ) ) {
-			$is_backend = true;
-		} elseif ( defined( 'DOING_CRON' ) && DOING_CRON ) {
-			$is_backend = true;
-		} elseif ( 'cli' === PHP_SAPI || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
-			$is_backend = true;
-		}
-	}
-
-	return $is_backend;
-}
-
 /**
  * Actions for the pre-WordPress process.
  *
