@@ -14,8 +14,6 @@
 $wp_super_cache_page   = Wp_Super_Cache_Page::instance();
 $wp_super_cache_config = Wp_Super_Cache_Config::instance();
 
-global $cache_path;
-
 if ( ! isset( $wp_cache_plugins_dir ) ) {
 	$wp_cache_plugins_dir = WPCACHEHOME . 'plugins';
 }
