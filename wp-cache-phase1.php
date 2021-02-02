@@ -1,7 +1,7 @@
 <?php
 
 if ( ! function_exists( 'wp_cache_phase2' ) ) {
-	require_once dirname( __FILE__ ) . '/wp-cache-phase2.php';
+	require_once __DIR__ . '/wp-cache-phase2.php';
 }
 
 // error_reporting(E_ERROR | E_PARSE); // uncomment to debug this file!
@@ -10,7 +10,7 @@ if ( ! @include WP_CONTENT_DIR . '/wp-cache-config.php' ) {
 }
 
 if ( ! defined( 'WPCACHEHOME' ) ) {
-	define( 'WPCACHEHOME', dirname( __FILE__ ) . '/' );
+	define( 'WPCACHEHOME', __DIR__ . '/' );
 }
 
 if ( defined( 'DISABLE_SUPERCACHE' ) ) {
@@ -50,9 +50,9 @@ if ( is_array( $plugins ) ) {
 }
 
 if ( isset( $wpsc_plugins ) && is_array( $wpsc_plugins ) ) {
-	foreach( $wpsc_plugins as $plugin_file ) {
+	foreach ( $wpsc_plugins as $plugin_file ) {
 		if ( file_exists( ABSPATH . $plugin_file ) ) {
-			include_once( ABSPATH . $plugin_file );
+			include_once ABSPATH . $plugin_file;
 		}
 	}
 }

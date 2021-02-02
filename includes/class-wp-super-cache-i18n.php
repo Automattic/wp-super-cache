@@ -41,6 +41,4 @@ class Wp_Super_Cache_I18n {
 
 	}
 
-
-
 }

@@ -111,35 +111,35 @@ class Wp_Super_Cache {
 		 * Basic functions that are used everywhere, before and after
 		 * WordPress is loaded.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/pre-wp-functions.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/pre-wp-functions.php';
 
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-super-cache-loader.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-super-cache-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-super-cache-i18n.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-super-cache-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wp-super-cache-admin.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-wp-super-cache-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wp-super-cache-public.php';
+		require_once plugin_dir_path( __DIR__ ) . 'public/class-wp-super-cache-public.php';
 
 		/**
 		 * The class responsible for defining configuration functions used by the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-super-cache-config.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-super-cache-config.php';
 
 		$this->config = Wp_Super_cache_Config::instance();
 		$this->loader = new Wp_Super_Cache_Loader();
