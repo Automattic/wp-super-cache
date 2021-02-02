@@ -329,7 +329,6 @@ class Wp_Super_Cache_File_Cache {
 		return $headers;
 	}
 
-
 	/**
 	 * Get meta information about new cache file.
 	 *
@@ -347,7 +346,7 @@ class Wp_Super_Cache_File_Cache {
 			wp_cache_debug( 'wp_cache_shutdown_callback: Plugin not loaded. Setting feed ttl to 60 seconds.' );
 		}
 
-		$wp_cache_meta['uri']     = WPSC_HTTP_HOST . preg_replace('/[ <>\'\"\r\n\t\(\)]/', '', WPSC_URI ); // To avoid XSS attacks
+		$wp_cache_meta['uri']     = WPSC_HTTP_HOST . preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', WPSC_URI ); // To avoid XSS attacks
 		$wp_cache_meta['blog_id'] = $blog_id;
 		$wp_cache_meta['post']    = $this->config->config['post_id'];
 		$wp_cache_meta['key']     = $wp_cache_key;
@@ -355,32 +354,33 @@ class Wp_Super_Cache_File_Cache {
 		$wp_cache_meta = apply_filters( 'wp_cache_meta', $wp_cache_meta );
 
 		$response = $this->get_response_headers();
-		foreach( $response as $key => $value ) {
+		foreach ( $response as $key => $value ) {
 			$wp_cache_meta['headers'][ $key ] = "$key: $value";
 		}
 
 		wp_cache_debug( 'wp_cache_shutdown_callback: collecting meta data.', 2 );
 
-		if (!isset( $response['Last-Modified'] )) {
-			$value = gmdate('D, d M Y H:i:s') . ' GMT';
-			/* Dont send this the first time */
+		if ( ! isset( $response['Last-Modified'] ) ) {
+			$value = gmdate( 'D, d M Y H:i:s' ) . ' GMT';
+			/*
+			 Dont send this the first time */
 			/* @header('Last-Modified: ' . $value); */
 			$wp_cache_meta['headers']['Last-Modified'] = "Last-Modified: $value";
 		}
 		$is_feed = false;
-		if ( !isset( $response['Content-Type'] ) && !isset( $response['Content-type'] ) ) {
+		if ( ! isset( $response['Content-Type'] ) && ! isset( $response['Content-type'] ) ) {
 			// On some systems, headers set by PHP can't be fetched from
 			// the output buffer. This is a last ditch effort to set the
 			// correct Content-Type header for feeds, if we didn't see
 			// it in the response headers already. -- dougal
 			if ( isset( $this->config->query_vars['is_feed'] ) ) {
-				if ( isset( $this->config->query_vars['is_sitemap'] ) )  {
+				if ( isset( $this->config->query_vars['is_sitemap'] ) ) {
 					$type  = 'sitemap';
 					$value = 'text/xml';
 				} else {
 					$type = get_query_var( 'feed' );
-					$type = str_replace('/','',$type);
-					switch ($type) {
+					$type = str_replace( '/', '', $type );
+					switch ( $type ) {
 						case 'atom':
 							$value = 'application/atom+xml';
 							break;
@@ -405,18 +405,19 @@ class Wp_Super_Cache_File_Cache {
 				$value = 'application/json';
 			} else { // not a feed
 				$value = get_option( 'html_type' );
-				if( $value == '' )
+				if ( $value == '' ) {
 					$value = 'text/html';
+				}
 			}
 			if ( defined( 'WPSC_BLOG_CHARSET' ) ) {
-				$value .=  "; charset=\"" . constant( 'WPSC_BLOG_CHARSET' ) . "\"";
+				$value .= '; charset="' . constant( 'WPSC_BLOG_CHARSET' ) . '"';
 			}
 
 			$wp_cache_meta['headers']['Content-Type'] = "Content-Type: $value";
 		}
 
-		if ( $cache_enabled && !$supercacheonly && $new_cache ) {
-			if( !isset( $wp_cache_meta['dynamic'] ) && $wp_cache_gzip_encoding && !in_array( 'Content-Encoding: ' . $wp_cache_gzip_encoding, $wp_cache_meta['headers'] ) ) {
+		if ( $cache_enabled && ! $supercacheonly && $new_cache ) {
+			if ( ! isset( $wp_cache_meta['dynamic'] ) && $wp_cache_gzip_encoding && ! in_array( 'Content-Encoding: ' . $wp_cache_gzip_encoding, $wp_cache_meta['headers'] ) ) {
 				wp_cache_debug( 'Sending gzip headers.', 2 );
 				$wp_cache_meta['headers']['Content-Encoding'] = 'Content-Encoding: ' . $wp_cache_gzip_encoding;
 				if ( defined( 'WPSC_VARY_HEADER' ) ) {
@@ -434,21 +435,22 @@ class Wp_Super_Cache_File_Cache {
 			}
 
 			$serial = '<?php die(); ?>' . json_encode( $wp_cache_meta );
-			$dir = get_current_url_supercache_dir();
-			if( @is_dir( $dir ) == false )
+			$dir    = get_current_url_supercache_dir();
+			if ( @is_dir( $dir ) == false ) {
 				@wp_mkdir_p( $dir );
+			}
 
-			if( wp_cache_writers_entry() ) {
+			if ( wp_cache_writers_entry() ) {
 				wp_cache_debug( "Writing meta file: {$dir}meta-{$meta_file}", 2 );
 
-				$tmp_meta_filename = $dir . uniqid( mt_rand(), true ) . '.tmp';
-				$final_meta_filename = $dir . "meta-" . $meta_file;
-				$fr = @fopen( $tmp_meta_filename, 'w');
+				$tmp_meta_filename   = $dir . uniqid( mt_rand(), true ) . '.tmp';
+				$final_meta_filename = $dir . 'meta-' . $meta_file;
+				$fr                  = @fopen( $tmp_meta_filename, 'w' );
 				if ( $fr ) {
-					fputs($fr, $serial);
-					fclose($fr);
-					@chmod( $tmp_meta_filename, 0666 & ~umask());
-					if( !@rename( $tmp_meta_filename, $final_meta_filename ) ) {
+					fputs( $fr, $serial );
+					fclose( $fr );
+					@chmod( $tmp_meta_filename, 0666 & ~umask() );
+					if ( ! @rename( $tmp_meta_filename, $final_meta_filename ) ) {
 						@unlink( $dir . $final_meta_filename );
 						@rename( $tmp_meta_filename, $final_meta_filename );
 					}
@@ -533,7 +535,7 @@ class Wp_Super_Cache_File_Cache {
 
 			$buffer = $this->write_buffer_to_file( $buffer );
 			// TODO.
-			//wp_cache_shutdown_callback();
+			// wp_cache_shutdown_callback();
 			$meta_info = $this->get_cache_meta_information();
 
 			$this->send_cache_headers( $meta_info );
@@ -867,7 +869,6 @@ class Wp_Super_Cache_File_Cache {
 			}
 		}
 	}
-
 
 	/**
 	 * Count the micro seconds between $a and $b

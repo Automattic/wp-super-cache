@@ -275,7 +275,6 @@ CONFIGFILE;
 		return true;
 	}
 
-
 	/**
 	 * Add WP_CACHE to wp-config.php
 	 *
@@ -296,9 +295,9 @@ CONFIGFILE;
 	 */
 	public function add_wpcachehome_constant() {
 		if ( ! defined( 'WPCACHEHOME' ) ) {
-			define( 'WPCACHEHOME', trailingslashit( dirname( __FILE__ ) ) );
+			define( 'WPCACHEHOME', trailingslashit( __DIR__ ) );
 		}
-		$line = "define( 'WPCACHEHOME', '" . trailingslashit( dirname( dirname( __FILE__ ) ) ) . "' );";
+		$line = "define( 'WPCACHEHOME', '" . trailingslashit( dirname( __DIR__ ) ) . "' );";
 		return $this->config->replace_line_in_file( 'define *\( *\'WPCACHEHOME\'', $line, $this->config_filename );
 	}
 

@@ -12,8 +12,7 @@
 /**
  * The class responsible for setting up required files for caching.
  */
-require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-super-cache-setup.php';
-
+require_once plugin_dir_path( __DIR__ ) . 'includes/class-wp-super-cache-setup.php';
 
 /**
  * The admin-specific functionality of the plugin.

@@ -52,7 +52,7 @@ class Wp_Super_Cache_Page {
 		}
 
 		if ( ! defined( 'WPCACHEHOME' ) ) {
-			define( 'WPCACHEHOME', dirname( dirname( __FILE__ ) ) . '/' );
+			define( 'WPCACHEHOME', dirname( __DIR__ ) . '/' );
 		}
 
 		// In the future we might have different caching engines.
@@ -287,7 +287,6 @@ class Wp_Super_Cache_Page {
 		}
 	}
 
-
 	/**
 	 * Return true if in wp-admin or other admin non cacheable page.
 	 *
@@ -477,7 +476,6 @@ class Wp_Super_Cache_Page {
 
 		return $cache_this_page;
 	}
-
 
 	/**
 	 * Return an instance of the current class, create one if it doesn't exist

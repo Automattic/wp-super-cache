@@ -98,7 +98,7 @@ class Wp_Super_Cache_Debug {
 	 * @param string $username username and password used to protect the log file.
 	 */
 	public function create_debug_log( $filename = '', $username = '' ) {
-		$debug_setting = $this->config->config['wp_super_cache_debug'];
+		$debug_setting                                = $this->config->config['wp_super_cache_debug'];
 		$this->config->config['wp_super_cache_debug'] = false;
 
 		if ( '' !== $filename ) {
@@ -206,7 +206,6 @@ foreach( $debug_log as $line ) {
 			'wp_cache_debug_username' => $this->config->config['wp_cache_debug_username'],
 		);
 	}
-
 
 	/**
 	 * Return an instance of the current class, create one if it doesn't exist

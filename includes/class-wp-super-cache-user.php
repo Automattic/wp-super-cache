@@ -22,7 +22,6 @@ class Wp_Super_Cache_User {
 	 */
 	public $config = array();
 
-
 	/**
 	 * Constructor
 	 *
