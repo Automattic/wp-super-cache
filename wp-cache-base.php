@@ -1,5 +1,5 @@
 <?php
-global $WPSC_HTTP_HOST, $cache_enabled, $cache_path, $blogcacheid, $blog_cache_dir;
+global $wpsc_config, $WPSC_HTTP_HOST, $blogcacheid, $blog_cache_dir;
 
 if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 	$WPSC_HTTP_HOST = function_exists( 'mb_strtolower' ) ? mb_strtolower( $_SERVER['HTTP_HOST'] ) : strtolower( $_SERVER['HTTP_HOST'] );
@@ -7,13 +7,13 @@ if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 } elseif ( PHP_SAPI === 'cli' && function_exists( 'get_option' ) ) {
 	$WPSC_HTTP_HOST = (string) parse_url( get_option( 'home' ), PHP_URL_HOST );
 } else {
-	$cache_enabled  = false;
+	$GLOBALS['wpsc_config']['cache_enabled']  = false;
 	$WPSC_HTTP_HOST = '';
 }
 
 // We want to be able to identify each blog in a WordPress MU install
 $blogcacheid    = '';
-$blog_cache_dir = $cache_path;
+$blog_cache_dir = $GLOBALS['wpsc_config']['cache_path'];
 
 if ( is_multisite() ) {
 	global $current_blog;
@@ -43,5 +43,5 @@ if ( is_multisite() ) {
 	if ( empty( $blogcacheid ) ) {
 		$blogcacheid = 'blog';
 	}
-	$blog_cache_dir = str_replace( '//', '/', $cache_path . 'blogs/' . $blogcacheid . '/' );
+	$blog_cache_dir = str_replace( '//', '/', $GLOBALS['wpsc_config']['cache_path'] . 'blogs/' . $blogcacheid . '/' );
 }

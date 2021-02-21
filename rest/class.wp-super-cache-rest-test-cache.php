@@ -9,8 +9,6 @@ class WP_Super_Cache_Rest_Test_Cache extends WP_REST_Controller {
 	 * @return WP_Error|WP_REST_Response
 	 */
 	public function callback( $request ) {
-		global $cache_path;
-
 		$url = trailingslashit( get_bloginfo( 'url' ) );
 
 		$response = array( 'status' => 'UNKNOWN' );
@@ -24,7 +22,7 @@ class WP_Super_Cache_Rest_Test_Cache extends WP_REST_Controller {
 			$page[ $c ] = wp_remote_get( $url, array('timeout' => 60, 'blocking' => true ) );
 
 			if ( ! is_wp_error( $page[ $c ] ) ) {
-				$fp = fopen( $cache_path . $c . ".html", "w" );
+				$fp = fopen( $GLOBALS['wpsc_config']['cache_path'] . $c . ".html", "w" );
 				fwrite( $fp, $page[ $c ][ 'body' ] );
 				fclose( $fp );
 			}

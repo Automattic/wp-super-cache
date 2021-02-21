@@ -47,14 +47,13 @@ function wp_super_cache_multisite_notice() {
 }
 
 function wp_super_cache_override_on_flag() {
-	global $cache_enabled, $super_cache_enabled;
-	if ( true !== $cache_enabled ) {
+	if ( true !== $GLOBALS['wpsc_config']['cache_enabled'] ) {
 		return false;
 	}
 
 	if ( 1 === (int) get_option( 'wp_super_cache_disabled' ) ) {
-		$cache_enabled = false;
-		$super_cache_enabled = false;
+		$GLOBALS['wpsc_config']['cache_enabled'] = false;
+		$GLOBALS['wpsc_config']['super_cache_enabled'] = false;
 		define( 'DONOTCACHEPAGE', 1 );
 		define( 'SUBMITDISABLED', 'disabled style="color: #aaa" ' );
 		if ( is_admin() ) {

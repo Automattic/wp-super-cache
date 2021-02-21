@@ -1,8 +1,6 @@
 <?php
 
 function domain_mapping_gc_cache( $function, $directory ) {
-	global $cache_path;
-
 	if ( ! function_exists( 'domain_mapping_warning' ) ) {
 		return;
 	}
@@ -20,17 +18,15 @@ function domain_mapping_gc_cache( $function, $directory ) {
 
 	switch ( $function ) {
 		case 'rebuild':
-			wpsc_rebuild_files( $cache_path . 'supercache/' . $sitedir . $directory );
+			wpsc_rebuild_files( $GLOBALS['wpsc_config']['cache_path'] . 'supercache/' . $sitedir . $directory );
 			break;
 		case 'prune':
-			wpsc_delete_files( $cache_path . 'supercache/' . $sitedir . $directory );
+			wpsc_delete_files( $GLOBALS['wpsc_config']['cache_path'] . 'supercache/' . $sitedir . $directory );
 			break;
 	}
 }
 
 function domain_mapping_supercachedir( $dir ) {
-	global $cache_path;
-
 	if ( ! function_exists( 'domain_mapping_warning' ) ) {
 		return $dir;
 	}
@@ -42,7 +38,7 @@ function domain_mapping_supercachedir( $dir ) {
 
 	$sitedir = trailingslashit( preg_replace( '`^(https?:)?//`', '', $siteurl ) );
 
-	return trailingslashit( $cache_path . 'supercache/' . $sitedir );
+	return trailingslashit( $GLOBALS['wpsc_config']['cache_path'] . 'supercache/' . $sitedir );
 }
 
 function domain_mapping_actions() {
@@ -102,9 +98,7 @@ function wp_supercache_domain_mapping_admin() {
 add_cacheaction( 'cache_admin_page', 'wp_supercache_domain_mapping_admin' );
 
 function wp_supercache_domain_mapping_notice() {
-	global $cache_enabled;
-
-	if ( $cache_enabled ) {
+	if ( $GLOBALS['wpsc_config']['cache_enabled'] ) {
 		echo '<div class="error"><p><strong>' . esc_html__( 'Domain Mapping plugin detected! Please go to the Supercache plugins page and enable the domain mapping helper plugin.', 'wp-super-cache' ) . '</strong></p></div>';
 	}
 }
