@@ -599,7 +599,7 @@ function wp_cache_manager_updates() {
 			if ( file_exists( $new_cache_path ) == false )
 				rename( $cache_path, $new_cache_path );
 			$cache_path = $new_cache_path;
-			wp_cache_replace_line('^ *\$cache_path', "\$cache_path = '" . $cache_path . "';", $wp_cache_config_file);
+			wp_cache_replace_line('^ *\$cache_path', "\$cache_path = " . var_export( $cache_path, true ) . ";", $wp_cache_config_file);
 		}
 
 		if( isset( $_POST[ 'wp_super_cache_late_init' ] ) ) {
