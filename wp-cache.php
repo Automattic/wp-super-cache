@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: WP Super Cache
+Plugin Name: WP Super Cache - FASTPATH.GR
 Plugin URI: https://wordpress.org/plugins/wp-super-cache/
-Description: Very fast caching plugin for WordPress.
-Version: 1.7.2
-Author: Automattic
+Description: Very fast caching plugin force WordPress.
+Version: 200.1.7.2
+Author: Automattic and Stathis Oureilidis, FASTPATH IKE
 Author URI: https://automattic.com/
 License: GPL2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -74,7 +74,7 @@ wpsc_init();
  */
 global $super_cache_enabled, $cache_enabled, $wp_cache_mod_rewrite, $wp_cache_home_path, $cache_path, $file_prefix;
 global $wp_cache_mutex_disabled, $mutex_filename, $sem_id, $wp_super_cache_late_init;
-global $cache_compression, $cache_max_time, $wp_cache_shutdown_gc, $cache_rebuild_files;
+global $cache_compression, $cache_compression_br, $cache_max_time, $wp_cache_shutdown_gc, $cache_rebuild_files;
 global $wp_super_cache_debug, $wp_super_cache_advanced_debug, $wp_cache_debug_level, $wp_cache_debug_to_file;
 global $wp_cache_debug_log, $wp_cache_debug_ip, $wp_cache_debug_username, $wp_cache_debug_email;
 global $cache_time_interval, $cache_scheduled_time, $cache_schedule_interval, $cache_schedule_type, $cache_gc_email_me;
@@ -530,7 +530,7 @@ if ( 'delcachepage' === filter_input( INPUT_GET, 'action' ) ) {
 }
 
 function wp_cache_manager_updates() {
-	global $wp_cache_mobile_enabled, $wp_cache_mfunc_enabled, $wp_supercache_cache_list, $wp_cache_config_file, $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_mutex_disabled, $wp_cache_not_logged_in, $wp_cache_make_known_anon, $cache_path, $wp_cache_refresh_single_only, $cache_compression, $wp_cache_mod_rewrite, $wp_supercache_304, $wp_super_cache_late_init, $wp_cache_front_page_checks, $cache_page_secret, $wp_cache_disable_utf8, $wp_cache_no_cache_for_get;
+	global $wp_cache_mobile_enabled, $wp_cache_mfunc_enabled, $wp_supercache_cache_list, $wp_cache_config_file, $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_mutex_disabled, $wp_cache_not_logged_in, $wp_cache_make_known_anon, $cache_path, $wp_cache_refresh_single_only, $cache_compression, $cache_compression_br, $wp_cache_mod_rewrite, $wp_supercache_304, $wp_super_cache_late_init, $wp_cache_front_page_checks, $cache_page_secret, $wp_cache_disable_utf8, $wp_cache_no_cache_for_get;
 	global $cache_schedule_type, $cache_max_time, $cache_time_interval, $wp_cache_shutdown_gc, $wpsc_save_headers;
 
 	if ( !wpsupercache_site_admin() )
@@ -739,19 +739,36 @@ function wp_cache_manager_updates() {
 
 		if ( defined( 'WPSC_DISABLE_COMPRESSION' ) ) {
 			$cache_compression = 0;
+			$cache_compression_br = 0;
 			wp_cache_replace_line('^ *\$cache_compression', "\$cache_compression = " . $cache_compression . ";", $wp_cache_config_file);
+			wp_cache_replace_line('^ *\$cache_compression_br', "\$cache_compression_br = " . $cache_compression_br . ";", $wp_cache_config_file);
 		} else {
 			if ( isset( $_POST[ 'cache_compression' ] ) ) {
 				$new_cache_compression = 1;
 			} else {
 				$new_cache_compression = 0;
 			}
+			// Brotli
+			if ( isset( $_POST[ 'cache_compression_br' ] ) ) {
+				$new_cache_compression_br = 1;
+			} else {
+				$new_cache_compression_br = 0;
+			}
+
 			if ( 1 == ini_get( 'zlib.output_compression' ) || "on" == strtolower( ini_get( 'zlib.output_compression' ) ) ) {
 				echo '<div class="notice notice-error">' . __( "<strong>Warning!</strong> You attempted to enable compression but <code>zlib.output_compression</code> is enabled. See #21 in the Troubleshooting section of the readme file.", 'wp-super-cache' ) . '</div>';
 			} else {
 				if ( $new_cache_compression != $cache_compression ) {
 					$cache_compression = $new_cache_compression;
 					wp_cache_replace_line('^ *\$cache_compression', "\$cache_compression = " . $cache_compression . ";", $wp_cache_config_file);
+					if ( function_exists( 'prune_super_cache' ) )
+						prune_super_cache( $cache_path, true );
+					delete_option( 'super_cache_meta' );
+				}
+				// Brotli
+				if ( $new_cache_compression_br != $cache_compression_br ) {
+					$cache_compression_br = $new_cache_compression_br;
+					wp_cache_replace_line('^ *\$cache_compression_br', "\$cache_compression_br = " . $cache_compression_br . ";", $wp_cache_config_file);
 					if ( function_exists( 'prune_super_cache' ) )
 						prune_super_cache( $cache_path, true );
 					delete_option( 'super_cache_meta' );
@@ -764,7 +781,7 @@ if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'wpsupercache' )
 	add_action( 'admin_init', 'wp_cache_manager_updates' );
 
 function wp_cache_manager() {
-	global $wp_cache_config_file, $valid_nonce, $supercachedir, $cache_path, $cache_enabled, $cache_compression, $super_cache_enabled;
+	global $wp_cache_config_file, $valid_nonce, $supercachedir, $cache_path, $cache_enabled, $cache_compression, $cache_compression_br, $super_cache_enabled;
 	global $wp_cache_clear_on_post_edit, $cache_rebuild_files, $wp_cache_mutex_disabled, $wp_cache_mobile_enabled, $wp_cache_mobile_browsers, $wp_cache_no_cache_for_get;
 	global $wp_cache_not_logged_in, $wp_cache_make_known_anon, $wp_supercache_cache_list, $cache_page_secret;
 	global $wp_super_cache_front_page_check, $wp_cache_refresh_single_only, $wp_cache_mobile_prefixes;
@@ -1095,6 +1112,12 @@ table.wpsc-settings-table {
 							<em><?php esc_html_e( 'Warning! Compression is disabled as gzencode() function was not found.', 'wp-super-cache' ); ?></em><br />
 						<?php else : ?>
 							<label><input type='checkbox' name='cache_compression' <?php checked( $cache_compression ); ?> value='1'> <?php echo __( 'Compress pages so they&#8217;re served more quickly to visitors.', 'wp-super-cache' ) . ' <em>(' . esc_html__( 'Recommended', 'wp-super-cache' ) . ')</em>'; ?></label><br />
+							<em><?php esc_html_e( 'Compression is disabled by default because some hosts have problems with compressed files. Switching it on and off clears the cache.', 'wp-super-cache' ); ?></em><br />
+						<?php endif; ?>
+						<?php if ( ! function_exists( 'brotli_compress' ) ) : ?>
+							<em><?php esc_html_e( 'Warning! Brotli compression is disabled as brotli_compress() function was not found.', 'wp-super-cache' ); ?></em><br />
+						<?php else : ?>
+							<label><input type='checkbox' name='cache_compression_br' <?php checked( $cache_compression_br ); ?> value='1'> <?php echo __( 'Brotli! Compress pages so they&#8217;re served more quickly to visitors.', 'wp-super-cache' ) . ' <em>(' . esc_html__( 'Recommended', 'wp-super-cache' ) . ')</em>'; ?></label><br />
 							<em><?php esc_html_e( 'Compression is disabled by default because some hosts have problems with compressed files. Switching it on and off clears the cache.', 'wp-super-cache' ); ?></em><br />
 						<?php endif; ?>
 					<?php endif; ?>
@@ -2737,7 +2760,7 @@ function wp_cache_format_fsize( $fsize ) {
 }
 
 function wp_cache_regenerate_cache_file_stats() {
-	global $cache_compression, $supercachedir, $file_prefix, $wp_cache_preload_on, $cache_max_time;
+	global $cache_compression, $cache_compression_br, $supercachedir, $file_prefix, $wp_cache_preload_on, $cache_max_time;
 
 	if ( $supercachedir == '' )
 		$supercachedir = get_supercache_dir();
@@ -2766,7 +2789,7 @@ function wp_cache_regenerate_cache_file_stats() {
 			$sizes[ $cache_type ][ $status ] = $cached_list;
 		}
 	}
-	if ( $cache_compression ) {
+	if ( $cache_compression || $cache_compression_br ) {
 		$sizes[ 'supercache' ][ 'cached' ]  = intval( $sizes[ 'supercache' ][ 'cached' ] / 2 );
 		$sizes[ 'supercache' ][ 'expired' ] = intval( $sizes[ 'supercache' ][ 'expired' ] / 2 );
 	}
