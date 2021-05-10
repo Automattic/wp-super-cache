@@ -28,6 +28,27 @@ function get_wp_cache_key( $url = false ) {
 	return do_cacheaction( 'wp_cache_key', wp_cache_check_mobile( $WPSC_HTTP_HOST . $server_port . preg_replace('/#.*$/', '', str_replace( '/index.php', '/', $url ) ) . $wp_cache_gzip_encoding . wp_cache_get_cookies_values() ) );
 }
 
+function remove_tracking_params_from_uri($uri) {
+	$parsedUrl = parse_url($uri);
+	$query = array();
+
+	if (isset($parsedUrl['query'])) {
+		parse_str($parsedUrl['query'], $query);
+		$q_params_to_ignore = array(
+			'fbclid', 'ref', 'gclid', 'fb_source', 'mc_cid', 'mc_eid',
+			'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_expid',
+			'mtm_source', 'mtm_medium', 'mtm_campaign', 'mtm_keyword', 'mtm_content', 'mtm_cid', 'mtm_group', 'mtm_placement',
+		);
+		foreach($q_params_to_ignore as $param_name) {
+			unset($query[$param_name]);
+		}
+	}
+	$path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
+	$query = !empty($query) ? '?'. http_build_query($query) : '';
+
+	return $parsedUrl['scheme']. '://'. $parsedUrl['host']. $path. $query;
+}
+
 function wp_super_cache_init() {
 	global $wp_cache_key, $key, $blogcacheid, $file_prefix, $blog_cache_dir, $meta_file, $cache_file, $cache_filename, $meta_pathname;
 
