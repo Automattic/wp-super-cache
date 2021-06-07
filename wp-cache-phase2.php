@@ -46,7 +46,7 @@ function remove_tracking_params_from_uri($uri) {
 	$path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
 	$query = !empty($query) ? '?'. http_build_query($query) : '';
 
-	return $parsedUrl['scheme']. '://'. $parsedUrl['host']. $path. $query;
+	return $parsedUrl['host']. $path. $query;
 }
 
 function wp_super_cache_init() {
