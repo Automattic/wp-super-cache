@@ -31,11 +31,11 @@ function get_wp_cache_key( $url = false ) {
 function wpsc_remove_tracking_params_from_uri( $uri ) {
 	global $wpsc_tracking_parameters, $wpsc_ignore_tracking_parameters;
 
-	if ( ! isset( $wpsc_ignore_tracking_parameters ) || ! isset( $wpsc_ignore_tracking_parameters ) ) {
+	if ( ! $wpsc_ignore_tracking_parameters ) {
 		return $uri;
 	}
 
-	if ( ! $wpsc_ignore_tracking_parameters ) {
+	if ( ! isset( $wpsc_tracking_parameters ) || empty( $wpsc_tracking_parameters ) ) {
 		return $uri;
 	}
 
