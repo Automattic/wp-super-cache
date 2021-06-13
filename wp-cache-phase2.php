@@ -31,7 +31,7 @@ function get_wp_cache_key( $url = false ) {
 function wpsc_remove_tracking_params_from_uri( $uri ) {
 	global $wpsc_tracking_parameters, $wpsc_ignore_tracking_parameters;
 
-	if ( ! $wpsc_ignore_tracking_parameters ) {
+	if ( ! isset( $wpsc_ignore_tracking_parameters ) || ! $wpsc_ignore_tracking_parameters ) {
 		return $uri;
 	}
 
@@ -51,7 +51,11 @@ function wpsc_remove_tracking_params_from_uri( $uri ) {
 	$path = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '';
 	$query = ! empty( $query ) ? '?' . http_build_query( $query ) : '';
 
-	return $path. $query;
+	if ( $uri !== $path . $query ) {
+		wp_cache_debug( 'Removed tracking parameters from URL. Returning ' . $path . $query );
+	}
+
+	return $path . $query;
 }
 
 function wp_super_cache_init() {
