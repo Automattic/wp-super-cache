@@ -16,11 +16,8 @@ $blogcacheid    = '';
 $blog_cache_dir = $cache_path;
 
 if ( is_multisite() ) {
-	global $current_blog;
 
-	if ( is_object( $current_blog ) && function_exists( 'is_subdomain_install' ) ) {
-		$blogcacheid = is_subdomain_install() ? $current_blog->domain : trim( $current_blog->path, '/' );
-	} elseif ( ( defined( 'SUBDOMAIN_INSTALL' ) && SUBDOMAIN_INSTALL ) || ( defined( 'VHOST' ) && VHOST === 'yes' ) ) {
+	if ( ( defined( 'SUBDOMAIN_INSTALL' ) && SUBDOMAIN_INSTALL ) || ( defined( 'VHOST' ) && VHOST === 'yes' ) ) {
 		$blogcacheid = $WPSC_HTTP_HOST;
 	} else {
 		$request_uri = str_replace( '..', '', preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER['REQUEST_URI'] ) );

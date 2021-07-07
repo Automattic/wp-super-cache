@@ -1,13 +1,28 @@
 <?php
 
 if ( is_multisite() ) {
-	add_cacheaction( 'add_cacheaction', 'wp_super_cache_multisite_init' );
+	if ( function_exists( 'add_action' ) ) {
+		add_action( 'ms_loaded', 'wp_super_cache_multisite_loaded' );
+	} else {
+		add_cacheaction( 'add_cacheaction', 'wp_super_cache_multisite_init' );
+	}
+}
+
+function wp_super_cache_multisite_loaded() {
+	wp_super_cache_override_on_flag();
+	wp_super_cache_multisite_admin_init();
 }
 
 function wp_super_cache_multisite_init() {
-	add_filter( 'wpmu_blogs_columns', 'wp_super_cache_blogs_col' );
-	add_action( 'manage_sites_custom_column', 'wp_super_cache_blogs_field', 10, 2 );
 	add_action( 'init', 'wp_super_cache_override_on_flag', 9 );
+	wp_super_cache_multisite_admin_init();
+}
+
+function wp_super_cache_multisite_admin_init() {
+	if ( is_admin() ) {
+		add_filter( 'wpmu_blogs_columns', 'wp_super_cache_blogs_col' );
+		add_action( 'manage_sites_custom_column', 'wp_super_cache_blogs_field', 10, 2 );
+	}
 }
 
 function wp_super_cache_blogs_col( $col ) {
@@ -17,48 +32,57 @@ function wp_super_cache_blogs_col( $col ) {
 
 function wp_super_cache_blogs_field( $name, $blog_id ) {
 	if ( 'wp_super_cache' !== $name ) {
-		return false;
+		return;
 	}
 
 	$blog_id = (int) $blog_id;
 
-	if ( isset( $_GET['id'], $_GET['action'], $_GET['_wpnonce'] )
-		&& $blog_id === filter_input( INPUT_GET, 'id', FILTER_VALIDATE_INT )
-		&& wp_verify_nonce( $_GET['_wpnonce'], 'wp-cache' . $blog_id )
+	if ( isset( $_GET['id'], $_GET['action'], $_GET['_wpnonce'] ) // WPCS: input var ok.
+		&& filter_input( INPUT_GET, 'id', FILTER_VALIDATE_INT ) === $blog_id
+		&& wp_verify_nonce( $_GET['_wpnonce'], 'wp-cache' . $blog_id ) // WPCS: sanitization ok.
 	) {
-		if ( 'disable_cache' === filter_input( INPUT_GET, 'action' ) ) {
+		if ( filter_input( INPUT_GET, 'action' ) === 'disable_cache' ) {
 			add_blog_option( $blog_id, 'wp_super_cache_disabled', 1 );
-		} elseif ( 'enable_cache' === filter_input( INPUT_GET, 'action' ) ) {
+		} elseif ( filter_input( INPUT_GET, 'action' ) === 'enable_cache' ) {
 			delete_blog_option( $blog_id, 'wp_super_cache_disabled' );
 		}
 	}
 
-	if ( 1 === (int) get_blog_option( $blog_id, 'wp_super_cache_disabled' ) ) {
-		echo '<a href="' . wp_nonce_url( add_query_arg( array( 'action' => 'enable_cache', 'id' => $blog_id ) ), 'wp-cache' . $blog_id ) . '">' . __( 'Enable', 'wp-super-cache' ) . '</a>';
-	} else {
-		echo '<a href="' . wp_nonce_url( add_query_arg( array( 'action' => 'disable_cache', 'id' => $blog_id ) ), 'wp-cache' . $blog_id ) . '">' . __( 'Disable', 'wp-super-cache' ) . '</a>';
-	}
+	$cache_option = (int) get_blog_option( $blog_id, 'wp_super_cache_disabled' ) === 1;
+
+	$action_text = $cache_option ? __( 'Enable', 'wp-super-cache' ) : __( 'Disable', 'wp-super-cache' );
+	$action_args = array(
+		'action'   => $cache_option ? 'enable_cache' : 'disable_cache',
+		'id'       => $blog_id,
+		'_wpnonce' => wp_create_nonce( 'wp-cache' . $blog_id ),
+	);
+	printf( '<a href="%s">%s</a>', esc_url_raw( add_query_arg( $action_args ) ), esc_html( $action_text ) );
 }
 
 function wp_super_cache_multisite_notice() {
-	if ( 'wpsupercache' === filter_input( INPUT_GET, 'page' ) ) {
-		echo '<div class="error"><p><strong>' . __( 'Caching has been disabled on this blog on the Network Admin Sites page.', 'wp-super-cache' ) . '</strong></p></div>';
+	if ( filter_input( INPUT_GET, 'page' ) === 'wpsupercache' ) {
+		echo '<div class="error"><p><strong>' . esc_html__( 'Caching has been disabled on this blog on the Network Admin Sites page.', 'wp-super-cache' ) . '</strong></p></div>';
 	}
 }
 
 function wp_super_cache_override_on_flag() {
-	global $cache_enabled, $super_cache_enabled;
-	if ( true !== $cache_enabled ) {
+	global $cache_enabled, $super_cache_enabled, $cache_path, $blogcacheid, $blog_cache_dir, $current_blog;
+
+	if ( is_object( $current_blog ) ) {
+		$blogcacheid    = trim( is_subdomain_install() ? $current_blog->domain : $current_blog->path, '/' );
+		$blog_cache_dir = $cache_path . 'blogs/' . $blogcacheid . '/';
+	}
+
+	if ( true !== $cache_enabled || (int) get_option( 'wp_super_cache_disabled' ) !== 1 ) {
 		return false;
 	}
 
-	if ( 1 === (int) get_option( 'wp_super_cache_disabled' ) ) {
-		$cache_enabled = false;
-		$super_cache_enabled = false;
-		define( 'DONOTCACHEPAGE', 1 );
+	$cache_enabled       = false;
+	$super_cache_enabled = false;
+	defined( 'DONOTCACHEPAGE' ) || define( 'DONOTCACHEPAGE', 1 );
+
+	if ( is_admin() ) {
 		define( 'SUBMITDISABLED', 'disabled style="color: #aaa" ' );
-		if ( is_admin() ) {
-			add_action( 'admin_notices', 'wp_super_cache_multisite_notice' );
-		}
+		add_action( 'admin_notices', 'wp_super_cache_multisite_notice' );
 	}
 }
