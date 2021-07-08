@@ -1143,7 +1143,7 @@ table.wpsc-settings-table {
 					<input type='text' size=80 name='wp_cache_location' value='<?php echo esc_attr( $cache_path ); ?>' />
 					<p><?php printf( __( 'Change the location of your cache files. The default is WP_CONTENT_DIR . /cache/ which translates to %s.', 'wp-super-cache' ), WP_CONTENT_DIR . '/cache/' ); ?></p>
 					<ol>
-						<li><?php _e( 'DO NOT USE A DIRECTORY OTHER USERS ON THIS SERVER CAN WRITE TO SUCH AS /tmp/. BEWARE OF USING DIRECTORIES THAT HAVE THE STICKY BIT SET.', 'wp-super-cache' ); ?></li>
+						<li><?php _e( 'Warning: do not use a shared directory like /tmp/ where other users on this server can modify files. Your cache files could be modified to deface your website.', 'wp-super-cache' ); ?></li>
 						<li><?php _e( 'You must give the full path to the directory.', 'wp-super-cache' ); ?></li>
 						<li><?php _e( 'If the directory does not exist, it will be created. Please make sure your web server user has write access to the parent directory. The parent directory must exist.', 'wp-super-cache' ); ?></li>
 						<li><?php _e( 'If the new cache directory does not exist, it will be created and the contents of the old cache directory will be moved there. Otherwise, the old cache directory will be left where it is.', 'wp-super-cache' ); ?></li>
