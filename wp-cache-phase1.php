@@ -24,12 +24,6 @@ if ( defined( 'DISABLE_SUPERCACHE' ) ) {
 
 require WPCACHEHOME . 'wp-cache-base.php';
 
-if ( $blogcacheid != '' ) {
-	$blog_cache_dir = str_replace( '//', '/', $cache_path . 'blogs/' . $blogcacheid . '/' );
-} else {
-	$blog_cache_dir = $cache_path;
-}
-
 $wp_cache_phase1_loaded = true;
 
 $mutex_filename = 'wp_cache_mutex.lock';
