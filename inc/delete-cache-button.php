@@ -38,27 +38,28 @@ function wpsc_admin_bar_render( $wp_admin_bar ) {
 add_action( 'admin_bar_menu', 'wpsc_admin_bar_render', 99 );
 
 function wpsc_delete_cache_scripts() {
-	if ( is_user_logged_in() ) {
-		$path_to_home = rtrim( (string) parse_url( get_option( 'home' ), PHP_URL_PATH ), '/' );
-
-		wp_enqueue_script( 'delete-cache-button', plugins_url( '/delete-cache-button.js', __FILE__ ), array('jquery'), '1.0', 1 );
-
-		if ( ( is_singular() || is_archive() || is_front_page() || is_search() ) && current_user_can(  'delete_others_posts' ) ) {
-			$site_regex   = preg_quote( $path_to_home, '`' );
-			$req_uri      = preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER[ 'REQUEST_URI' ] );
-			$path_to_home = preg_replace( '`^' . $site_regex . '`', '', $req_uri );
-			$admin        = 0;
-		} else {
-			$admin = 1;
-		}
-
-		if ( $path_to_home === '' ) {
-			$path_to_home = '/';
-		}
-
-		$nonce = wp_create_nonce( 'delete-cache-' . rawurlencode( $path_to_home ) . '_' . $admin );
-		wp_localize_script( 'delete-cache-button', 'wpsc_ajax', array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'path' => $path_to_home, 'admin' => $admin, 'nonce' => $nonce ) );
+	if ( ! is_user_logged_in() ) {
+		return;
 	}
+	$path_to_home = rtrim( (string) parse_url( get_option( 'home' ), PHP_URL_PATH ), '/' );
+
+	wp_enqueue_script( 'delete-cache-button', plugins_url( '/delete-cache-button.js', __FILE__ ), array('jquery'), '1.0', 1 );
+
+	if ( ( is_singular() || is_archive() || is_front_page() || is_search() ) && current_user_can(  'delete_others_posts' ) ) {
+		$site_regex   = preg_quote( $path_to_home, '`' );
+		$req_uri      = preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', $_SERVER[ 'REQUEST_URI' ] );
+		$path_to_home = preg_replace( '`^' . $site_regex . '`', '', $req_uri );
+		$admin        = 0;
+	} else {
+		$admin = 1;
+	}
+
+	if ( $path_to_home === '' ) {
+		$path_to_home = '/';
+	}
+
+	$nonce = wp_create_nonce( 'delete-cache-' . rawurlencode( $path_to_home ) . '_' . $admin );
+	wp_localize_script( 'delete-cache-button', 'wpsc_ajax', array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'path' => $path_to_home, 'admin' => $admin, 'nonce' => $nonce ) );
 }
 add_action( 'wp_ajax_ajax-delete-cache', 'wpsc_admin_bar_delete_cache' );
 add_action( 'wp_enqueue_scripts', 'wpsc_delete_cache_scripts' );
