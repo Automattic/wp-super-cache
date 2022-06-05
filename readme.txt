@@ -277,7 +277,7 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 * Add commonWP and disclaimer to "recommended links" #812
 * Hide warnings in case files deleted #814
 * Remove the GET param when removing tracking params #818
-* Check that post is private to unpublish it and clear cache
+* Check that post is private to unpublish it and clear cache 2249e58e6f585d936c0993e9d18e6382fa976a66
 * Check $gc_flag was opened before closing it. #819)
 
 ### 1.7.7 ###
