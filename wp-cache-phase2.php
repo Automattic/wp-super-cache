@@ -46,6 +46,7 @@ function wpsc_remove_tracking_params_from_uri( $uri ) {
 		parse_str( $parsed_url['query'], $query );
 		foreach( $wpsc_tracking_parameters as $param_name ) {
 			unset( $query[$param_name] );
+			unset( $_GET[ $param_name ] );
 		}
 	}
 	$path = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '';
