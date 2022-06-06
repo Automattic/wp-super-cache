@@ -42,7 +42,10 @@ function wpsc_delete_cache_scripts() {
 		return;
 	}
 
-	if ( function_exists( 'ampforwp_is_amp_endpoint' ) && ampforwp_is_amp_endpoint() ) {
+	if (
+		is_plugin_active( 'amp/amp.php' ) ||
+		( function_exists( 'ampforwp_is_amp_endpoint' ) && ampforwp_is_amp_endpoint() )
+	) {
 		wp_cache_debug( 'AMP detected. Not loading Delete Cache button JavaScript.' );
 		return;
 	}
