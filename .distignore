@@ -1,0 +1,9 @@
+/docker
+/.wordpress-org
+/.git
+/.github
+.phpcs.xml.dist
+composer.json
+composer.lock
+.distignore
+.gitignore
