@@ -241,11 +241,8 @@ function wpsupercache_site_admin() {
 function wp_cache_add_pages() {
 	if ( wpsupercache_site_admin() ) {
 		// In single or MS mode add this menu item too, but only for superadmins in MS mode.
-		$wp_super_cache_menu = add_menu_page( 'WP Super Cache', 'WP Super Cache', 'manage_options', 'wpsupercache-dash', 'wp_cache_dashboard' );
-		add_submenu_page( 'wpsupercache-dash' , 'Settings', 'Settings', 'manage_options', 'wpsupercache', 'wp_cache_manager' );
-		add_submenu_page( 'wpsupercache-dash' , 'About', 'About', 'manage_options', 'wpsupercache-about', 'wp_cache_about' );
-		$wp_super_cache_menu_feedback = add_submenu_page( 'wpsupercache-dash' , 'Feedback', 'Feedback', 'manage_options', 'wpsupercache-feedback', 'wp_cache_feedback' );
-		add_submenu_page( 'wpsupercache-dash' , 'More Plugins', 'More Plugins', 'manage_options', 'wpsupercache-more', 'wp_cache_more' );
+		$wp_super_cache_menu = add_menu_page( 'WP Super Cache', 'WP Super Cache', 'manage_options', 'wpsupercache', 'wp_cache_manager' );
+		$wp_super_cache_menu_feedback = add_submenu_page( 'wpsupercache' , 'Feedback', 'Feedback', 'manage_options', 'wpsupercache-feedback', 'wp_cache_feedback' );
 
 		add_action('admin_print_scripts-' . $wp_super_cache_menu_feedback, 'wp_cache_admin_styles_feedback');
 
@@ -257,15 +254,6 @@ add_action( 'admin_menu', 'wp_cache_add_pages' );
 function wp_cache_admin_styles_feedback(){
 	wp_register_style( 'wpsc_wp_admin_css', plugin_dir_url( __FILE__ ) . 'css/wpsc-feedback.min.css', false, '1.0.0' );
 	wp_enqueue_style( 'wpsc_wp_admin_css' );
-}
-
-
-function wp_cache_dashboard(){
-	echo "Dashboard";
-}
-
-function wp_cache_about(){
-	echo "About";
 }
 
 function wp_cache_feedback(){
@@ -281,10 +269,6 @@ function wp_cache_feedback(){
 	</div>
 	</div>
 	<?php
-}
-
-function wp_cache_more(){
-	echo "More plugins (Boost, Jetpack)";
 }
 
 function wp_cache_network_pages() {
