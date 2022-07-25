@@ -235,13 +235,41 @@ function wpsupercache_site_admin() {
 	return is_super_admin();
 }
 
+/** 
+ * Modifying to add a menu page and submenus thereafter for ease of navigation
+ */
 function wp_cache_add_pages() {
 	if ( wpsupercache_site_admin() ) {
 		// In single or MS mode add this menu item too, but only for superadmins in MS mode.
-		add_options_page( 'WP Super Cache', 'WP Super Cache', 'manage_options', 'wpsupercache', 'wp_cache_manager' );
+		$wp_super_cache_menu = add_menu_page( 'WP Super Cache', 'WP Super Cache', 'manage_options', 'wpsupercache', 'wp_cache_manager' );
+		$wp_super_cache_menu_feedback = add_submenu_page( 'wpsupercache' , 'Feedback', 'Feedback', 'manage_options', 'wpsupercache-feedback', 'wp_cache_feedback' );
+
+		add_action('admin_print_scripts-' . $wp_super_cache_menu_feedback, 'wp_cache_admin_styles_feedback');
+
+
 	}
 }
 add_action( 'admin_menu', 'wp_cache_add_pages' );
+
+function wp_cache_admin_styles_feedback(){
+	wp_register_style( 'wpsc_wp_admin_css', plugin_dir_url( __FILE__ ) . 'css/wpsc-feedback.min.css', false, '1.0.0' );
+	wp_enqueue_style( 'wpsc_wp_admin_css' );
+}
+
+function wp_cache_feedback(){
+	?>
+	<div class='wpsc-survey-wrapper'>
+		<div class='wpsc-survey'>
+
+			<a href="https://mikestottuk.survey.fm/wp-super-cache" class="button button-primary">Give Feeback</a>
+			<a href="#" class="button button-secondary">Let us interview you</a>
+		</div>
+	<div class='wpsc-create-own-survey credits'>
+		<?php printf( __( 'Create your own survey with <a href="%s">Crowd Signal</a>', 'wp-super-cache' ), 'https://crowdsignal.com/' ); ?>
+	</div>
+	</div>
+	<?php
+}
 
 function wp_cache_network_pages() {
 	add_submenu_page( 'settings.php', 'WP Super Cache', 'WP Super Cache', 'manage_options', 'wpsupercache', 'wp_cache_manager' );
