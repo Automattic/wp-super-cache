@@ -744,8 +744,6 @@ function wp_cache_manager() {
 	global $wp_super_cache_comments, $wp_cache_home_path, $wpsc_save_headers, $is_nginx;
 
 
-	//add our own action hook here to be able to put something at the top of the cache manager (settings) pages
-	do_action('super_cache_settings_notification');
 
 
 	if ( !wpsupercache_site_admin() )
