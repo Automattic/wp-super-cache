@@ -743,9 +743,6 @@ function wp_cache_manager() {
 	global $wp_cache_mod_rewrite, $wp_supercache_304, $wp_super_cache_late_init, $wp_cache_front_page_checks, $wp_cache_disable_utf8, $wp_cache_mfunc_enabled;
 	global $wp_super_cache_comments, $wp_cache_home_path, $wpsc_save_headers, $is_nginx;
 
-
-
-
 	if ( !wpsupercache_site_admin() )
 		return false;
 
