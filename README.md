@@ -1,4 +1,4 @@
-# super-cache
+# wp super-cache
 
 A very fast caching engine for WordPress that produces static html files.
 
