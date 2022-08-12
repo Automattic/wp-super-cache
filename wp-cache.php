@@ -1014,9 +1014,6 @@ table.wpsc-settings-table {
 				data: {
 					action: 'wpsc-hide-survey',
 					security: '<?php echo $survey_nonce; ?>',
-				},
-				success: function(msg) {
-					
 				}
 			});
 		}
