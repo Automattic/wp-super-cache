@@ -14,6 +14,7 @@ This is an alpha version! The changes listed here are not final.
 - PHP 8 Support: Ensure the expected value for the $auto_release in sem_get is used.
 
 ### Fixed
+- Fixed the display issue with the survey link
 - Updated readme.txt, changelog.md and the composer slug.
 
 ## 1.7.9 - 2022-06-07
