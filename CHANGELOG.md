@@ -5,10 +5,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [1.8] - 2022-08-16
 ### Added
 - Added WP Super cache to the repo.
 - PHP 8 Support: Ensure the expected value for the $auto_release in sem_get is used.
@@ -605,4 +602,4 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.8-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.7.9...v1.8-alpha
+[1.8]: https://github.com/Automattic/wp-super-cache/compare/v1.7.9...v1.8
