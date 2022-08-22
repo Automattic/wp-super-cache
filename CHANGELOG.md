@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Changed
+- Updated package dependencies.
+
 ## [1.8] - 2022-08-16
 ### Added
 - PHP 8 Support: Ensure the expected value for the $auto_release in sem_get is used.
