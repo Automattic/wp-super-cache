@@ -1,3 +1,7 @@
+# Automatically generated rules.
+/.git*	export-ignore
+
+# Package attributes file.
 # Files not needed to be distributed in the package.
 .gitattributes    export-ignore
 .github/          export-ignore
