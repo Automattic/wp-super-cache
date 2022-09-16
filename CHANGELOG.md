@@ -15,6 +15,9 @@ This is an alpha version! The changes listed here are not final.
 ### Changed
 - Updated package dependencies.
 
+### Fixed
+- Bugfix: Don't parse partial URLs with parse_url, as double-slashes may confuse it.
+
 ## [1.8] - 2022-08-16
 ### Added
 - PHP 8 Support: Ensure the expected value for the $auto_release in sem_get is used.
