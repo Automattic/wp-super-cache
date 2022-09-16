@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Fixed
+- Avoid use of QUERY_STRING value, as it is not available in all hosting environments
+
 ## [1.9.0] - 2022-09-16
 ### Added
 - Cache deletion: add new hook to trigger actions after a successful cache deletion from the admin bar. [#26202]
