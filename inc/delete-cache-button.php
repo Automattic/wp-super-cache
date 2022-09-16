@@ -120,7 +120,7 @@ function wpsc_admin_bar_delete_cache() {
 		/**
 		 * Hook into the cache deletion process after a successful cache deletion from the admin bar button.
 		 *
-		 * @since 1.9-alpha
+		 * @since 1.9
 		 *
 		 * @param string $req_path Path of the page where the cache flush was requested.
 		 * @param string $referer  Referer URL.
