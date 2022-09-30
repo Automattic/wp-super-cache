@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Added
+- Added the start of an e2e test suite
+
 ### Fixed
 - Avoid use of QUERY_STRING value, as it is not available in all hosting environments
 
