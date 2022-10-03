@@ -12,6 +12,9 @@ This is an alpha version! The changes listed here are not final.
 ### Added
 - Added the start of an e2e test suite
 
+### Changed
+- Updated package dependencies.
+
 ### Fixed
 - Avoid use of QUERY_STRING value, as it is not available in all hosting environments
 
