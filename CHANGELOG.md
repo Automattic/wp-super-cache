@@ -13,6 +13,7 @@ This is an alpha version! The changes listed here are not final.
 - Added the start of an e2e test suite
 
 ### Changed
+- Tweak jest versions to match the rest of the monorepo
 - Updated package dependencies.
 
 ### Fixed
