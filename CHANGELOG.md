@@ -11,6 +11,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Added
 - Added the start of an e2e test suite
+- Tested with v6.1 of WordPress
 
 ### Changed
 - Tweak jest versions to match the rest of the monorepo
