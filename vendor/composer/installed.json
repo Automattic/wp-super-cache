@@ -2,12 +2,12 @@
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
-            "version": "1.4.21-alpha",
-            "version_normalized": "1.4.21.0-alpha",
+            "version": "1.4.21",
+            "version_normalized": "1.4.21.0",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "b1bf52675b95ec7ed121396138572451a1e7f810"
+                "reference": "1c4ce959bce5917c76b64c9c35f2c18ccff2de47"
             },
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.2.1",
