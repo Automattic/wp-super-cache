@@ -19,6 +19,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - Avoid use of QUERY_STRING value, as it is not available in all hosting environments
+- General stability improvements to SuperCache tests
 - Import Device-Detection directly from the monorepo, instead of attempting to load it via Jetpack.
 - Updated jetpack links in the plugin
 
