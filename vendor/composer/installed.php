@@ -11,12 +11,12 @@
     ),
     'versions' => array(
         'automattic/jetpack-device-detection' => array(
-            'pretty_version' => '1.4.21',
-            'version' => '1.4.21.0',
+            'pretty_version' => '1.4.22-alpha',
+            'version' => '1.4.22.0-alpha',
             'type' => 'jetpack-library',
             'install_path' => __DIR__ . '/../automattic/jetpack-device-detection',
             'aliases' => array(),
-            'reference' => '1c4ce959bce5917c76b64c9c35f2c18ccff2de47',
+            'reference' => 'fd130f9ada9905b17a10ec907583201df338f21a',
             'dev_requirement' => false,
         ),
         'automattic/wp-super-cache' => array(
