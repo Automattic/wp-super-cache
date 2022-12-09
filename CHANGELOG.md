@@ -5,24 +5,22 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.9.1-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [1.9.2-beta] - 2022-12-09
 ### Added
-- Add a banner for Boost
-- Added the start of an e2e test suite
-- Tested with v6.1 of WordPress
+- Added a dismissable option to install Jetpack Boost. [#26702]
+- Improved stability with the start of an end-to-end test suite. [#26462]
+- Tested with v6.1 of WordPress. [#26831]
 
 ### Changed
-- Tweak jest versions to match the rest of the monorepo
 - Updated package dependencies.
 
 ### Fixed
-- Avoid use of QUERY_STRING value, as it is not available in all hosting environments
-- General stability improvements to SuperCache tests
-- Import Device-Detection directly from the monorepo, instead of attempting to load it via Jetpack.
-- Updated jetpack links in the plugin
+- Compatibility: Avoid use of QUERY_STRING value, which is not available in all environments. [#26251]
+- Updated links to related plugins to remove click-tracking redirects. [#26757]
+
+## [1.9.1] - 2022-11-02
+### Fixed
+- Fixes crash when using the “Jetpack Mobile Theme” plugin alongside Jetpack 11.5.
 
 ## [1.9.0] - 2022-09-16
 ### Added
@@ -629,6 +627,6 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.9.1-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.9.0...v1.9.1-alpha
+[1.9.1-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.0...v1.9.1-beta
 [1.9.0]: https://github.com/Automattic/wp-super-cache/compare/v1.8...v1.9
 [1.8]: https://github.com/Automattic/wp-super-cache/compare/v1.7.9...v1.8
