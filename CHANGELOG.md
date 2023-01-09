@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Fixed
+- Fixed an issue that caused wp-config.php file permissions to change.
+
 ## [1.9.2-beta] - 2022-12-09
 ### Added
 - Added a dismissable option to install Jetpack Boost. [#26702]
