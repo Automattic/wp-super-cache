@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Added
+- Added the ability to set any header and mod_expires rules in the htaccess file via filters
+
 ### Fixed
 - Fixed an issue that caused wp-config.php file permissions to change.
 
