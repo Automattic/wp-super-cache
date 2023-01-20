@@ -11,6 +11,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Added
 - Added the ability to set any header and mod_expires rules in the htaccess file via filters
+- Trigger wp_cache_cleared when clearing the cache as a result of the "clear on post updated/published" option
 
 ### Fixed
 - Fixed an issue that caused wp-config.php file permissions to change.
