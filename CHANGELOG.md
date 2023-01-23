@@ -5,16 +5,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.9.3-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [1.9.3-beta] - 2023-01-23
 ### Added
-- Added the ability to set any header and mod_expires rules in the htaccess file via filters
-- Trigger wp_cache_cleared when clearing the cache as a result of the "clear on post updated/published" option
+- Added new filters to set mod_expires rules and HTTP headers in the cache htaccess file. [#28031]
 
 ### Fixed
-- Fixed an issue that caused wp-config.php file permissions to change.
+- Fixed an issue that caused wp-config.php file permissions to change. [#28164]
+- Fixed missing missing action 'wp_cache_cleared' when clearing the cache on post update. [#28481]
 
 ## [1.9.2-beta] - 2022-12-09
 ### Added
@@ -638,7 +635,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.9.3-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2-beta...v1.9.3-alpha
+[1.9.3-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2-beta...v1.9.3-beta
 [1.9.2-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.1...v1.9.2-beta
 [1.9.1]: https://github.com/Automattic/wp-super-cache/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/Automattic/wp-super-cache/compare/v1.8...v1.9
