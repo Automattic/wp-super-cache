@@ -11,6 +11,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - Fix undefined PHP variable when trying to delete a protected folder.
+- Reassert scheduled cron-job whenever the interval setting is updated
 
 ## [1.9.3-beta] - 2023-01-23
 ### Added
