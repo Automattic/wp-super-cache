@@ -5,6 +5,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.4-alpha] - unreleased
+
+This is an alpha version! The changes listed here are not final.
+
+### Fixed
+- Fix undefined PHP variable when trying to delete a protected folder.
+
 ## [1.9.3-beta] - 2023-01-23
 ### Added
 - Added new filters to set mod_expires rules and HTTP headers in the cache htaccess file. [#28031]
@@ -635,6 +642,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Misc fixes
 
+[1.9.4-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3-beta...v1.9.4-alpha
 [1.9.3-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2-beta...v1.9.3-beta
 [1.9.2-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.1...v1.9.2-beta
 [1.9.1]: https://github.com/Automattic/wp-super-cache/compare/v1.9.0...v1.9.1
