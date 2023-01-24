@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Fixed
+- Fix undefined PHP variable when trying to delete a protected folder.
+
 ## [1.9.3-beta] - 2023-01-23
 ### Added
 - Added new filters to set mod_expires rules and HTTP headers in the cache htaccess file. [#28031]
