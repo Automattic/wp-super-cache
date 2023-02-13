@@ -14,6 +14,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Changed
 - Update contributors list.
+- Updated package dependencies.
 
 ### Fixed
 - Fix undefined PHP variable when trying to delete a protected folder.
