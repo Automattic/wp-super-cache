@@ -12,6 +12,9 @@ This is an alpha version! The changes listed here are not final.
 ### Added
 - Added a filter to allow users to control post-editing cache-clearing behavior
 
+### Changed
+- Update contributors list.
+
 ### Fixed
 - Fix undefined PHP variable when trying to delete a protected folder.
 - Reassert scheduled cron-job whenever the interval setting is updated
