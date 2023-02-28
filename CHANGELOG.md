@@ -5,20 +5,20 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.9.4-alpha] - unreleased
+## [1.9.5-alpha] - unreleased
 
 This is an alpha version! The changes listed here are not final.
 
+## [1.9.4-beta] - 2023-02-28
 ### Added
-- Added a filter to allow users to control post-editing cache-clearing behavior
+- Added new filter which controls cache clearing on post edit. [#28556]
+- Added a check to ensure preload cronjobs exist when updating preload settings. [#28545]
 
 ### Changed
-- Update contributors list.
-- Updated package dependencies.
+- Updated contributors list. [#28891]
 
 ### Fixed
-- Fix undefined PHP variable when trying to delete a protected folder.
-- Reassert scheduled cron-job whenever the interval setting is updated
+- Fixed undefined PHP variable when trying to delete a protected folder. [#28524]
 
 ## [1.9.3-beta] - 2023-01-23
 ### Added
@@ -650,7 +650,8 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.9.4-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3-beta...v1.9.4-alpha
+[1.9.5-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4-beta...v1.9.5-alpha
+[1.9.4-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3-beta...v1.9.4-beta
 [1.9.3-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2-beta...v1.9.3-beta
 [1.9.2-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.1...v1.9.2-beta
 [1.9.1]: https://github.com/Automattic/wp-super-cache/compare/v1.9.0...v1.9.1
