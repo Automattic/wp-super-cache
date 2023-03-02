@@ -5,6 +5,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.5-alpha] - unreleased
+
+This is an alpha version! The changes listed here are not final.
+
+### Fixed
+- Add mike as a contributor :)
+
 ## [1.9.4-beta] - 2023-02-28
 ### Added
 - Added new filter which controls cache clearing on post edit. [#28556]
@@ -646,6 +653,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Misc fixes
 
+[1.9.5-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4-beta...v1.9.5-alpha
 [1.9.4-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3-beta...v1.9.4-beta
 [1.9.3-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2-beta...v1.9.3-beta
 [1.9.2-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.1...v1.9.2-beta
