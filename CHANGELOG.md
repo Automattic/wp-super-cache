@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Fixed
+- Add mike as a contributor :)
+
 ## [1.9.4-beta] - 2023-02-28
 ### Added
 - Added new filter which controls cache clearing on post edit. [#28556]
