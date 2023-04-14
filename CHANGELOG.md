@@ -18,6 +18,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - Add mike as a contributor :)
+- Fixed debug URL in wp-admin for nested WP instances.
 
 ## [1.9.4-beta] - 2023-02-28
 ### Added
