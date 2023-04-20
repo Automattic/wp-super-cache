@@ -17,6 +17,9 @@ This is an alpha version! The changes listed here are not final.
 - Updated package dependencies.
 - Update WordPress version requirements. Now requires version 6.1.
 
+### Removed
+- Do not ship development environment files with the stable version of the plugin.
+
 ### Fixed
 - Add mike as a contributor :)
 - Fixed debug URL in wp-admin for nested WP instances.
