@@ -24,6 +24,7 @@ This is an alpha version! The changes listed here are not final.
 ### Fixed
 - Add mike as a contributor :)
 - Fixed debug URL in wp-admin for nested WP instances.
+- WP Super Cache: A small fix to the counter used in the preload loop.
 - WP Super Cache: use a constant instead of hard coding email numbers in preload dropdown
 
 ## [1.9.4-beta] - 2023-02-28
