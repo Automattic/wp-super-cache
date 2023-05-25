@@ -25,6 +25,7 @@ This is an alpha version! The changes listed here are not final.
 - Add mike as a contributor :)
 - Fixed debug URL in wp-admin for nested WP instances.
 - WP Super Cache: A small fix to the counter used in the preload loop.
+- WP Super Cache: fix links to cache directory on sites that are in a sub directory
 - WP Super Cache: reset the preload settings when done
 - WP Super Cache: use a constant instead of hard coding email numbers in preload dropdown
 
