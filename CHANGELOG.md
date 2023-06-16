@@ -18,6 +18,7 @@ This is an alpha version! The changes listed here are not final.
 - Update Boost install/activate card styles.
 - Updated package dependencies.
 - Update WordPress version requirements. Now requires version 6.1.
+- WP Super Cache: preload notification shows the last 5 preloaded URLs now
 
 ### Removed
 - Do not ship development environment files with the stable version of the plugin.
