@@ -30,6 +30,7 @@ This is an alpha version! The changes listed here are not final.
 - WP Super Cache: don't delete child taxonomies during preload
 - WP Super Cache: fix links to cache directory on sites that are in a sub directory
 - WP Super Cache: reset the preload settings when done
+- WP Super Cache: simplify the preload loop and improve stopping procedures.
 - WP Super Cache: use a constant instead of hard coding email numbers in preload dropdown
 
 ## [1.9.4-beta] - 2023-02-28
