@@ -26,6 +26,7 @@ This is an alpha version! The changes listed here are not final.
 ### Fixed
 - Add mike as a contributor :)
 - Fixed debug URL in wp-admin for nested WP instances.
+- Type check $posts to prevent warning
 - WP Super Cache: A small fix to the counter used in the preload loop.
 - WP Super Cache: don't delete child taxonomies during preload
 - WP Super Cache: fix links to cache directory on sites that are in a sub directory
