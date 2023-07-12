@@ -21,6 +21,9 @@ This is an alpha version! The changes listed here are not final.
 - WP Super Cache: preload notification shows the last 5 preloaded URLs now
 - WP Super Cache: reject unkown URIs so they're not cached.
 
+### Deprecated
+- WP Super Cache: removed unused "object cache" code.
+
 ### Removed
 - Do not ship development environment files with the stable version of the plugin.
 
