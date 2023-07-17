@@ -14,6 +14,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Changed
 - General: indicate full compatibility with the latest version of WordPress, 6.2.
+- General: indicate full compatibility with the latest version of WordPress, 6.3.
 - Super Cache: make preload faster and more robust on slower hosts.
 - Update Boost install/activate card styles.
 - Updated package dependencies.
