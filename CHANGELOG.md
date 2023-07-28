@@ -35,6 +35,7 @@ This is an alpha version! The changes listed here are not final.
 - Updated Nginx documentation hyperlink
 - WP Super Cache: A small fix to the counter used in the preload loop.
 - WP Super Cache: don't delete child taxonomies during preload
+- WP Super Cache: fix bug serving gzipped content to known users when dynamic caching is enabled.
 - WP Super Cache: fix links to cache directory on sites that are in a sub directory
 - WP Super Cache: reset the preload settings when done
 - WP Super Cache: simplify the preload loop and improve stopping procedures.
