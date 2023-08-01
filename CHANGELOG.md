@@ -5,44 +5,37 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.10.0-alpha] - unreleased
+## [1.10.1-alpha] - unreleased
 
 This is an alpha version! The changes listed here are not final.
 
+## [1.10.0-beta] - 2023-08-01
 ### Added
-- Update documentation links to point to Jetpack.com docs.
-- WP Super Cache - added support for the Accept HTTP Header. Commonly used in APIs to fetch JSON.
+- Caching: Added support for the 'Accept' HTTP Header. Prevent caching JSON content. [#29456]
+- Preload: Improved preload notification panel shows the last 5 preloaded URLs. [#31017]
 
 ### Changed
-- General: indicate full compatibility with the latest version of WordPress, 6.2.
-- General: indicate full compatibility with the latest version of WordPress, 6.3.
-- Super Cache: make preload faster and more robust on slower hosts.
-- Update Boost install/activate card styles.
-- Updated package dependencies.
-- Update WordPress version requirements. Now requires version 6.1.
-- WP Super Cache: preload notification shows the last 5 preloaded URLs now
-- WP Super Cache: reject unkown URIs so they're not cached.
-
-### Deprecated
-- WP Super Cache: removed unused "object cache" code.
+- Preload: Faster and more robust preloading slower hosts. [#30450]
+- General: Indicate full compatibility with the latest version of WordPress, 6.3. [#31910]
+- General: Update Boost install / activate card styles. [#31311]
+- General: Update documentation links to point to Jetpack.com docs. [#32164]
+- General: Update the contributors list. [#29241]
 
 ### Removed
-- Do not ship development environment files with the stable version of the plugin.
+- Cleanup: Remove unused "object cache" code. [#31783]
+- Cleanup: Removes unwanted development environment files from production version of the plugin. [#30216]
 
 ### Fixed
-- Add mike as a contributor :)
-- Fixed debug URL in wp-admin for nested WP instances.
-- Type check $posts to prevent warning
-- Updated Nginx documentation hyperlink
-- WP Super Cache: A small fix to the counter used in the preload loop.
-- WP Super Cache: don't delete child taxonomies during preload
-- WP Super Cache: fix bug serving gzipped content to known users when dynamic caching is enabled.
-- WP Super Cache: fix links to cache directory on sites that are in a sub directory
-- WP Super Cache: reset the preload settings when done
-- WP Super Cache: simplify the preload loop and improve stopping procedures.
-- WP Super Cache: use a constant instead of hard coding email numbers in preload dropdown
+- Caching: Reject unknown or malformed URIs to prevent PHP warnings. [#31786]
+- Cache Compression: Fix PHP warning appearing in gzip output stream. [#31487]
+- Dynamic Caching: Fixed incorrect encoding headers when using dynamic caching with compression. [#32106]
+- General: Fix incorrect Debug Log URL for nested WordPress installations. [#29985]
+- General: Fix links to cache directory on sites that are in a sub directory. [#30872]
+- General: Updated Nginx documentation hyperlink. [#31420]
+- Preload: No longer deletes child taxonomies during preload. [#30830]
+- Preload: Use a constant instead of hard-coded email numbers in preload dropdown. [#30713]
 
-## [1.9.4-beta] - 2023-02-28
+## [1.9.4] - 2023-02-28
 ### Added
 - Added new filter which controls cache clearing on post edit. [#28556]
 - Added a check to ensure preload cronjobs exist when updating preload settings. [#28545]
@@ -54,7 +47,7 @@ This is an alpha version! The changes listed here are not final.
 - Fixed undefined PHP variable when trying to delete a protected folder. [#28524]
 - Fixed deprecation warnings on PHP 8.1+. [#28959]
 
-## [1.9.3-beta] - 2023-01-23
+## [1.9.3] - 2023-01-23
 ### Added
 - Added new filters to set mod_expires rules and HTTP headers in the cache htaccess file. [#28031]
 
@@ -62,7 +55,7 @@ This is an alpha version! The changes listed here are not final.
 - Fixed an issue that caused wp-config.php file permissions to change. [#28164]
 - Fixed missing missing action 'wp_cache_cleared' when clearing the cache on post update. [#28481]
 
-## [1.9.2-beta] - 2022-12-09
+## [1.9.2] - 2022-12-09
 ### Added
 - Added a dismissable option to install Jetpack Boost. [#26702]
 - Improved stability with the start of an end-to-end test suite. [#26462]
@@ -684,10 +677,11 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.10.0-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4-beta...v1.10.0-alpha
-[1.9.4-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3-beta...v1.9.4-beta
-[1.9.3-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2-beta...v1.9.3-beta
-[1.9.2-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.1...v1.9.2-beta
+[1.10.1-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0-beta...v1.10.1-alpha
+[1.10.0-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4...v1.10.0-beta
+[1.9.4]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3...v1.9.4
+[1.9.3]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2...v1.9.3
+[1.9.2]: https://github.com/Automattic/wp-super-cache/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/Automattic/wp-super-cache/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/Automattic/wp-super-cache/compare/v1.8...v1.9
 [1.8]: https://github.com/Automattic/wp-super-cache/compare/v1.7.9...v1.8
