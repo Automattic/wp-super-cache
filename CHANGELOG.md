@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Fixed
+- Fixed boost banner getting oversized when zoomed out
+
 ## [1.10.0-beta] - 2023-08-01
 ### Added
 - Caching: Added support for the 'Accept' HTTP Header. Prevent caching JSON content. [#29456]
