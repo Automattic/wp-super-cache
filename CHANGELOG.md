@@ -5,6 +5,15 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.1-alpha] - unreleased
+
+This is an alpha version! The changes listed here are not final.
+
+### Fixed
+- Fixed boost banner getting oversized when zoomed out
+- Prevent Super Cache from attempting to gunzip content which is not zipped
+- WP Super Cache: fix null/false warning in PHP8.1
+
 ## [1.10.0-beta] - 2023-08-01
 ### Added
 - Caching: Added support for the 'Accept' HTTP Header. Prevent caching JSON content. [#29456]
@@ -673,6 +682,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Misc fixes
 
+[1.10.1-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0-beta...v1.10.1-alpha
 [1.10.0-beta]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4...v1.10.0-beta
 [1.9.4]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3...v1.9.4
 [1.9.3]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2...v1.9.3
