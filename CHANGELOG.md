@@ -15,6 +15,7 @@ This is an alpha version! The changes listed here are not final.
 ### Fixed
 - Fixed boost banner getting oversized when zoomed out
 - Prevent Super Cache from attempting to gunzip content which is not zipped
+- WP Super Cache: fix null/false warning in PHP8.1
 
 ## [1.10.0-beta] - 2023-08-01
 ### Added
