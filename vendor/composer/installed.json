@@ -2,16 +2,16 @@
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
-            "version": "1.4.26",
-            "version_normalized": "1.4.26.0",
+            "version": "1.4.27-alpha.1692641735",
+            "version_normalized": "1.4.27.0-alpha1692641735",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "bf77c8b509801c531708038c56a3a79d08358531"
+                "reference": "66b76de6b6ca6372a5355847dcbd5216fd074b05"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^3.3.7",
-                "yoast/phpunit-polyfills": "1.0.4"
+                "automattic/jetpack-changelogger": "^3.3.8-alpha",
+                "yoast/phpunit-polyfills": "1.1.0"
             },
             "suggest": {
                 "automattic/jetpack-autoloader": "Allow for better interoperability with other plugins that use this package."
