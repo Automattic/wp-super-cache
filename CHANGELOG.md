@@ -12,6 +12,9 @@ This is an alpha version! The changes listed here are not final.
 ### Changed
 - Updated package dependencies.
 
+### Fixed
+- Caching: make sure $wp_cache_request_uri is defined to avoid warnings about "NULL" parameters.
+
 ## [1.10.0] - 2023-08-16
 ### Added
 - Caching: Added support for the 'Accept' HTTP Header. Prevent caching JSON content. [#29456]
