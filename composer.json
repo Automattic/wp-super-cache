@@ -4,11 +4,11 @@
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {
-		"automattic/jetpack-device-detection": "^1.4.27-alpha"
+		"automattic/jetpack-device-detection": "^1.4.27"
 	},
 	"require-dev": {
 		"yoast/phpunit-polyfills": "1.1.0",
-		"automattic/jetpack-changelogger": "^3.3.8-alpha"
+		"automattic/jetpack-changelogger": "^3.3.8"
 	},
 	"autoload": {
 		"classmap": [
