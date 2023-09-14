@@ -11,6 +11,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Changed
 - General: update WordPress version requirements to WordPress 6.2.
+- Overhauled visual styling to match Jetpack branding
 - Updated package dependencies.
 
 ### Fixed
