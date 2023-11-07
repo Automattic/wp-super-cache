@@ -17,6 +17,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - Caching: make sure $wp_cache_request_uri is defined to avoid warnings about "NULL" parameters.
+- super-cache: fixed null parameter warning when using $supercachedir
 - Super Cache: cancel the full preload job correctly.
 
 ## [1.10.0] - 2023-08-16
