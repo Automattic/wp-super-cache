@@ -5,9 +5,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.10.1-alpha] - unreleased
+## [1.11.0-alpha] - unreleased
 
 This is an alpha version! The changes listed here are not final.
+
+### Added
+- Super Cache: fix "accept header" check, and add new "wpsc_accept_list" filter on JSON accept list
 
 ### Changed
 - General: indicate full compatibility with the latest version of WordPress, 6.4.
@@ -691,7 +694,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.10.1-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0...v1.10.1-alpha
+[1.11.0-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0...v1.11.0-alpha
 [1.10.0]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4...v1.10.0
 [1.9.4]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3...v1.9.4
 [1.9.3]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2...v1.9.3
