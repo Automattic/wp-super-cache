@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_11_0_alpha
+class ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_11_0
 {
     public static $classMap = array (
         'Automattic\\Jetpack\\Device_Detection' => __DIR__ . '/..' . '/automattic/jetpack-device-detection/src/class-device-detection.php',
@@ -15,7 +15,7 @@ class ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_11_0_al
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->classMap = ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_11_0_alpha::$classMap;
+            $loader->classMap = ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_11_0::$classMap;
 
         }, null, ClassLoader::class);
     }
