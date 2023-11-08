@@ -5,23 +5,23 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.11.0-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [1.11.0] - 2023-11-08
 ### Added
-- Super Cache: fix "accept header" check, and add new "wpsc_accept_list" filter on JSON accept list
+- Super Cache: fix "accept header" check, and add new "wpsc_accept_headers" filter on accept header list [#33972]
 
 ### Changed
-- General: indicate full compatibility with the latest version of WordPress, 6.4.
-- General: update WordPress version requirements to WordPress 6.2.
-- Overhauled visual styling to match Jetpack branding
-- Updated package dependencies.
+- General: indicate full compatibility with the latest version of WordPress, 6.4. [#33776]
+- General: update WordPress version requirements to WordPress 6.2. [#32762]
+- Overhauled visual styling to match Jetpack branding [#32981]
+- Updated package dependencies. [#32307]
+- Updated package dependencies. [#32605]
+- Updated package dependencies. [#32966]
+- Updated package dependencies. [#33498]
 
 ### Fixed
-- Caching: make sure $wp_cache_request_uri is defined to avoid warnings about "NULL" parameters.
-- super-cache: fixed null parameter warning when using $supercachedir
-- Super Cache: cancel the full preload job correctly.
+- Caching: make sure $wp_cache_request_uri is defined to avoid warnings about "NULL" parameters. [#32629]
+- super-cache: fixed null parameter warning when using $supercachedir [#33970]
+- Super Cache: cancel the full preload job correctly. [#33560]
 
 ## [1.10.0] - 2023-08-16
 ### Added
@@ -694,7 +694,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.11.0-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0...v1.11.0-alpha
+[1.11.0]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4...v1.10.0
 [1.9.4]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3...v1.9.4
 [1.9.3]: https://github.com/Automattic/wp-super-cache/compare/v1.9.2...v1.9.3
