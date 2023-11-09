@@ -4,7 +4,7 @@
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {
-		"automattic/jetpack-device-detection": "^1.4.27"
+		"automattic/jetpack-device-detection": "^1.5.0-alpha"
 	},
 	"require-dev": {
 		"yoast/phpunit-polyfills": "1.1.0",
@@ -42,6 +42,6 @@
 		"wp-svn-autopublish": true
 	},
 	"config": {
-		"autoloader-suffix": "6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_11_0"
+		"autoloader-suffix": "6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_11_1_alpha"
 	}
 }

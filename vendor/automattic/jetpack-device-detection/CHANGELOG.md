@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0-alpha] - unreleased
+
+This is an alpha version! The changes listed here are not final.
+
+### Added
+- Allow cookieinformationscanner and facebookexternalhit to be detected as bots
+
 ## [1.4.27] - 2023-08-23
 ### Changed
 - Updated package dependencies. [#32605]
@@ -163,6 +170,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Moving jetpack_is_mobile into a package
 
+[1.5.0-alpha]: https://github.com/Automattic/jetpack-device-detection/compare/v1.4.27...v1.5.0-alpha
 [1.4.27]: https://github.com/Automattic/jetpack-device-detection/compare/v1.4.26...v1.4.27
 [1.4.26]: https://github.com/Automattic/jetpack-device-detection/compare/v1.4.25...v1.4.26
 [1.4.25]: https://github.com/Automattic/jetpack-device-detection/compare/v1.4.24...v1.4.25
