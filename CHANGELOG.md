@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Changed
+- Updated package dependencies.
+
 ## [1.11.0] - 2023-11-08
 ### Added
 - Super Cache: fix "accept header" check, and add new "wpsc_accept_headers" filter on accept header list [#33972]
