@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5902177452d51a9dcb3ed4e4419f1b47",
+    "content-hash": "238d781f1a8fd0cc98ea799ffadb6360",
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
@@ -12,10 +12,10 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "db294886f20b63680fd88b0d96cc55f468ea2007"
+                "reference": "11e5d03e18f08e900d85a63f73af00e0f3dbe01f"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^3.3.11",
+                "automattic/jetpack-changelogger": "^4.0.0-alpha",
                 "yoast/phpunit-polyfills": "1.1.0"
             },
             "suggest": {
@@ -57,14 +57,14 @@
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "3.3.11",
+            "version": "4.0.0-alpha.1700235328",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-changelogger",
-                "reference": "3f8f32d5ee0defba3bbf229d628afa440393ff92"
+                "reference": "5050213a3c297c5a8b9fa05c18748633aea10195"
             },
             "require": {
-                "php": ">=5.6",
+                "php": ">=7.0",
                 "symfony/console": "^3.4 || ^5.2 || ^6.0",
                 "symfony/process": "^3.4 || ^5.2 || ^6.0",
                 "wikimedia/at-ease": "^1.2 || ^2.0"
@@ -80,7 +80,7 @@
             "extra": {
                 "autotagger": true,
                 "branch-alias": {
-                    "dev-trunk": "3.3.x-dev"
+                    "dev-trunk": "4.0.x-dev"
                 },
                 "mirror-repo": "Automattic/jetpack-changelogger",
                 "version-constants": {

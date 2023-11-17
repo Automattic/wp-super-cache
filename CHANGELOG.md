@@ -5,11 +5,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.11.1-alpha] - unreleased
+## [2.0.0-alpha] - unreleased
 
 This is an alpha version! The changes listed here are not final.
 
 ### Changed
+- General: updated PHP requirement to PHP 7.0+
 - General: update WordPress version requirements to WordPress 6.3.
 - Updated package dependencies.
 
@@ -702,7 +703,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.11.1-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.11.0...v1.11.1-alpha
+[2.0.0-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.11.0...v2.0.0-alpha
 [1.11.0]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4...v1.10.0
 [1.9.4]: https://github.com/Automattic/wp-super-cache/compare/v1.9.3...v1.9.4

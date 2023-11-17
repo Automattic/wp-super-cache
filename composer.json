@@ -8,7 +8,7 @@
 	},
 	"require-dev": {
 		"yoast/phpunit-polyfills": "1.1.0",
-		"automattic/jetpack-changelogger": "^3.3.11"
+		"automattic/jetpack-changelogger": "^4.0.0-alpha"
 	},
 	"autoload": {
 		"classmap": [
@@ -42,6 +42,6 @@
 		"wp-svn-autopublish": true
 	},
 	"config": {
-		"autoloader-suffix": "6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_11_1_alpha"
+		"autoloader-suffix": "6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ2_0_0_alpha"
 	}
 }
