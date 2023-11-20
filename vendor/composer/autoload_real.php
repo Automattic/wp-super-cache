@@ -22,6 +22,8 @@ class ComposerAutoloaderInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ2_0_0
             return self::$loader;
         }
 
+        require __DIR__ . '/platform_check.php';
+
         spl_autoload_register(array('ComposerAutoloaderInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ2_0_0_alpha', 'loadClassLoader'), true, true);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader(\dirname(__DIR__));
         spl_autoload_unregister(array('ComposerAutoloaderInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ2_0_0_alpha', 'loadClassLoader'));

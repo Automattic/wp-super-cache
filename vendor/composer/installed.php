@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'automattic/jetpack-device-detection' => array(
-            'pretty_version' => '1.5.1',
-            'version' => '1.5.1.0',
-            'reference' => '11e5d03e18f08e900d85a63f73af00e0f3dbe01f',
+            'pretty_version' => '2.0.0-alpha.1700485793',
+            'version' => '2.0.0.0-alpha1700485793',
+            'reference' => '46634515da0eb7b601d799919770aeb5808d9192',
             'type' => 'jetpack-library',
             'install_path' => __DIR__ . '/../automattic/jetpack-device-detection',
             'aliases' => array(),

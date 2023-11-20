@@ -2,12 +2,15 @@
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
-            "version": "1.5.1",
-            "version_normalized": "1.5.1.0",
+            "version": "2.0.0-alpha.1700485793",
+            "version_normalized": "2.0.0.0-alpha1700485793",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "11e5d03e18f08e900d85a63f73af00e0f3dbe01f"
+                "reference": "46634515da0eb7b601d799919770aeb5808d9192"
+            },
+            "require": {
+                "php": ">=7.0"
             },
             "require-dev": {
                 "automattic/jetpack-changelogger": "^4.0.0-alpha",
@@ -24,7 +27,7 @@
                     "link-template": "https://github.com/Automattic/jetpack-device-detection/compare/v${old}...v${new}"
                 },
                 "branch-alias": {
-                    "dev-trunk": "1.5.x-dev"
+                    "dev-trunk": "2.0.x-dev"
                 }
             },
             "installation-source": "dist",
