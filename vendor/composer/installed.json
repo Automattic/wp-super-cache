@@ -7,13 +7,13 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "fee0241b46024b73a5e81c834f9c304272926a2a"
+                "reference": "9b1a55b87dffd6e898d6a1bf03fb7740cbe9d6a8"
             },
             "require": {
                 "php": ">=7.0"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^4.0.0",
+                "automattic/jetpack-changelogger": "^4.0.1-alpha",
                 "yoast/phpunit-polyfills": "1.1.0"
             },
             "suggest": {
