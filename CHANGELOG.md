@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This is an alpha version! The changes listed here are not final.
 
 ### Changed
+- Code Modernization: Replace usage of strpos() with str_contains()
 - Code Modernization: Replace usage of strpos() with str_starts_with().
 - Code Modernization: Replace usage of substr() with str_starts_with() and str_ends_with().
 - General: updated PHP requirement to PHP 7.0+
