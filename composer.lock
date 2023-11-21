@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aaa2b59f2baeaae8d3f8d3609ed72e80",
+    "content-hash": "47db0553a6b0bc5ef1dfbf5d3414b5db",
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "9b1a55b87dffd6e898d6a1bf03fb7740cbe9d6a8"
+                "reference": "fc170a6b2d36f7c75c3494e1cb69dc299cf3f31a"
             },
             "require": {
                 "php": ">=7.0"
@@ -60,17 +60,16 @@
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "4.0.1-alpha.1700559279",
+            "version": "4.0.1-alpha.1700559364",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-changelogger",
-                "reference": "233337a6a678e45b7b20eb6e2f116e783a74def4"
+                "reference": "6bb5cac5e5d24b9656a31c19ab9b33fb2f06c1eb"
             },
             "require": {
                 "php": ">=7.0",
-                "symfony/console": "^3.4 || ^5.2 || ^6.0",
-                "symfony/process": "^3.4 || ^5.2 || ^6.0",
-                "wikimedia/at-ease": "^1.2 || ^2.0"
+                "symfony/console": "^3.4 || ^4.4 || ^5.2 || ^6.0",
+                "symfony/process": "^3.4 || ^4.4 || ^5.2 || ^6.0"
             },
             "require-dev": {
                 "wikimedia/testing-access-wrapper": "^1.0 || ^2.0",
@@ -2633,61 +2632,6 @@
                 }
             ],
             "time": "2021-07-28T10:34:58+00:00"
-        },
-        {
-            "name": "wikimedia/at-ease",
-            "version": "v2.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wikimedia/at-ease.git",
-                "reference": "e8ebaa7bb7c8a8395481a05f6dc4deaceab11c33"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wikimedia/at-ease/zipball/e8ebaa7bb7c8a8395481a05f6dc4deaceab11c33",
-                "reference": "e8ebaa7bb7c8a8395481a05f6dc4deaceab11c33",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2.9"
-            },
-            "require-dev": {
-                "mediawiki/mediawiki-codesniffer": "35.0.0",
-                "mediawiki/minus-x": "1.1.1",
-                "ockcyp/covers-validator": "1.3.3",
-                "php-parallel-lint/php-console-highlighter": "0.5.0",
-                "php-parallel-lint/php-parallel-lint": "1.2.0",
-                "phpunit/phpunit": "^8.5"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/Wikimedia/Functions.php"
-                ],
-                "psr-4": {
-                    "Wikimedia\\AtEase\\": "src/Wikimedia/AtEase/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-2.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Tim Starling",
-                    "email": "tstarling@wikimedia.org"
-                },
-                {
-                    "name": "MediaWiki developers",
-                    "email": "wikitech-l@lists.wikimedia.org"
-                }
-            ],
-            "description": "Safe replacement to @ for suppressing warnings.",
-            "homepage": "https://www.mediawiki.org/wiki/at-ease",
-            "support": {
-                "source": "https://github.com/wikimedia/at-ease/tree/v2.1.0"
-            },
-            "time": "2021-02-27T15:53:37+00:00"
         },
         {
             "name": "yoast/phpunit-polyfills",
