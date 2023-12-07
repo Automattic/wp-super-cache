@@ -17,6 +17,9 @@ This is an alpha version! The changes listed here are not final.
 - General: update WordPress version requirements to WordPress 6.3.
 - Updated package dependencies.
 
+### Fixed
+- Supercache: add "days" to "Next preload scheduled" message.
+
 ## [1.11.0] - 2023-11-08
 ### Added
 - Super Cache: fix "accept header" check, and add new "wpsc_accept_headers" filter on accept header list [#33972]
