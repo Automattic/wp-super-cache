@@ -14,6 +14,7 @@ This is an alpha version! The changes listed here are not final.
 - Code Modernization: Replace usage of strpos() with str_starts_with().
 - Code Modernization: Replace usage of substr() with str_starts_with() and str_ends_with().
 - Fix blurry Automattic logo.
+- General: avoid deprecation warnings when trying to get URLs in PHP 8.2
 - General: updated PHP requirement to PHP 7.0+
 - General: update WordPress version requirements to WordPress 6.3.
 - Updated package dependencies.
