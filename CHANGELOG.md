@@ -19,6 +19,7 @@ This is an alpha version! The changes listed here are not final.
 - General: updated PHP requirement to PHP 7.0+
 - General: update WordPress version requirements to WordPress 6.3.
 - Updated package dependencies.
+- WP Super Cache: remove notifications that preload started working again.
 
 ### Fixed
 - Supercache: add "days" to "Next preload scheduled" message.
