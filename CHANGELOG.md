@@ -23,6 +23,7 @@ This is an alpha version! The changes listed here are not final.
 - General: update WordPress version requirements to WordPress 6.3.
 - Updated package dependencies.
 - WP Super Cache: check for Boost Cache when creating advanced-cache.php
+- WP Super Cache: fixed labels on advanced settings page
 - WP Super Cache: remove notifications that preload started working again.
 
 ### Fixed
