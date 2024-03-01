@@ -29,6 +29,7 @@ This is an alpha version! The changes listed here are not final.
 ### Fixed
 - Supercache: add "days" to "Next preload scheduled" message.
 - Super Cache: with rebuild enabled, apply that to subdirectories instead of deleting them.
+- WP Super Cache - fix the wp_super_cache_clear_post_cache so the homepage cache isn't deleted too.
 - WP Super Cache: bail if the request uri isn't set. It means the plugin isn't configured yet.
 
 ## [1.11.0] - 2023-11-08
