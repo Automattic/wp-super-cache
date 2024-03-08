@@ -11,6 +11,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Added
 - Setup: Detect Jetpack Boost cache and suggest troubleshooting steps
+- WP Super Cache: added WPSC_PRELOAD_POST_INTERVAL and WPSC_PRELOAD_LOOP_INTERVAL to modify preload timings
 
 ### Changed
 - Code Modernization: Replace usage of strpos() with str_contains()
