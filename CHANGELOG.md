@@ -34,6 +34,7 @@ This is an alpha version! The changes listed here are not final.
 - WP Super Cache: don't create an output buffer if there's already one active
 - WP Super Cache: fixed serving a cached page on POST with late init enabled.
 - WP Super Cache: fix the output buffer check, and make debug logs pre-formatted.
+- WP Super Cache: if the preload number of posts is not in the list, then add it
 
 ## [1.11.0] - 2023-11-08
 ### Added
