@@ -2,12 +2,18 @@
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
-            "version": "2.1.0",
+            "version": "v2.1.0",
             "version_normalized": "2.1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/jetpack-device-detection.git",
+                "reference": "2f9d771b5b3585d8692f8323f70108cee00723f8"
+            },
             "dist": {
-                "type": "path",
-                "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "d9b58b4c51a1b422ec296f40d479f18dbe69717f"
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/jetpack-device-detection/zipball/2f9d771b5b3585d8692f8323f70108cee00723f8",
+                "reference": "2f9d771b5b3585d8692f8323f70108cee00723f8",
+                "shasum": ""
             },
             "require": {
                 "php": ">=7.0"
@@ -19,6 +25,7 @@
             "suggest": {
                 "automattic/jetpack-autoloader": "Allow for better interoperability with other plugins that use this package."
             },
+            "time": "2024-02-22T02:09:09+00:00",
             "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
@@ -36,20 +43,13 @@
                     "src/"
                 ]
             },
-            "scripts": {
-                "phpunit": [
-                    "./vendor/phpunit/phpunit/phpunit --colors=always"
-                ],
-                "test-php": [
-                    "@composer phpunit"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-2.0-or-later"
             ],
             "description": "A way to detect device types based on User-Agent header.",
-            "transport-options": {
-                "relative": false
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-device-detection/tree/v2.1.0"
             },
             "install-path": "../automattic/jetpack-device-detection"
         }
