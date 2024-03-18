@@ -12,6 +12,9 @@ This is an alpha version! The changes listed here are not final.
 ### Changed
 - Updated package dependencies.
 
+### Fixed
+- WP Super Cache: do not define DONOTCACHEPAGE if it is already defined
+
 ## [1.12.0] - 2024-03-11
 ### Added
 - Setup: Detect Jetpack Boost cache and suggest troubleshooting steps [#36018]
