@@ -12,6 +12,9 @@ This is an alpha version! The changes listed here are not final.
 ### Added
 - Added functionality for extracting the browser and desktop platform from a user agent
 
+### Changed
+- Add new bots
+
 ## [2.1.2] - 2024-03-18
 ### Changed
 - Internal updates.
