@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cccba972c97e20a908e08ce20e863e2f",
+    "content-hash": "c5d8937e55382734e60f13264f13c344",
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
@@ -12,13 +12,13 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "2fea361c1c62203aeb07748bdd6780bfcdee1578"
+                "reference": "b7ab04ebbb478bd0d60ef69c0485a4f591d4334b"
             },
             "require": {
                 "php": ">=7.0"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^4.2.1",
+                "automattic/jetpack-changelogger": "^4.2.2-alpha",
                 "yoast/phpunit-polyfills": "1.1.0"
             },
             "suggest": {
@@ -60,11 +60,11 @@
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "4.2.1",
+            "version": "4.2.2-alpha.1713286100",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-changelogger",
-                "reference": "d8a86d0d9540f196ea697403390ad2e8f68b194c"
+                "reference": "c0693fdba03f883b458963de500eb6d4252361b6"
             },
             "require": {
                 "php": ">=7.0",
