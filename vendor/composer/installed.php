@@ -13,7 +13,7 @@
         'automattic/jetpack-device-detection' => array(
             'pretty_version' => '2.1.3',
             'version' => '2.1.3.0',
-            'reference' => 'b7ab04ebbb478bd0d60ef69c0485a4f591d4334b',
+            'reference' => '26f4f0e74e9f8a1e7427c701ef3c939a84fbd5f8',
             'type' => 'jetpack-library',
             'install_path' => __DIR__ . '/../automattic/jetpack-device-detection',
             'aliases' => array(),
