@@ -15,6 +15,7 @@ This is an alpha version! The changes listed here are not final.
 - Updated package dependencies.
 
 ### Fixed
+- Super-cache: Fix the CDN functionality when cache is disabled
 - WP Super Cache: do not define DONOTCACHEPAGE if it is already defined
 
 ## [1.12.0] - 2024-03-11
