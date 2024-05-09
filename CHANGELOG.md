@@ -5,18 +5,14 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.12.1-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [1.12.1] - 2024-05-09
 ### Changed
-- General: update WordPress version requirements to WordPress 6.4.
-- General: use wp_admin_notice function introduced in WP 6.4 to display notices.
-- Updated package dependencies.
+- General: update WordPress version requirements to WordPress 6.4. [#37047]
+- General: use wp_admin_notice function introduced in WP 6.4 to display notices. [#37051]
 
 ### Fixed
-- Super-cache: Fix the CDN functionality when cache is disabled
-- WP Super Cache: do not define DONOTCACHEPAGE if it is already defined
+- Fix the CDN functionality when cache is disabled [#37112]
+- Do not define DONOTCACHEPAGE if it is already defined [#36423]
 
 ## [1.12.0] - 2024-03-11
 ### Added
@@ -735,7 +731,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.12.1-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.12.0...v1.12.1-alpha
+[1.12.1]: https://github.com/Automattic/wp-super-cache/compare/v1.12.0...v1.12.1
 [1.12.0]: https://github.com/Automattic/wp-super-cache/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/Automattic/wp-super-cache/compare/v1.9.4...v1.10.0
