@@ -5,6 +5,10 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.2-alpha] - unreleased
+
+This is an alpha version! The changes listed here are not final.
+
 ## [1.12.1] - 2024-05-09
 ### Changed
 - General: update WordPress version requirements to WordPress 6.4. [#37047]
@@ -731,6 +735,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Misc fixes
 
+[1.12.2-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.12.1...v1.12.2-alpha
 [1.12.1]: https://github.com/Automattic/wp-super-cache/compare/v1.12.0...v1.12.1
 [1.12.0]: https://github.com/Automattic/wp-super-cache/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/Automattic/wp-super-cache/compare/v1.10.0...v1.11.0
