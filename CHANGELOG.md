@@ -13,6 +13,9 @@ This is an alpha version! The changes listed here are not final.
 - Super Cache: tell user that Cache module of Boost must be deactivated to use WPSC
 - Updated package dependencies.
 
+### Fixed
+- Super Cache: remove the preload interval based on the post count. Preload as often as you want.
+
 ## [1.12.1] - 2024-05-09
 ### Changed
 - General: update WordPress version requirements to WordPress 6.4. [#37047]
