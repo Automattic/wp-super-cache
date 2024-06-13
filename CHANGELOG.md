@@ -17,6 +17,7 @@ This is an alpha version! The changes listed here are not final.
 - Updated package dependencies.
 
 ### Fixed
+- Super Cache: make sure plugins links is an array before using it.
 - Super Cache: remove the preload interval based on the post count. Preload as often as you want.
 
 ## [1.12.1] - 2024-05-09
