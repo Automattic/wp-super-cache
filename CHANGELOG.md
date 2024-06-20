@@ -15,6 +15,7 @@ This is an alpha version! The changes listed here are not final.
 - Super Cache: notify Boost of migration to that plugin
 
 ### Changed
+- General: indicate compatibility with the upcoming version of WordPress - 6.6.
 - Super Cache: tell user that Cache module of Boost must be deactivated to use WPSC
 - Updated package dependencies.
 
