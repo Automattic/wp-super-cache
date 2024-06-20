@@ -18,6 +18,7 @@ This is an alpha version! The changes listed here are not final.
 - General: indicate compatibility with the upcoming version of WordPress - 6.6.
 - Super Cache: tell user that Cache module of Boost must be deactivated to use WPSC
 - Updated package dependencies.
+- WP Super Cache: Updated banner designs, added auto-install Jetpack Boost buttons
 
 ### Fixed
 - Super Cache: Align detection of Boost installs with activation of that plugin
