@@ -22,6 +22,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - Super Cache: Align detection of Boost installs with activation of that plugin
+- Super Cache: fixed a PHP warning when deactivating the plugin.
 - Super Cache: make sure plugins links is an array before using it.
 - Super Cache: remove the preload interval based on the post count. Preload as often as you want.
 
