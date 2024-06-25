@@ -25,6 +25,7 @@ This is an alpha version! The changes listed here are not final.
 - Super Cache: fixed a PHP warning when deactivating the plugin.
 - Super Cache: make sure plugins links is an array before using it.
 - Super Cache: remove the preload interval based on the post count. Preload as often as you want.
+- Super Cache: renamed WPSC_VERSION because it conflicted with other plugins
 
 ## [1.12.1] - 2024-05-09
 ### Changed
