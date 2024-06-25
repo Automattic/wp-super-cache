@@ -23,6 +23,7 @@ This is an alpha version! The changes listed here are not final.
 ### Fixed
 - Detect when WP_CACHE is defined with "const" in wp-config.php
 - Super Cache: Align detection of Boost installs with activation of that plugin
+- Super Cache: do not show migration notice if already using Boost Cache
 - Super Cache: fixed a PHP warning when deactivating the plugin.
 - Super Cache: make sure plugins links is an array before using it.
 - Super Cache: remove the preload interval based on the post count. Preload as often as you want.
