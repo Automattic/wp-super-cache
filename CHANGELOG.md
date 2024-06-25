@@ -21,6 +21,7 @@ This is an alpha version! The changes listed here are not final.
 - WP Super Cache: Updated banner designs, added auto-install Jetpack Boost buttons
 
 ### Fixed
+- Detect when WP_CACHE is defined with "const" in wp-config.php
 - Super Cache: Align detection of Boost installs with activation of that plugin
 - Super Cache: fixed a PHP warning when deactivating the plugin.
 - Super Cache: make sure plugins links is an array before using it.
