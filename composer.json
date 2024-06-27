@@ -8,7 +8,7 @@
 	},
 	"require-dev": {
 		"yoast/phpunit-polyfills": "1.1.0",
-		"automattic/jetpack-changelogger": "^4.2.5-alpha"
+		"automattic/jetpack-changelogger": "^4.2.5"
 	},
 	"autoload": {
 		"classmap": [
@@ -28,6 +28,7 @@
 		"build-production": "echo 'Add your build step to composer.json, please!'",
 		"build-development": "echo 'Add your build step to composer.json, please!'"
 	},
+	"repositories": [],
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"extra": {
@@ -42,6 +43,6 @@
 		"wp-svn-autopublish": true
 	},
 	"config": {
-		"autoloader-suffix": "6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_13_0_alpha"
+		"autoloader-suffix": "6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ1_12_2"
 	}
 }
