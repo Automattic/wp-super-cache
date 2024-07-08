@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Changed
+- Updated package dependencies.
+
 ## [1.12.2] - 2024-06-27
 ### Added
 - add an admin notice to encourage migration to Jetpack Boost [#37933]
