@@ -14,6 +14,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - WPSC: Don't delete the log viewer when doing garbage collection
+- WPSC: fix clearing the cache when scheduled posts are published
 
 ## [1.12.2] - 2024-06-27
 ### Added
