@@ -5,15 +5,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [1.12.4] - 2024-07-17
 ### Removed
-- General: update WordPress version requirements to WordPress 6.5.
+- General: update WordPress version requirements to WordPress 6.5. [#38382]
 
 ### Fixed
-- WP Super Cache: fixed problem with is_utf8_charset missing in WP 6.6
+- Fixed problem with is_utf8_charset missing in WP 6.6 [#38383]
 
 ## [1.12.3] - 2024-07-10
 ### Fixed
@@ -767,7 +764,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[2.0.0-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.12.3...v2.0.0-alpha
+[1.12.4]: https://github.com/Automattic/wp-super-cache/compare/v1.12.3...v1.12.4
 [1.12.3]: https://github.com/Automattic/wp-super-cache/compare/v1.12.2...v1.12.3
 [1.12.2]: https://github.com/Automattic/wp-super-cache/compare/v1.12.1...v1.12.2
 [1.12.1]: https://github.com/Automattic/wp-super-cache/compare/v1.12.0...v1.12.1
