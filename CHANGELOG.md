@@ -12,6 +12,9 @@ This is an alpha version! The changes listed here are not final.
 ### Removed
 - General: update WordPress version requirements to WordPress 6.5.
 
+### Fixed
+- WP Super Cache: fixed problem with is_utf8_charset missing in WP 6.6
+
 ## [1.12.3] - 2024-07-10
 ### Fixed
 - Don't delete the log viewer when doing garbage collection [#38276]
