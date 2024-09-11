@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.5-alpha] - unreleased
+
+This is an alpha version! The changes listed here are not final.
+
+### Changed
+- Device_Detection::get_info() will now memoize its result
+
 ## [2.1.4] - 2024-08-23
 ### Changed
 - Updated package dependencies. [#39004]
@@ -200,6 +207,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Moving jetpack_is_mobile into a package
 
+[2.1.5-alpha]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.4...v2.1.5-alpha
 [2.1.4]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.1...v2.1.2
