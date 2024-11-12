@@ -5,7 +5,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.12.5-alpha] - unreleased
+## [2.0.0-alpha] - unreleased
 
 This is an alpha version! The changes listed here are not final.
 
@@ -15,6 +15,9 @@ This is an alpha version! The changes listed here are not final.
 ### Changed
 - General: indicate compatibility with the upcoming version of WordPress - 6.7.
 - Updated package dependencies.
+
+### Removed
+- General: Update minimum WordPress version to 6.6.
 
 ### Fixed
 - Lossless image optimization for images (should improve performance with no visible changes).
@@ -780,7 +783,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[1.12.5-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.12.4...v1.12.5-alpha
+[2.0.0-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.12.4...v2.0.0-alpha
 [1.12.4]: https://github.com/Automattic/wp-super-cache/compare/v1.12.3...v1.12.4
 [1.12.3]: https://github.com/Automattic/wp-super-cache/compare/v1.12.2...v1.12.3
 [1.12.2]: https://github.com/Automattic/wp-super-cache/compare/v1.12.1...v1.12.2
