@@ -4,11 +4,11 @@
 	"type": "jetpack-library",
 	"license": "GPL-2.0-or-later",
 	"require": {
-		"php": ">=7.0"
+		"php": ">=7.2"
 	},
 	"require-dev": {
 		"yoast/phpunit-polyfills": "^1.1.1",
-		"automattic/jetpack-changelogger": "^4.2.8"
+		"automattic/jetpack-changelogger": "^5.0.0-alpha"
 	},
 	"suggest": {
 		"automattic/jetpack-autoloader": "Allow for better interoperability with other plugins that use this package."
@@ -38,7 +38,7 @@
 			"link-template": "https://github.com/Automattic/jetpack-device-detection/compare/v${old}...v${new}"
 		},
 		"branch-alias": {
-			"dev-trunk": "2.1.x-dev"
+			"dev-trunk": "3.0.x-dev"
 		}
 	}
 }
