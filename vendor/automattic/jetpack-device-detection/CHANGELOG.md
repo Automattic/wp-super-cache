@@ -5,12 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [3.0.0] - 2024-11-14
 ### Removed
-- General: Update minimum PHP version to 7.2.
+- General: Update minimum PHP version to 7.2. [#40147]
 
 ## [2.1.6] - 2024-11-04
 ### Added
@@ -215,7 +212,7 @@ This is an alpha version! The changes listed here are not final.
 
 - Moving jetpack_is_mobile into a package
 
-[3.0.0-alpha]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.6...v3.0.0-alpha
+[3.0.0]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.6...v3.0.0
 [2.1.6]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.5...v2.1.6
 [2.1.5]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.4...v2.1.5
 [2.1.4]: https://github.com/Automattic/jetpack-device-detection/compare/v2.1.3...v2.1.4
