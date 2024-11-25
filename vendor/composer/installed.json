@@ -7,7 +7,7 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "00dbc576e666080e3b1bce0a3199e9a3d6a2fc7c"
+                "reference": "cdf3502969a67b22971d5e20457113490558f55f"
             },
             "require": {
                 "php": ">=7.2"
