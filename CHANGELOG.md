@@ -22,6 +22,7 @@ This is an alpha version! The changes listed here are not final.
 - General: Update minimum WordPress version to 6.6.
 
 ### Fixed
+- Caching: make sure there is cache content to serve, even if the cache file was found
 - Lossless image optimization for images (should improve performance with no visible changes).
 - Move trailing space out of i18n message.
 - Revert recent SVG image optimizations.
