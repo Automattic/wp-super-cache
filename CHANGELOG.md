@@ -26,6 +26,7 @@ This is an alpha version! The changes listed here are not final.
 - Lossless image optimization for images (should improve performance with no visible changes).
 - Move trailing space out of i18n message.
 - Revert recent SVG image optimizations.
+- Super Cache: Fixed the apache_request_headers fallback so it works when that command is disabled
 
 ## [1.12.4] - 2024-07-17
 ### Removed
