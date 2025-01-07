@@ -23,6 +23,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - Caching: make sure there is cache content to serve, even if the cache file was found
+- Ensure homepage cache gets flushed when a post is unpublished.
 - Lossless image optimization for images (should improve performance with no visible changes).
 - Move trailing space out of i18n message.
 - Revert recent SVG image optimizations.
