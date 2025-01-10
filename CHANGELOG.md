@@ -5,29 +5,25 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [2.0.0] - 2025-01-10
 ### Added
-- Enable test coverage.
+- Enable test coverage. [#39961]
 
 ### Changed
-- General: indicate compatibility with the upcoming version of WordPress - 6.7.
-- Updated package dependencies.
+- General: Indicate compatibility with the upcoming version of WordPress - 6.7. [#39786]
+- Updated package dependencies. [#38822] [#38870] [#39004] [#39278] [#39288] [#39653] [#40116] [#40515]
 
 ### Removed
-- Cleaned up legacy code.
-- General: Update minimum PHP version to 7.2.
-- General: Update minimum WordPress version to 6.6.
+- Cleaned up legacy code. [#40200]
+- General: Update minimum PHP version to 7.2. [#40147]
+- General: Update minimum WordPress version to 6.6. [#40146]
 
 ### Fixed
-- Caching: make sure there is cache content to serve, even if the cache file was found
-- Ensure homepage cache gets flushed when a post is unpublished.
-- Lossless image optimization for images (should improve performance with no visible changes).
-- Move trailing space out of i18n message.
-- Revert recent SVG image optimizations.
-- Super Cache: Fixed the apache_request_headers fallback so it works when that command is disabled
+- Caching: make sure there is cache content to serve, even if the cache file was found [#40342]
+- Ensure homepage cache gets flushed when a post is unpublished. [#40879]
+- Lossless image optimization for images (should improve performance with no visible changes). [#38750] [#38981]
+- Move trailing space out of i18n message. [#39305]
+- Fix apache_request_headers fallback so it works when that command is disabled. [#39951]
 
 ## [1.12.4] - 2024-07-17
 ### Removed
@@ -788,7 +784,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[2.0.0-alpha]: https://github.com/Automattic/wp-super-cache/compare/v1.12.4...v2.0.0-alpha
+[2.0.0]: https://github.com/Automattic/wp-super-cache/compare/v1.12.4...v2.0.0
 [1.12.4]: https://github.com/Automattic/wp-super-cache/compare/v1.12.3...v1.12.4
 [1.12.3]: https://github.com/Automattic/wp-super-cache/compare/v1.12.2...v1.12.3
 [1.12.2]: https://github.com/Automattic/wp-super-cache/compare/v1.12.1...v1.12.2
