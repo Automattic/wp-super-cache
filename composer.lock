@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab15fdae6b6f1b816bb092c3419fd5e4",
+    "content-hash": "e213647b774aaf870c408d38b0ebda11",
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
@@ -12,14 +12,14 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "49e607abf297bcffcec73530d5be59316efe996e"
+                "reference": "4c49c2401af227e09712f5f898aed18d6f6fb5b8"
             },
             "require": {
                 "php": ">=7.2"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^6.0.1-alpha",
-                "automattic/phpunit-select-config": "^1.0.1-alpha",
+                "automattic/jetpack-changelogger": "^6.0.1",
+                "automattic/phpunit-select-config": "^1.0.0",
                 "yoast/phpunit-polyfills": "^1.1.1"
             },
             "suggest": {
@@ -64,11 +64,11 @@
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "6.0.1-alpha.1741789611",
+            "version": "6.0.1",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-changelogger",
-                "reference": "bb988280e806601e34bc828eb81d30a25e007154"
+                "reference": "54e788072ac7f21b3571a1ee6371b31b4e1bb5f2"
             },
             "require": {
                 "composer-runtime-api": "^2.2.0",
@@ -147,11 +147,11 @@
         },
         {
             "name": "automattic/phpunit-select-config",
-            "version": "1.0.1-alpha.1741025906",
+            "version": "1.0.0",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/phpunit-select-config",
-                "reference": "13a3ef635ed9eadf4ce77a3dd645ede120d19d98"
+                "reference": "6b287c719e3f76578326f1d2b5a34c2545988ef9"
             },
             "require": {
                 "composer-runtime-api": "^2.2.2",
@@ -160,7 +160,7 @@
             },
             "require-dev": {
                 "antecedent/patchwork": "^2.2",
-                "automattic/jetpack-changelogger": "^6.0.1-alpha",
+                "automattic/jetpack-changelogger": "^6.0.1",
                 "yoast/phpunit-polyfills": "^1.1.1"
             },
             "bin": [
