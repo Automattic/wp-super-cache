@@ -2,18 +2,18 @@
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
-            "version": "3.0.5",
-            "version_normalized": "3.0.5.0",
+            "version": "3.0.6-alpha.1745351100",
+            "version_normalized": "3.0.6.0-alpha1745351100",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "03f4308b70945b46767101f139d095fd7f796ad0"
+                "reference": "a14c799385e95f39635bf247497b5d97ab15ddda"
             },
             "require": {
                 "php": ">=7.2"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^6.0.4",
+                "automattic/jetpack-changelogger": "^6.0.5-alpha",
                 "automattic/phpunit-select-config": "^1.0.2",
                 "yoast/phpunit-polyfills": "^3.0.0"
             },
