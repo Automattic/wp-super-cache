@@ -17,6 +17,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - Code: Update stylesheets to use hex instead of named colors.
+- Linting: Fix more Stylelint violations.
 
 ## [2.0.1] - 2025-04-04
 ### Changed
