@@ -2,12 +2,12 @@
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
-            "version": "3.0.7-alpha.1749200492",
-            "version_normalized": "3.0.7.0-alpha1749200492",
+            "version": "3.0.7",
+            "version_normalized": "3.0.7.0",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "49f8d3a9797577917c0f50e7a4223ae721f04e21"
+                "reference": "79d366dbd36bededc6a5dee7c7603d539f1af7fb"
             },
             "require": {
                 "php": ">=7.2"
