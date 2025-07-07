@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Changed
+- Update package dependencies.
+
 ## [3.0.0] - 2025-06-10
 ### Changed
 - Code: First pass of style coding standards. [#42734]
