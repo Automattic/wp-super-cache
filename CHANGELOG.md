@@ -5,15 +5,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.1-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [3.0.1] - 2025-08-05
 ### Added
-- Caching: ignore Yandex parameters so those visitors are served from the cache.
+- Caching: Ignore Yandex parameters so those visitors are served from the cache. [#44618]
 
 ### Changed
-- Update package dependencies.
+- Update package dependencies. [#44206] [#44506]
 
 ## [3.0.0] - 2025-06-10
 ### Changed
@@ -812,7 +809,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[3.0.1-alpha]: https://github.com/Automattic/wp-super-cache/compare/v3.0.0...v3.0.1-alpha
+[3.0.1]: https://github.com/Automattic/wp-super-cache/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/Automattic/wp-super-cache/compare/v2.0.1...v3.0.0
 [2.0.1]: https://github.com/Automattic/wp-super-cache/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Automattic/wp-super-cache/compare/v1.12.4...v2.0.0
