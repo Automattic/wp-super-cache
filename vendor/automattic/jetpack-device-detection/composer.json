@@ -8,7 +8,7 @@
 	},
 	"require-dev": {
 		"yoast/phpunit-polyfills": "^4.0.0",
-		"automattic/jetpack-changelogger": "^6.0.6-alpha",
+		"automattic/jetpack-changelogger": "^6.0.6",
 		"automattic/phpunit-select-config": "^1.0.3"
 	},
 	"suggest": {
