@@ -15,6 +15,9 @@ This is an alpha version! The changes listed here are not final.
 ### Changed
 - Update package dependencies.
 
+### Fixed
+- Code: Resolve PhanImpossibleCondition violations.
+
 ## [3.0.1] - 2025-08-05
 ### Added
 - Caching: Ignore Yandex parameters so those visitors are served from the cache. [#44618]
