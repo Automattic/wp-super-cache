@@ -14,6 +14,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Changed
 - Update package dependencies.
+- Use wp_rand() instead of rand() and mt_rand().
 
 ### Fixed
 - Code: Resolve PhanImpossibleCondition violations.
