@@ -2,12 +2,18 @@
     "packages": [
         {
             "name": "automattic/jetpack-device-detection",
-            "version": "3.1.0",
+            "version": "v3.1.0",
             "version_normalized": "3.1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/jetpack-device-detection.git",
+                "reference": "191ceb22e0ef56da105d4f132e0410bde217c850"
+            },
             "dist": {
-                "type": "path",
-                "url": "/tmp/jetpack-build/Automattic/jetpack-device-detection",
-                "reference": "1992654398f9e18a13ce75f50ce61b2c72ac69ae"
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/jetpack-device-detection/zipball/191ceb22e0ef56da105d4f132e0410bde217c850",
+                "reference": "191ceb22e0ef56da105d4f132e0410bde217c850",
+                "shasum": ""
             },
             "require": {
                 "php": ">=7.2"
@@ -20,15 +26,16 @@
             "suggest": {
                 "automattic/jetpack-autoloader": "Allow for better interoperability with other plugins that use this package."
             },
+            "time": "2025-10-10T15:05:58+00:00",
             "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-device-detection",
-                "changelogger": {
-                    "link-template": "https://github.com/Automattic/jetpack-device-detection/compare/v${old}...v${new}"
-                },
                 "branch-alias": {
                     "dev-trunk": "3.1.x-dev"
+                },
+                "changelogger": {
+                    "link-template": "https://github.com/Automattic/jetpack-device-detection/compare/v${old}...v${new}"
                 }
             },
             "installation-source": "dist",
@@ -37,23 +44,13 @@
                     "src/"
                 ]
             },
-            "scripts": {
-                "phpunit": [
-                    "phpunit-select-config phpunit.#.xml.dist --colors=always"
-                ],
-                "test-coverage": [
-                    "php -dpcov.directory=. ./vendor/bin/phpunit-select-config phpunit.#.xml.dist --coverage-php \"$COVERAGE_DIR/php.cov\""
-                ],
-                "test-php": [
-                    "@composer phpunit"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-2.0-or-later"
             ],
             "description": "A way to detect device types based on User-Agent header.",
-            "transport-options": {
-                "relative": false
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-device-detection/tree/v3.1.0"
             },
             "install-path": "../automattic/jetpack-device-detection"
         }
