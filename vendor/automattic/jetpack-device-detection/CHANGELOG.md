@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Added
+- Device detection: added a method that returns the browser display name.
+
 ### Changed
 - Device detection: update bot detection list to include new AI and LLM crawler oriented bots.
 
