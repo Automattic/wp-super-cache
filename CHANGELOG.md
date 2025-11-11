@@ -5,19 +5,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.3-alpha] - unreleased
-
-This is an alpha version! The changes listed here are not final.
-
+## [3.0.3] - 2025-11-11
 ### Added
-- Tested up to WordPress 6.9
+- Tested up to WordPress 6.9. [#45571]
 
 ### Changed
-- Update package dependencies.
+- Update package dependencies. [#45478] [#45652]
 
 ### Fixed
-- Phan: Address PhanRedundantCondition, PhanRedundantArrayValuesCall, and PhanPluginRedundantAssignment violations.
-- Remove redundant code.
+- Phan: Address PhanRedundantCondition, PhanRedundantArrayValuesCall, and PhanPluginRedundantAssignment violations. [#45681]
+- Remove redundant code. [#45733]
 
 ## [3.0.2] - 2025-10-10
 ### Added
@@ -834,7 +831,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[3.0.3-alpha]: https://github.com/Automattic/wp-super-cache/compare/v3.0.2...v3.0.3-alpha
+[3.0.3]: https://github.com/Automattic/wp-super-cache/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/Automattic/wp-super-cache/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/Automattic/wp-super-cache/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/Automattic/wp-super-cache/compare/v2.0.1...v3.0.0
