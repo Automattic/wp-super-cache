@@ -2,6 +2,9 @@
 /**
  * User agent detection for Jetpack.
  *
+ * Since WPSC doesn't use an autoloader or composer, this is a simple copy/paste of the package
+ * as of November 11, 2025.
+ *
  * @package automattic/jetpack-device-detection
  *
  * We don't want to rename public members.
@@ -12,7 +15,7 @@
  * @phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
  */
 
-namespace Automattic\Jetpack\Device_Detection;
+namespace Automattic\WPSC\Device_Detection;
 
 require_once __DIR__ . '/functions.php';
 

@@ -2,10 +2,13 @@
 /**
  * Utility functions for device detection.
  *
+ *  Since WPSC doesn't use an autoloader or composer, this is a simple copy/paste of the package
+ *  as of November 11, 2025.
+ *
  * @package automattic/jetpack-device-detection
  */
 
-namespace Automattic\Jetpack\Device_Detection;
+namespace Automattic\WPSC\Device_Detection;
 
 // Check if the function is already defined, in case someone bypassed the autoloader or something
 // to get the two classes from different copies of the package.

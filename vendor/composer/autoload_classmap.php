@@ -6,7 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Automattic\\Jetpack\\Device_Detection' => $vendorDir . '/automattic/jetpack-device-detection/src/class-device-detection.php',
-    'Automattic\\Jetpack\\Device_Detection\\User_Agent_Info' => $vendorDir . '/automattic/jetpack-device-detection/src/class-user-agent-info.php',
+    'Automattic\\WPSC\\Device_Detection' => $baseDir . '/src/device-detection/class-device-detection.php',
+    'Automattic\\WPSC\\Device_Detection\\User_Agent_Info' => $baseDir . '/src/device-detection/class-user-agent-info.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
 );
