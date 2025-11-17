@@ -11,6 +11,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Changed
 - Device Detection: use an embedded version instead of the Composer dependency
+- Update package dependencies.
 
 ## [3.0.3] - 2025-11-11
 ### Added
