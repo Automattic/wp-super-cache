@@ -4,16 +4,16 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c9987a3a475fcccebbffc7e61d73949",
+    "content-hash": "e41525903620478c7d4b5cd80e4e2f56",
     "packages": [],
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "6.0.11-alpha.1764686827",
+            "version": "6.0.11-alpha.1764773158",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-changelogger",
-                "reference": "878af5d3782981dc0d8a15d5dadf96660a6f686c"
+                "reference": "b11bcb6acdcf26f50e629320fc0f3160ba9afde5"
             },
             "require": {
                 "composer-runtime-api": "^2.2.0",
@@ -96,7 +96,7 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/phpunit-select-config",
-                "reference": "b9b42cff54bc24121fd0c9a2e15768f505ed9330"
+                "reference": "884f219c22c569f76ced888c75c678e5554798e0"
             },
             "require": {
                 "composer-runtime-api": "^2.2.2",
