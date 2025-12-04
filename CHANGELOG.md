@@ -13,6 +13,9 @@ This is an alpha version! The changes listed here are not final.
 - Device Detection: use an embedded version instead of the Composer dependency
 - Update package dependencies.
 
+### Fixed
+- Ensure proper flags are used with `json_encode()`.
+
 ## [3.0.3] - 2025-11-11
 ### Added
 - Tested up to WordPress 6.9. [#45571]
