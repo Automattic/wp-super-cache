@@ -5,13 +5,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.4-alpha] - unreleased
+## [4.0.0-alpha] - unreleased
 
 This is an alpha version! The changes listed here are not final.
 
 ### Changed
 - Device Detection: use an embedded version instead of the Composer dependency
 - Update package dependencies.
+
+### Removed
+- General: Update minimum WordPress version to 6.8.
 
 ### Fixed
 - Ensure proper flags are used with `json_encode()`.
@@ -842,7 +845,7 @@ This is an alpha version! The changes listed here are not final.
 
 Misc fixes
 
-[3.0.4-alpha]: https://github.com/Automattic/wp-super-cache/compare/v3.0.3...v3.0.4-alpha
+[4.0.0-alpha]: https://github.com/Automattic/wp-super-cache/compare/v3.0.3...v4.0.0-alpha
 [3.0.3]: https://github.com/Automattic/wp-super-cache/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/Automattic/wp-super-cache/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/Automattic/wp-super-cache/compare/v3.0.0...v3.0.1

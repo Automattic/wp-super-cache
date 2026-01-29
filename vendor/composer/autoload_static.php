@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ3_0_4_alpha
+class ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ4_0_0_alpha
 {
     public static $classMap = array (
         'Automattic\\WPSC\\Device_Detection' => __DIR__ . '/../..' . '/src/device-detection/class-device-detection.php',
@@ -15,7 +15,7 @@ class ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ3_0_4_alp
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->classMap = ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ3_0_4_alpha::$classMap;
+            $loader->classMap = ComposerStaticInit6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ4_0_0_alpha::$classMap;
 
         }, null, ClassLoader::class);
     }
