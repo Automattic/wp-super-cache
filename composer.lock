@@ -4,16 +4,16 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "91788463ebd9caa66b135fa53af63299",
+    "content-hash": "c3602216c22c3acab324aa54126ce75b",
     "packages": [],
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "6.0.12",
+            "version": "6.0.13-alpha.1769720062",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-changelogger",
-                "reference": "d2595624c2ed613bf03ddd4a81e0fc8386d8f5a9"
+                "reference": "387adf5524dfb3a5639dbe11e49aff2cf995bea8"
             },
             "require": {
                 "composer-runtime-api": "^2.2.0",
@@ -22,7 +22,7 @@
                 "symfony/process": "^5.4 || ^6.4 || ^7.1"
             },
             "require-dev": {
-                "wikimedia/testing-access-wrapper": "^1.0 || ^2.0 || ^3.0",
+                "wikimedia/testing-access-wrapper": "^1.0 || ^2.0 || ^3.0 || ^4.0",
                 "yoast/phpunit-polyfills": "^4.0.0"
             },
             "bin": [
@@ -96,7 +96,7 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/phpunit-select-config",
-                "reference": "140edeb0e892c2c9edb06cd195927aa54dd62bc2"
+                "reference": "a2227865a77563638b674777bfdcaa8688d63502"
             },
             "require": {
                 "composer-runtime-api": "^2.2.2",
@@ -105,7 +105,7 @@
             },
             "require-dev": {
                 "antecedent/patchwork": "^2.2",
-                "automattic/jetpack-changelogger": "^6.0.12",
+                "automattic/jetpack-changelogger": "^6.0.13-alpha",
                 "yoast/phpunit-polyfills": "^4.0.0"
             },
             "bin": [
