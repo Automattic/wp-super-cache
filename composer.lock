@@ -4,16 +4,16 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "deb48ad951b9ab528554e5e4aabb83f3",
+    "content-hash": "cbf15a81b1d8699825f1853cbffe8b67",
     "packages": [],
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "6.0.14-alpha.1770735915",
+            "version": "6.0.14",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-changelogger",
-                "reference": "511e7fcd9db63a6fd421e64a3e1de413ce2fde18"
+                "reference": "e76c55e3078af3efdfedf83c5742f5576417aad2"
             },
             "require": {
                 "composer-runtime-api": "^2.2.0",
@@ -96,7 +96,7 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/phpunit-select-config",
-                "reference": "0b2cf2da13ec293cbe36fb03e6439724559dea01"
+                "reference": "a374c996b63a92c2e59344fa1ff608ad864fec29"
             },
             "require": {
                 "composer-runtime-api": "^2.2.2",
@@ -105,7 +105,7 @@
             },
             "require-dev": {
                 "antecedent/patchwork": "^2.2",
-                "automattic/jetpack-changelogger": "^6.0.14-alpha",
+                "automattic/jetpack-changelogger": "^6.0.14",
                 "yoast/phpunit-polyfills": "^4.0.0"
             },
             "bin": [
