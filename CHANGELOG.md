@@ -11,6 +11,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Changed
 - Device Detection: use an embedded version instead of the Composer dependency
+- Switch to Native TypeScript compiler based on Go.
 - Update package dependencies.
 
 ### Removed
