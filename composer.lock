@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a09333fa214b47662c8bd8d561ca3c68",
+    "content-hash": "dc59e3d92b826f5b82d025d49bedb755",
     "packages": [],
     "packages-dev": [
         {
@@ -13,7 +13,7 @@
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/jetpack-changelogger",
-                "reference": "118bf75cd4bea4911e591c1f436b43794595a0c1"
+                "reference": "4133182befabb8fe026e68c897e36df83c7f5592"
             },
             "require": {
                 "composer-runtime-api": "^2.2.0",
@@ -92,11 +92,11 @@
         },
         {
             "name": "automattic/phpunit-select-config",
-            "version": "1.0.4-alpha.1774547093",
+            "version": "1.0.4",
             "dist": {
                 "type": "path",
                 "url": "/tmp/jetpack-build/Automattic/phpunit-select-config",
-                "reference": "68de564f90a92a6b4d2c391d93304888903b2a93"
+                "reference": "228436b8cf848e2714976d7ab9b8027cadf77fde"
             },
             "require": {
                 "composer-runtime-api": "^2.2.2",
