@@ -3703,10 +3703,11 @@ function wp_cron_preload_cache() {
 					if ( ! isset( $preload_schedule_interval ) ) {
 						$preload_schedule_interval = 'daily';
 					}
-					$schedules = wp_get_schedules();
+					$schedules        = wp_get_schedules();
 					$interval_display = isset( $schedules[ $preload_schedule_interval ]['display'] ) ? $schedules[ $preload_schedule_interval ]['display'] : $preload_schedule_interval;
 					if ( $wp_cache_preload_email_me )
-						$msg = sprintf( __( 'Scheduling next preload at %s (%s).', 'wp-super-cache' ), $preload_scheduled_time, $interval_display );
+						/* translators: 1: scheduled time, 2: schedule interval display name */
+						$msg = sprintf( __( 'Scheduling next preload at %1$s (%2$s).', 'wp-super-cache' ), $preload_scheduled_time, $interval_display );
 					wp_cache_debug( "wp_cron_preload_cache: no more posts. scheduling next preload at $preload_scheduled_time ($preload_schedule_interval).", 5 );
 					wp_schedule_event( strtotime( $preload_scheduled_time ), $preload_schedule_interval, 'wp_cache_full_preload_hook' );
 				}
@@ -4041,7 +4042,7 @@ function wpsc_get_minimum_preload_interval() {
 
 function wpsc_preload_settings() {
 	global $wp_cache_preload_interval, $wp_cache_preload_on, $wp_cache_preload_taxonomies, $wp_cache_preload_email_me, $wp_cache_preload_email_volume, $wp_cache_preload_posts, $wpdb;
-	global $preload_schedule_type, $preload_scheduled_time, $preload_schedule_interval, $wp_cache_config_file;
+	global $preload_schedule_type, $preload_scheduled_time, $preload_schedule_interval;
 
 	if ( isset( $_POST[ 'action' ] ) == false || $_POST[ 'action' ] != 'preload' )
 		return;
@@ -4066,8 +4067,10 @@ function wpsc_preload_settings() {
 	$force_preload_reschedule = false;
 
 	// Handle preload schedule type (interval vs time)
-	if ( isset( $_POST['preload_schedule_type'] ) ) {
-		$new_schedule_type = in_array( $_POST['preload_schedule_type'], array( 'interval', 'time' ), true ) ? $_POST['preload_schedule_type'] : 'interval';
+	// Nonce is verified in wp_cache_manager() before this function is called.
+	if ( isset( $_POST['preload_schedule_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$new_schedule_type = sanitize_text_field( wp_unslash( $_POST['preload_schedule_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$new_schedule_type = in_array( $new_schedule_type, array( 'interval', 'time' ), true ) ? $new_schedule_type : 'interval';
 		if ( ! isset( $preload_schedule_type ) || $preload_schedule_type !== $new_schedule_type ) {
 			$force_preload_reschedule = true;
 		}
@@ -4076,8 +4079,8 @@ function wpsc_preload_settings() {
 	}
 
 	// Handle preload scheduled time (HH:MM format)
-	if ( isset( $_POST['preload_scheduled_time'] ) ) {
-		$new_scheduled_time = sanitize_text_field( $_POST['preload_scheduled_time'] );
+	if ( isset( $_POST['preload_scheduled_time'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$new_scheduled_time = sanitize_text_field( wp_unslash( $_POST['preload_scheduled_time'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( ! preg_match( '/^[0-9]{2}:[0-9]{2}$/', $new_scheduled_time ) ) {
 			$new_scheduled_time = '00:00';
 		}
@@ -4089,9 +4092,10 @@ function wpsc_preload_settings() {
 	}
 
 	// Handle preload schedule interval (hourly, twicedaily, daily, etc.)
-	if ( isset( $_POST['preload_schedule_interval'] ) ) {
-		$schedules = wp_get_schedules();
-		$new_schedule_interval = isset( $schedules[ $_POST['preload_schedule_interval'] ] ) ? $_POST['preload_schedule_interval'] : 'daily';
+	if ( isset( $_POST['preload_schedule_interval'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$schedules             = wp_get_schedules();
+		$new_schedule_interval = sanitize_text_field( wp_unslash( $_POST['preload_schedule_interval'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$new_schedule_interval = isset( $schedules[ $new_schedule_interval ] ) ? $new_schedule_interval : 'daily';
 		if ( ! isset( $preload_schedule_interval ) || $preload_schedule_interval !== $new_schedule_interval ) {
 			$force_preload_reschedule = true;
 		}
