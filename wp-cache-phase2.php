@@ -834,7 +834,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$home_url  = home_url();
 		$permalink = get_permalink( $post_id );
 		if ( ! is_string( $permalink ) ) {
-			$DONOTREMEMBER = 1;
+			$DONOTREMEMBER = 1; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 			wp_cache_debug( "get_current_url_supercache_dir: WARNING! get_permalink($post_id) did not return a valid string. Using front page.", 1 );
 			$uri = '';
 		} elseif ( ! str_contains( $permalink, $home_url ) ) {
