@@ -10,7 +10,8 @@
 		"phan/phan": "^5.4",
 		"php-stubs/wordpress-stubs": "^6.8",
 		"php-stubs/wp-cli-stubs": "^2.10",
-		"automattic/jetpack-codesniffer": "^4.0"
+		"automattic/jetpack-codesniffer": "^4.0",
+		"sirbrillig/phpcs-changed": "^2.11"
 	},
 	"autoload": {
 		"classmap": [
