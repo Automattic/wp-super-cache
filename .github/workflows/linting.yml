@@ -11,10 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           tools: composer
           coverage: none
       - run: composer install --no-progress
-      - run: vendor/bin/phpcs
+      - name: Run PHPCS (changed lines only)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            vendor/bin/phpcs-changed --git --git-base "${{ github.event.pull_request.base.sha }}"
+          else
+            vendor/bin/phpcs-changed --git --git-base "${{ github.event.before }}"
+          fi

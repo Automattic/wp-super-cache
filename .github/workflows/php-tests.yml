@@ -20,5 +20,13 @@ jobs:
           php-version: ${{ matrix.php }}
           tools: composer
           coverage: none
-      - run: composer install --no-progress
+      - name: Install dependencies
+        run: |
+          if composer install --no-progress 2>&1; then
+            echo "Updating PHPUnit for best match with PHP ${{ matrix.php }}"
+            composer update -W --no-progress phpunit/phpunit
+          else
+            echo "Platform reqs failed, running composer update for dev dependencies"
+            composer update --no-progress
+          fi
       - run: composer test-php
