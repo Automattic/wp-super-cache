@@ -673,12 +673,18 @@ function wp_cache_manager_error_checks() {
 			<?php esc_html_e( 'Mobile support requires extra rules in your .htaccess file, or you can set the plugin to simple mode. Here are your options (in order of difficulty):', 'wp-super-cache' ); ?></p>
 			<ol><li> <?php esc_html_e( 'Set the plugin to simple mode and enable mobile support.', 'wp-super-cache' ); ?></li>
 			<li> <?php _e( 'Scroll down the Advanced Settings page and click the <strong>Update Mod_Rewrite Rules</strong> button.', 'wp-super-cache' ); ?></li>
-			<li> <?php
+			<li>
+			<?php
 			// translators: %s is the path to the .htaccess file.
-			printf( wp_kses( __( 'Delete the plugin mod_rewrite rules in %s.htaccess enclosed by <code># BEGIN WPSuperCache</code> and <code># END WPSuperCache</code> and let the plugin regenerate them by reloading this page.', 'wp-super-cache' ), array( 'code' => array() ) ), esc_html( $home_path ) ); ?></li>
-			<li> <?php
+			printf( wp_kses( __( 'Delete the plugin mod_rewrite rules in %s.htaccess enclosed by <code># BEGIN WPSuperCache</code> and <code># END WPSuperCache</code> and let the plugin regenerate them by reloading this page.', 'wp-super-cache' ), array( 'code' => array() ) ), esc_html( $home_path ) );
+			?>
+			</li>
+			<li>
+			<?php
 			// translators: %1$s is the path to the .htaccess file, %2$s is the logged-in cookie name.
-			printf( wp_kses( __( 'Add the rules yourself. Edit %1$s.htaccess and find the block of code enclosed by the lines <code># BEGIN WPSuperCache</code> and <code># END WPSuperCache</code>. There are two sections that look very similar. Just below the line <code>%%{HTTP:Cookie} !^.*(comment_author_|%2$s|wp-postpass_).*$</code> add these lines: (do it twice, once for each section)', 'wp-super-cache' ), array( 'code' => array() ) ), esc_html( $home_path ), esc_html( wpsc_get_logged_in_cookie() ) ); ?></p>
+			printf( wp_kses( __( 'Add the rules yourself. Edit %1$s.htaccess and find the block of code enclosed by the lines <code># BEGIN WPSuperCache</code> and <code># END WPSuperCache</code>. There are two sections that look very similar. Just below the line <code>%%{HTTP:Cookie} !^.*(comment_author_|%2$s|wp-postpass_).*$</code> add these lines: (do it twice, once for each section)', 'wp-super-cache' ), array( 'code' => array() ) ), esc_html( $home_path ), esc_html( wpsc_get_logged_in_cookie() ) );
+			?>
+			</p>
 			<div style='padding: 2px; margin: 2px; border: 1px solid #333; width:400px; overflow: scroll'><pre><?php echo "RewriteCond %{HTTP_user_agent} !^.*(" . addcslashes( str_replace( ', ', '|', $wp_cache_mobile_browsers ), ' ' ) . ").*\nRewriteCond %{HTTP_user_agent} !^(" . addcslashes( str_replace( ', ', '|', $wp_cache_mobile_prefixes ), ' ' ) . ").*"; ?></pre></div></li></ol></div><?php
 		}
 
