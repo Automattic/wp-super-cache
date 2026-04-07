@@ -1718,17 +1718,17 @@ function wpsc_edit_rejected_ua() {
 }
 
 function wp_cache_update_rejected_pages() {
-	global $wp_cache_config_file, $valid_nonce, $wp_cache_pages;
+	global $wp_cache_config_file, $wp_cache_pages;
 
-	if ( isset( $_POST[ 'wp_edit_rejected_pages' ] ) && $valid_nonce ) {
+	if ( isset( $_POST['wp_edit_rejected_pages'], $_POST['_wpnonce'] )
+		&& wp_verify_nonce( $_POST['_wpnonce'], 'wp-cache' )
+	) {
 		$pages = array( 'single', 'pages', 'archives', 'tag', 'frontpage', 'home', 'category', 'feed', 'author', 'search' );
-		foreach( $pages as $page ) {
-			if ( isset( $_POST[ 'wp_cache_pages' ][ $page ] ) ) {
-				$value = 1;
-			} else {
-				$value = 0;
-			}
-			wp_cache_replace_line('^ *\$wp_cache_pages\[ "' . $page . '" \]', "\$wp_cache_pages[ \"{$page}\" ] = $value;", $wp_cache_config_file);
+		foreach ( $pages as $page ) {
+			$value = empty( $_POST['wp_cache_pages'][ $page ] ) ? 0 : 1;
+
+			$page_regexp = '\s*(' . preg_quote( "'" . $page . "'" ) . '|' . preg_quote( '"' . $page . '"' ) . ')\s*';
+			wp_cache_replace_line( '^\s*\$wp_cache_pages\[' . $page_regexp . '\]', "\$wp_cache_pages[ \"{$page}\" ] = $value;", $wp_cache_config_file );
 			$wp_cache_pages[ $page ] = $value;
 		}
 	}
