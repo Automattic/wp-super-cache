@@ -25,6 +25,7 @@ This is an alpha version! The changes listed here are not final.
 - Fix a PHP warning when the newest cached pages list is unavailable.
 - Fix TS errors detected by tsgo.
 - Fix `str_starts_with()` PHP 8.1+ deprecation when `$wp_cache_home_path` is null in `get_current_url_supercache_dir()`.
+- Remove `.eslintignore` and fix JS linting errors in `delete-cache-button.js`.
 
 ## [3.0.3] - 2025-11-11
 ### Added
