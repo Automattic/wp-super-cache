@@ -1,6 +1,6 @@
 <div class="wpsc-settings-inner">
 <?php
-global $wp_cache_preload_posts, $preload_schedule_type, $preload_scheduled_time, $preload_schedule_interval;
+global $wp_cache_preload_interval, $wp_cache_preload_posts, $preload_schedule_type, $preload_scheduled_time, $preload_schedule_interval;
 
 echo '<a name="preload"></a>';
 if ( ! $cache_enabled || ! $super_cache_enabled || true === defined( 'DISABLESUPERCACHEPRELOADING' ) ) {
@@ -89,22 +89,22 @@ echo "jQuery(function () {
 		jQuery('#preload_schedule_time_radio').attr('checked', true);
 	});
 	});";
-echo "</script>";
+echo '</script>';
 
 echo '<table class="form-table">';
 echo '<tr><td valign="top"><strong>' . esc_html__( 'Scheduler', 'wp-super-cache' ) . '</strong></td><td><table cellpadding=0 cellspacing=0><tr><td valign="top"><input type="radio" id="preload_schedule_interval_radio" name="preload_schedule_type" value="interval" ' . checked( 'interval', $preload_schedule_type, false ) . ' /></td><td valign="top"><label for="preload_schedule_interval_radio">' . esc_html__( 'Timer:', 'wp-super-cache' ) . '</label></td>';
-echo "<td><input type='text' id='preload_interval_time' size=6 name='wp_cache_preload_interval' value='" . esc_attr( $wp_cache_preload_interval ) . "' /> " . esc_html__( 'minutes', 'wp-super-cache' ) . '<br />' . sprintf( esc_html__( 'Refresh preloaded cache files at this interval. (0 to disable, minimum %d minutes)', 'wp-super-cache' ), $min_refresh_interval ) . '</td></tr>';
+// translators: %d is the minimum refresh interval in minutes.
+echo '<td><input type=\'text\' id=\'preload_interval_time\' size=6 name=\'wp_cache_preload_interval\' value=\'' . esc_attr( $wp_cache_preload_interval ) . '\' /> ' . esc_html__( 'minutes', 'wp-super-cache' ) . '<br />' . sprintf( esc_html__( 'Refresh preloaded cache files at this interval. (0 to disable, minimum %d minutes)', 'wp-super-cache' ), (int) $min_refresh_interval ) . '</td></tr>';
 echo '<tr><td valign="top"><input type="radio" id="preload_schedule_time_radio" name="preload_schedule_type" value="time" ' . checked( 'time', $preload_schedule_type, false ) . ' /></td><td valign="top"><label for="preload_schedule_time_radio">' . esc_html__( 'Clock:', 'wp-super-cache' ) . '</label></td>';
-echo "<td><input type=\"text\" size=5 id='preload_scheduled_time' name='preload_scheduled_time' value=\"" . esc_attr( $preload_scheduled_time ) . "\" /> " . esc_html__( "HH:MM", 'wp-super-cache' ) . "<br />" . esc_html__( 'Start preloading at this time (UTC) or starting at this time every interval below.', 'wp-super-cache' ) . "</td></tr>";
+echo '<td><input type=\'text\' size=5 id=\'preload_scheduled_time\' name=\'preload_scheduled_time\' value=\'' . esc_attr( $preload_scheduled_time ) . '\' /> ' . esc_html__( 'HH:MM', 'wp-super-cache' ) . '<br />' . esc_html__( 'Start preloading at this time (UTC) or starting at this time every interval below.', 'wp-super-cache' ) . '</td></tr>';
 $schedules = wp_get_schedules();
-echo "<tr><td><br /></td><td><label for='preload_scheduled_select'>" . esc_html__( 'Interval:', 'wp-super-cache' ) . "</label></td><td><select id='preload_scheduled_select' name='preload_schedule_interval' size=1>";
-foreach( $schedules as $desc => $details ) {
-	echo "<option value='$desc' " . selected( $desc, $preload_schedule_interval, false ) . " /> {$details[ 'display' ]}</option>";
+echo '<tr><td><br /></td><td><label for=\'preload_scheduled_select\'>' . esc_html__( 'Interval:', 'wp-super-cache' ) . '</label></td><td><select id=\'preload_scheduled_select\' name=\'preload_schedule_interval\' size=1>';
+foreach ( $schedules as $desc => $details ) {
+	echo '<option value=\'' . esc_attr( $desc ) . '\' ' . selected( $desc, $preload_schedule_interval, false ) . '>' . esc_html( $details['display'] ) . '</option>';
 }
-echo "</select></td></tr>";
+echo '</select></td></tr>';
 echo '</table></td></tr>';
 echo '</table>';
-
 
 echo '<input type="checkbox" name="wp_cache_preload_on" value="1" ';
 echo $wp_cache_preload_on == 1 ? 'checked=1' : '';
