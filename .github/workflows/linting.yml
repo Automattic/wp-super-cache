@@ -22,7 +22,15 @@ jobs:
       - name: Run PHPCS (changed lines only)
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            vendor/bin/phpcs-changed --git --git-base "${{ github.event.pull_request.base.sha }}"
+            BASE="${{ github.event.pull_request.base.sha }}"
           else
-            vendor/bin/phpcs-changed --git --git-base "${{ github.event.before }}"
+            BASE="${{ github.event.before }}"
           fi
+          FILES=$(git diff --name-only --diff-filter=d "$BASE" HEAD -- '*.php')
+          if [ -z "$FILES" ]; then
+            echo "No PHP files changed, skipping PHPCS."
+            exit 0
+          fi
+          echo "Changed PHP files:"
+          echo "$FILES"
+          echo "$FILES" | xargs vendor/bin/phpcs-changed --git --git-base "$BASE"
