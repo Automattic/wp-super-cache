@@ -822,7 +822,7 @@ function get_supercache_dir( $blog_id = 0 ) {
 	return trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
 }
 function get_current_url_supercache_dir( $post_id = 0 ) {
-	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST;
+	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 	static $saved_supercache_dir = array();
 
 	if ( isset( $saved_supercache_dir[ $post_id ] ) ) {
@@ -881,7 +881,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$dir = do_cacheaction( 'supercache_dir', $dir );
 	}
 	$dir = $cache_path . 'supercache/' . $dir . '/';
-	if ( is_array( $cached_direct_pages ) && in_array( $_SERVER['REQUEST_URI'], $cached_direct_pages, true ) ) {
+	if ( is_array( $cached_direct_pages ) && isset( $_SERVER['REQUEST_URI'] ) && in_array( $_SERVER['REQUEST_URI'], $cached_direct_pages, true ) ) {
 		$dir = ABSPATH . $uri . '/';
 	}
 	$dir = str_replace( '..', '', str_replace( '//', '/', $dir ) );
