@@ -2210,7 +2210,7 @@ function wp_cache_append_tag( &$buffer ) {
 		$msg = "Live page served on $timestamp";
 	}
 
-	// Don't output debug message if we aren't handling a normal HTML response.
+	// Don't append debug HTML comments to non-HTML responses (REST, Ajax, etc.).
 	if (
 		strpos( $buffer, '<html' ) === false ||
 		( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
@@ -2236,7 +2236,7 @@ function wp_cache_add_to_buffer( &$buffer, $text ) {
 		return false;
 	}
 
-	// Don't output debug message if we aren't handling a normal HTML response.
+	// Don't append debug HTML comments to non-HTML responses (REST, Ajax, etc.).
 	if (
 		strpos( $buffer, '<html' ) === false ||
 		( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
