@@ -833,7 +833,11 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	if ( $post_id != 0 ) {
 		$home_url  = home_url();
 		$permalink = get_permalink( $post_id );
-		if ( ! str_contains( $permalink, $home_url ) ) {
+		if ( ! is_string( $permalink ) ) {
+			$DONOTREMEMBER = 1;
+			wp_cache_debug( "get_current_url_supercache_dir: WARNING! get_permalink($post_id) did not return a valid string. Using front page.", 1 );
+			$uri = '';
+		} elseif ( ! str_contains( $permalink, $home_url ) ) {
 			/*
 			 * Sometimes home_url doesn't return the home url. See https://wordpress.org/support/topic/wp-super-cache-not-refreshing-post-after-comments-made
 			 */
