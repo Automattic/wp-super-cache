@@ -1,24 +1,13 @@
-# Automatically generated rules.
-/.git*	export-ignore
-
-# Package attributes file.
-# Files not needed to be distributed in the package.
-.gitattributes    export-ignore
-.github/          export-ignore
-package.json      export-ignore
-
-# Files to include in the mirror repo, but excluded via gitignore
-# Remember to end all directories with `/**` to properly tag every file.
-# /src/js/example.min.js  production-include
-
-/jetpack_vendor/**                              production-include
-/vendor/autoload.php                            production-include
-/vendor/composer/**                             production-include
-/vendor/automattic/jetpack-device-detection/**  production-include
-
-# Files to exclude from the mirror repo, but included in the monorepo.
-# Remember to end all directories with `/**` to properly tag every file.
-.gitignore        production-exclude
-.phpcs.dir.xml    production-exclude
-changelog/**      production-exclude
-tests/**          production-exclude
+# Files not needed in the release zip.
+/.git*             export-ignore
+.gitattributes     export-ignore
+.github/           export-ignore
+package.json       export-ignore
+tests/             export-ignore
+.phan/             export-ignore
+phpunit.*.xml.dist export-ignore
+.phpcs.*           export-ignore
+.eslintignore      export-ignore
+eslint.config.mjs  export-ignore
+changelog/         export-ignore
+.w.org-assets/     export-ignore
