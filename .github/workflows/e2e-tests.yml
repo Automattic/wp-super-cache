@@ -26,10 +26,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: tests/e2e
-        run: |
-          # The _jetpack-e2e-commons workspace dependency is only available in the
-          # Jetpack monorepo. Override it so pnpm install succeeds in this standalone repo.
-          pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Start Docker environment
         working-directory: tests/e2e
