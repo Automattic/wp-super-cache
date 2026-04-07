@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This is an alpha version! The changes listed here are not final.
 
+### Added
+- Add a WordPress.org Live Preview Blueprint.
+
 ### Changed
 - Device Detection: use an embedded version instead of the Composer dependency
 - Switch to Native TypeScript compiler based on Go.
