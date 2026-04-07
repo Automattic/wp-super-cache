@@ -22,6 +22,7 @@ This is an alpha version! The changes listed here are not final.
 
 ### Fixed
 - Ensure proper flags are used with `json_encode()`.
+- Fix a PHP warning when the newest cached pages list is unavailable.
 - Fix TS errors detected by tsgo.
 - Fix `str_starts_with()` PHP 8.1+ deprecation when `$wp_cache_home_path` is null in `get_current_url_supercache_dir()`.
 
