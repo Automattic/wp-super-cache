@@ -2096,7 +2096,7 @@ function wpsc_config_file_notices() {
 }
 add_action( 'admin_notices', 'wpsc_config_file_notices' );
 function wpsc_dismiss_indexhtml_warning() {
-	check_ajax_referer( "wpsc-index-dismiss" );
+	check_ajax_referer( 'wpsc-index-dismiss' );
 
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_send_json_error( null, 403 );
