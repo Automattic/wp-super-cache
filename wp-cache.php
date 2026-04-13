@@ -4096,7 +4096,7 @@ function wpsc_preload_settings() {
 		wp_cache_setting( 'preload_schedule_type', $preload_schedule_type );
 	}
 
-	// Handle preload scheduled time (HH:MM format)
+		if ( ! preg_match( '/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $new_scheduled_time ) ) {
 	if ( isset( $_POST['preload_scheduled_time'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$new_scheduled_time = sanitize_text_field( wp_unslash( $_POST['preload_scheduled_time'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( ! preg_match( '/^[0-9]{2}:[0-9]{2}$/', $new_scheduled_time ) ) {
