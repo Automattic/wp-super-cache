@@ -10,11 +10,6 @@ dedupe_files() {
 	awk 'NF && !seen[$0]++'
 }
 
-collect_files() {
-	local cmd=("$@")
-	"${cmd[@]}" | dedupe_files
-}
-
 base_ref=""
 if git rev-parse --verify origin/trunk >/dev/null 2>&1; then
 	base_ref="origin/trunk"
