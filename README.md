@@ -59,7 +59,7 @@ Other useful targets:
 
 | Target | Purpose |
 |--------|---------|
-| `make cli` | Open a shell inside the WordPress container |
+| `make cli` | Open a shell inside the `wp-cli` container |
 | `make wp CMD="super-cache status"` | Run an arbitrary `wp-cli` command |
 | `make logs` | Tail the WordPress container logs |
 | `make lint` / `make lint-fix` | Run / auto-fix PHPCS on changed PHP files |
