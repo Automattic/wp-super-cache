@@ -4018,10 +4018,14 @@ function wpsc_get_minimum_preload_interval() {
 }
 
 function wpsc_preload_settings() {
-	global $wp_cache_preload_interval, $wp_cache_preload_on, $wp_cache_preload_taxonomies, $wp_cache_preload_email_me, $wp_cache_preload_email_volume, $wp_cache_preload_posts, $wpdb;
+	global $wp_cache_preload_interval, $wp_cache_preload_on, $wp_cache_preload_taxonomies, $wp_cache_preload_email_volume, $wp_cache_preload_posts, $valid_nonce;
 
 	if ( isset( $_POST[ 'action' ] ) == false || $_POST[ 'action' ] != 'preload' )
 		return;
+
+	if ( ! $valid_nonce ) {
+		return;
+	}
 
 	if ( isset( $_POST[ 'preload_off' ] ) ) {
 		wpsc_cancel_preload();
