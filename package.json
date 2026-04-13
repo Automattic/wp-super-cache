@@ -5,12 +5,11 @@
 	"description": "A very fast caching engine for WordPress that produces static html files.",
 	"homepage": "https://jetpack.com",
 	"bugs": {
-		"url": "https://github.com/Automattic/jetpack/labels/[Plugin] Super Cache"
+		"url": "https://github.com/Automattic/wp-super-cache/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Automattic/jetpack.git",
-		"directory": "projects/plugins/super-cache"
+		"url": "https://github.com/Automattic/wp-super-cache.git"
 	},
 	"license": "GPL-2.0-or-later",
 	"author": "Automattic",
@@ -20,5 +19,10 @@
 		"build-production": "echo 'Not implemented.'",
 		"build-production-js": "echo 'Not implemented.'",
 		"clean": "true"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.0",
+		"eslint": "^9.0",
+		"globals": "^15.0"
 	}
 }

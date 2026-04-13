@@ -1,21 +1,62 @@
-name: End to end tests
+name: E2E Tests
 
 on:
+  pull_request:
   push:
-
-# We use secrets.REPO_DISPATCH_TOKEN for everything here, so no need for permissions.
-permissions: {}
+    branches: [trunk]
 
 jobs:
-  run-tests:
-    name: "Trigger e2e tests in Jetpack monorepo"
+  e2e:
+    name: E2E Tests
     runs-on: ubuntu-latest
-
     steps:
-      - name: Create a repository dispatch
-        uses: peter-evans/repository-dispatch@v4
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.REPO_DISPATCH_TOKEN }}
-          repository: automattic/jetpack
-          event-type: e2e tests at ${{github.event_name}} on ${{github.repository}} ${{github.ref_name}} ${{github.ref_type}}
-          client-payload: '{"repository": "${{github.repository}}", "ref_name": "${{github.ref_name}}", "ref_type": "${{github.ref_type}}"}'
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: tests/e2e/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: tests/e2e
+        run: pnpm install --frozen-lockfile
+
+      - name: Start Docker environment
+        working-directory: tests/e2e
+        run: docker compose up -d --build --wait
+
+      - name: Wait for WordPress
+        run: |
+          echo "Waiting for WordPress to be ready..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:2022/ > /dev/null 2>&1; then
+              echo "WordPress is ready."
+              exit 0
+            fi
+            echo "Attempt $i/30 - waiting 5s..."
+            sleep 5
+          done
+          echo "WordPress did not become ready in time."
+          docker compose -f tests/e2e/docker-compose.yml --project-directory tests/e2e logs
+          exit 1
+
+      - name: Run e2e tests
+        working-directory: tests/e2e
+        run: pnpm test:run
+
+      - name: Docker logs
+        if: failure()
+        working-directory: tests/e2e
+        run: docker compose logs
+
+      - name: Tear down Docker environment
+        if: always()
+        working-directory: tests/e2e
+        run: docker compose down -v

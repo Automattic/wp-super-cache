@@ -2097,9 +2097,14 @@ function wpsc_config_file_notices() {
 }
 add_action( 'admin_notices', 'wpsc_config_file_notices' );
 function wpsc_dismiss_indexhtml_warning() {
-		check_ajax_referer( "wpsc-index-dismiss" );
-		update_site_option( 'wp_super_cache_index_detected', 3 );
-		die( 0 );
+	check_ajax_referer( 'wpsc-index-dismiss' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( null, 403 );
+	}
+
+	update_site_option( 'wp_super_cache_index_detected', 3 );
+	die( 0 );
 }
 add_action( 'wp_ajax_wpsc-index-dismiss', 'wpsc_dismiss_indexhtml_warning' );
 
@@ -3319,6 +3324,12 @@ function clear_post_supercache( $post_id ) {
  * Serves an AJAX endpoint to return the current state of the preload process.
  */
 function wpsc_ajax_get_preload_status() {
+	check_ajax_referer( 'wpsc-get-preload-status' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( null, 403 );
+	}
+
 	$preload_status = wpsc_get_preload_status( true );
 	wp_send_json_success( $preload_status, null, JSON_UNESCAPED_SLASHES );
 }
@@ -4044,11 +4055,15 @@ function wpsc_get_minimum_preload_interval() {
 }
 
 function wpsc_preload_settings() {
-	global $wp_cache_preload_interval, $wp_cache_preload_on, $wp_cache_preload_taxonomies, $wp_cache_preload_email_me, $wp_cache_preload_email_volume, $wp_cache_preload_posts, $wpdb;
+	global $wp_cache_preload_interval, $wp_cache_preload_on, $wp_cache_preload_taxonomies, $wp_cache_preload_email_volume, $wp_cache_preload_posts, $valid_nonce;
 	global $preload_schedule_type, $preload_scheduled_time, $preload_schedule_interval;
 
 	if ( isset( $_POST[ 'action' ] ) == false || $_POST[ 'action' ] != 'preload' )
 		return;
+
+	if ( ! $valid_nonce ) {
+		return;
+	}
 
 	if ( isset( $_POST[ 'preload_off' ] ) ) {
 		wpsc_cancel_preload();

@@ -1,0 +1,36 @@
+name: Linting
+
+on:
+  pull_request:
+  push:
+    branches: [trunk]
+
+jobs:
+  phpcs:
+    name: PHPCS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+          coverage: none
+      - run: composer install --no-progress
+      - name: Run PHPCS (changed lines only)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
+          FILES=$(git diff --name-only --diff-filter=d "$BASE" HEAD -- '*.php')
+          if [ -z "$FILES" ]; then
+            echo "No PHP files changed, skipping PHPCS."
+            exit 0
+          fi
+          echo "Changed PHP files:"
+          echo "$FILES"
+          echo "$FILES" | xargs vendor/bin/phpcs-changed --git --git-base "$BASE"
