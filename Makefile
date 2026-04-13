@@ -20,7 +20,7 @@ destroy: ## Remove the WordPress containers and database
 logs: ## Tail the WordPress container logs
 	$(WP_ENV) logs
 
-cli: ## Open a shell inside the WordPress container
+cli: ## Open a shell inside the cli container
 	$(WP_ENV) run cli bash
 
 wp: ## Run an arbitrary wp-cli command, e.g. `make wp CMD="plugin list"`
