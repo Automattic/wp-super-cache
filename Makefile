@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 PLUGIN_NAME := wp-super-cache
-WP_ENV := COMPOSE_PROJECT_NAME=$(PLUGIN_NAME) npx @wordpress/env
+WP_ENV := COMPOSE_PROJECT_NAME=$(PLUGIN_NAME) npx --yes @wordpress/env
 
 ## Development environment
 install: ## Install PHP (Composer) and JS (npm) dependencies
