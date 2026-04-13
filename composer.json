@@ -19,6 +19,12 @@
 		]
 	},
 	"scripts": {
+		"phpcs": [
+			"@php -d error_reporting='E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED' ./vendor/bin/phpcs --standard=.phpcs.xml.dist ."
+		],
+		"phpcbf": [
+			"@php -d error_reporting='E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED' ./vendor/bin/phpcbf --standard=.phpcs.xml.dist ."
+		],
 		"phpunit": [
 			"phpunit-select-config phpunit.#.xml.dist --colors=always"
 		],
