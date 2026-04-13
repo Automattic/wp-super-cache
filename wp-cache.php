@@ -3318,6 +3318,12 @@ function clear_post_supercache( $post_id ) {
  * Serves an AJAX endpoint to return the current state of the preload process.
  */
 function wpsc_ajax_get_preload_status() {
+	check_ajax_referer( 'wpsc-get-preload-status' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( null, 403 );
+	}
+
 	$preload_status = wpsc_get_preload_status( true );
 	wp_send_json_success( $preload_status, null, JSON_UNESCAPED_SLASHES );
 }

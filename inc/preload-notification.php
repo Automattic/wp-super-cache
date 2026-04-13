@@ -20,6 +20,7 @@ function wpsc_preload_notification_scripts() {
 			'wpsc_preload_ajax',
 			array(
 				'ajax_url'       => admin_url( 'admin-ajax.php' ),
+				'nonce'          => wp_create_nonce( 'wpsc-get-preload-status' ),
 				'preload_status' => wpsc_get_preload_status( true ),
 			)
 		);
