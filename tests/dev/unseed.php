@@ -2,10 +2,11 @@
 /**
  * Remove content created by tests/dev/seed.php. Safe to run repeatedly —
  * deletes only posts/pages that carry the `_wpsc_seed=1` meta key.
+ *
+ * @package WP_Super_Cache
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	fwrite( STDERR, "This file must be run via wp-cli (wp eval-file).\n" );
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	exit( 1 );
 }
 
@@ -21,10 +22,10 @@ $ids = get_posts(
 );
 
 $deleted = 0;
-foreach ( $ids as $id ) {
-	if ( wp_delete_post( $id, true ) ) {
+foreach ( $ids as $post_to_delete_id ) {
+	if ( wp_delete_post( $post_to_delete_id, true ) ) {
 		++$deleted;
 	}
 }
 
-printf( "Deleted %d seeded posts/pages.\n", $deleted );
+WP_CLI::success( sprintf( 'Deleted %d seeded posts/pages.', $deleted ) );

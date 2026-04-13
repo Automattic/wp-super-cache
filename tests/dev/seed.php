@@ -7,10 +7,11 @@
  * Intended to be executed via `wp eval-file` inside the `make up` environment.
  * Every item is tagged with post_meta `_wpsc_seed=1` so `tests/dev/unseed.php`
  * can remove the seeded content without touching anything else.
+ *
+ * @package WP_Super_Cache
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	fwrite( STDERR, "This file must be run via wp-cli (wp eval-file).\n" );
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	exit( 1 );
 }
 
@@ -35,26 +36,26 @@ $created = array(
 	'page' => 0,
 );
 
-foreach ( array( 'post', 'page' ) as $type ) {
+foreach ( array( 'post', 'page' ) as $content_type ) {
 	for ( $i = 0; $i < $count; $i++ ) {
-		$post_id = wp_insert_post(
+		$inserted_post_id = wp_insert_post(
 			array(
-				'post_title'   => wpsc_seed_random_title( ucfirst( $type ) ),
+				'post_title'   => wpsc_seed_random_title( ucfirst( $content_type ) ),
 				'post_content' => wpsc_seed_random_body(),
 				'post_status'  => 'publish',
-				'post_type'    => $type,
+				'post_type'    => $content_type,
 			),
 			true
 		);
 
-		if ( is_wp_error( $post_id ) ) {
-			fwrite( STDERR, "Failed to insert {$type}: " . $post_id->get_error_message() . "\n" );
+		if ( is_wp_error( $inserted_post_id ) ) {
+			WP_CLI::warning( sprintf( 'Failed to insert %s: %s', $content_type, $inserted_post_id->get_error_message() ) );
 			continue;
 		}
 
-		update_post_meta( $post_id, '_wpsc_seed', 1 );
-		++$created[ $type ];
+		update_post_meta( $inserted_post_id, '_wpsc_seed', 1 );
+		++$created[ $content_type ];
 	}
 }
 
-printf( "Seeded %d posts and %d pages.\n", $created['post'], $created['page'] );
+WP_CLI::success( sprintf( 'Seeded %d posts and %d pages.', $created['post'], $created['page'] ) );

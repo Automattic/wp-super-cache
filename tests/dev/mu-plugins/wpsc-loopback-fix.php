@@ -13,6 +13,8 @@
  * loopback works the same way in Docker as it does on a normal host — both
  * when PHP runs inside the `wordpress` container (cron, preloader) and
  * when wp-cli triggers loopback from the separate `cli` container.
+ *
+ * @package WP_Super_Cache
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
