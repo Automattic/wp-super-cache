@@ -62,7 +62,8 @@ Other useful targets:
 | `make cli` | Open a shell inside the WordPress container |
 | `make wp CMD="super-cache status"` | Run an arbitrary `wp-cli` command |
 | `make logs` | Tail the WordPress container logs |
-| `make lint` / `make lint-fix` | Run / auto-fix PHPCS |
+| `make lint` / `make lint-fix` | Run / auto-fix PHPCS on changed PHP files |
+| `make lint-all` | Run PHPCS on the full codebase |
 
 The seed script tags every item it creates with `_wpsc_seed=1` post meta, so `make unseed` only removes content it generated — it will not touch posts or pages you created by hand.
 
@@ -85,8 +86,11 @@ composer test-coverage
 ### Linting
 
 ```bash
-# PHPCS (WordPress/Jetpack coding standards)
-vendor/bin/phpcs
+# Changed PHP files only (matches CI)
+make lint
+
+# Full-tree PHPCS (WordPress/Jetpack coding standards)
+make lint-all
 ```
 
 ### Static analysis

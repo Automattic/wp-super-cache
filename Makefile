@@ -35,13 +35,16 @@ unseed: ## Delete content created by `make seed`
 
 ## Lint
 lint: ## Run PHP CodeSniffer
+	composer lint
+
+lint-all: ## Run PHP CodeSniffer on all files
 	composer phpcs
 
 lint-fix: ## Auto-fix PHP CodeSniffer issues
-	composer phpcbf
+	composer lint-fix
 
 ## Help
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: install up down destroy logs cli wp seed unseed lint lint-fix help
+.PHONY: install up down destroy logs cli wp seed unseed lint lint-all lint-fix help
