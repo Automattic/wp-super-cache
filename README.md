@@ -39,8 +39,34 @@ changelog/                Individual changelog entries (Jetpack Changelogger for
 
 - PHP 7.4+
 - [Composer](https://getcomposer.org/)
+- Node.js 20+ and Docker (only needed for the Makefile / wp-env workflow)
 
-### Installation
+### Quick start with the Makefile
+
+A `Makefile` is provided to spin up a disposable WordPress site in Docker (via [`@wordpress/env`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/)) with the plugin pre-mounted. Run `make help` to see every target.
+
+```bash
+make install     # composer install + npm install
+make up          # start WordPress at http://localhost:8888 (admin / password)
+make seed        # create 100 random posts + 100 random pages for cache testing
+# ... hack on the plugin; files are live-mounted into the container ...
+make unseed      # delete only the content created by `make seed`
+make down        # stop containers
+make destroy     # stop and wipe the database
+```
+
+Other useful targets:
+
+| Target | Purpose |
+|--------|---------|
+| `make cli` | Open a shell inside the WordPress container |
+| `make wp CMD="super-cache status"` | Run an arbitrary `wp-cli` command |
+| `make logs` | Tail the WordPress container logs |
+| `make lint` / `make lint-fix` | Run / auto-fix PHPCS |
+
+The seed script tags every item it creates with `_wpsc_seed=1` post meta, so `make unseed` only removes content it generated — it will not touch posts or pages you created by hand.
+
+### Manual installation
 
 ```bash
 composer install
