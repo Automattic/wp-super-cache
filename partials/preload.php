@@ -96,7 +96,14 @@ echo '<tr><td valign="top"><strong>' . esc_html__( 'Scheduler', 'wp-super-cache'
 // translators: %d is the minimum refresh interval in minutes.
 echo '<td><input type=\'text\' id=\'preload_interval_time\' size=6 name=\'wp_cache_preload_interval\' value=\'' . esc_attr( $wp_cache_preload_interval ) . '\' /> ' . esc_html__( 'minutes', 'wp-super-cache' ) . '<br />' . sprintf( esc_html__( 'Refresh preloaded cache files at this interval. (0 to disable, minimum %d minutes)', 'wp-super-cache' ), (int) $min_refresh_interval ) . '</td></tr>';
 echo '<tr><td valign="top"><input type="radio" id="preload_schedule_time_radio" name="preload_schedule_type" value="time" ' . checked( 'time', $preload_schedule_type, false ) . ' /></td><td valign="top"><label for="preload_schedule_time_radio">' . esc_html__( 'Clock:', 'wp-super-cache' ) . '</label></td>';
-echo '<td><input type=\'text\' size=5 id=\'preload_scheduled_time\' name=\'preload_scheduled_time\' value=\'' . esc_attr( $preload_scheduled_time ) . '\' /> ' . esc_html__( 'HH:MM', 'wp-super-cache' ) . '<br />' . esc_html__( 'Start preloading at this time (UTC) or starting at this time every interval below.', 'wp-super-cache' ) . '</td></tr>';
+$wpsc_tz_label = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : 'UTC';
+echo '<td><input type=\'text\' size=5 id=\'preload_scheduled_time\' name=\'preload_scheduled_time\' value=\'' . esc_attr( $preload_scheduled_time ) . '\' /> ' . esc_html__( 'HH:MM', 'wp-super-cache' ) . '<br />'
+	. sprintf(
+		/* translators: %s: site timezone string, e.g. "Europe/Dublin" or "+00:00". */
+		esc_html__( 'Start preloading at this time (site timezone: %s) or starting at this time every interval below.', 'wp-super-cache' ),
+		'<code>' . esc_html( $wpsc_tz_label ) . '</code>'
+	)
+	. '</td></tr>';
 $schedules = wp_get_schedules();
 echo '<tr><td><br /></td><td><label for=\'preload_scheduled_select\'>' . esc_html__( 'Interval:', 'wp-super-cache' ) . '</label></td><td><select id=\'preload_scheduled_select\' name=\'preload_schedule_interval\' size=1>';
 foreach ( $schedules as $desc => $details ) {

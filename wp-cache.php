@@ -3723,7 +3723,7 @@ function wp_cron_preload_cache() {
 						$msg = sprintf( __( 'Scheduling next preload at %1$s (%2$s).', 'wp-super-cache' ), $preload_scheduled_time, $interval_display );
 					}
 					wp_cache_debug( "wp_cron_preload_cache: no more posts. scheduling next preload at $preload_scheduled_time ($preload_schedule_interval).", 5 );
-					wp_schedule_event( strtotime( $preload_scheduled_time ), $preload_schedule_interval, 'wp_cache_full_preload_hook' );
+					wp_schedule_event( wpsc_next_scheduled_preload_timestamp( $preload_scheduled_time ), $preload_schedule_interval, 'wp_cache_full_preload_hook' );
 				}
 			}
 		}
@@ -4054,6 +4054,34 @@ function wpsc_get_minimum_preload_interval() {
 	return apply_filters( 'wpsc_minimum_preload_interval', 10 );
 }
 
+/**
+ * Convert an "HH:MM" clock time (interpreted in the site's timezone) into the
+ * next UTC timestamp at or after "now". Falls back to "00:00" for malformed
+ * input.
+ *
+ * @param string $hhmm Wall-clock time in the site's timezone, e.g. "03:00".
+ * @return int UTC timestamp suitable for wp_schedule_event().
+ */
+function wpsc_next_scheduled_preload_timestamp( $hhmm ) {
+	if ( ! preg_match( '/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', (string) $hhmm ) ) {
+		$hhmm = '00:00';
+	}
+
+	$site_tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+	$dt      = DateTime::createFromFormat( 'H:i', $hhmm, $site_tz );
+
+	if ( ! $dt ) {
+		$dt = new DateTime( 'now', $site_tz );
+		$dt->setTime( (int) substr( $hhmm, 0, 2 ), (int) substr( $hhmm, 3, 2 ), 0 );
+	}
+
+	if ( $dt->getTimestamp() <= time() ) {
+		$dt->modify( '+1 day' );
+	}
+
+	return $dt->getTimestamp();
+}
+
 function wpsc_preload_settings() {
 	global $wp_cache_preload_interval, $wp_cache_preload_on, $wp_cache_preload_taxonomies, $wp_cache_preload_email_volume, $wp_cache_preload_posts, $valid_nonce;
 	global $preload_schedule_type, $preload_scheduled_time, $preload_schedule_interval;
@@ -4096,10 +4124,9 @@ function wpsc_preload_settings() {
 		wp_cache_setting( 'preload_schedule_type', $preload_schedule_type );
 	}
 
-		if ( ! preg_match( '/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $new_scheduled_time ) ) {
 	if ( isset( $_POST['preload_scheduled_time'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$new_scheduled_time = sanitize_text_field( wp_unslash( $_POST['preload_scheduled_time'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( ! preg_match( '/^[0-9]{2}:[0-9]{2}$/', $new_scheduled_time ) ) {
+		if ( ! preg_match( '/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $new_scheduled_time ) ) {
 			$new_scheduled_time = '00:00';
 		}
 		if ( ! isset( $preload_scheduled_time ) || $preload_scheduled_time !== $new_scheduled_time ) {
@@ -4207,7 +4234,7 @@ function wpsc_preload_settings() {
 			if ( ! isset( $preload_schedule_interval ) ) {
 				$preload_schedule_interval = 'daily';
 			}
-			wp_schedule_event( strtotime( $preload_scheduled_time ), $preload_schedule_interval, 'wp_cache_full_preload_hook' );
+			wp_schedule_event( wpsc_next_scheduled_preload_timestamp( $preload_scheduled_time ), $preload_schedule_interval, 'wp_cache_full_preload_hook' );
 		}
 	}
 }
