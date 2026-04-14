@@ -29,7 +29,7 @@ partials/                 Admin settings page tab templates
 tests/php/                PHPUnit tests
 tests/e2e/                End-to-end tests (Docker + Jest)
 
-changelog/                Individual changelog entries (Jetpack Changelogger format)
+scripts/                  Release tooling (pre-build, build, publish, exclude list)
 .phan/                    Phan static analysis configuration and stubs
 ```
 
@@ -111,20 +111,53 @@ docker compose up -d
 pnpm test
 ```
 
+## Releases
+
+Releases are cut manually from `trunk` in three stages. See `scripts/pre-build.sh`, `scripts/build-plugin.sh`, and `scripts/publish.sh` for the full implementation; `scripts/exclude.lst` is the single source of truth for which files are excluded from the shipped plugin (shared by `rsync` and `zip`).
+
+### 1. Prepare the release PR
+
+```bash
+make pre-build VERSION=x.y.z
+```
+
+Run from a clean, up-to-date `trunk`. This target:
+
+1. Creates a `release/x.y.z` branch.
+2. Bumps `Stable tag:` in `readme.txt` and `Version:` in `wp-cache.php`.
+3. Generates a list of PRs merged in the last six months (via `gh pr list`) into a temp file and opens it alongside `readme.txt` in `vim` for manual changelog editing.
+4. Shows the diff and prompts for confirmation.
+5. Pushes the branch and opens a PR via `gh pr create`.
+
+Review, merge the PR into `trunk`, and pull the merge commit locally.
+
+### 2. Build the zip
+
+```bash
+make build
+```
+
+Rsyncs the plugin tree into `build/wp-super-cache/` (excluding everything in `scripts/exclude.lst`) and zips it to `build/wp-super-cache.zip`.
+
+### 3. Publish
+
+```bash
+make publish
+```
+
+1. Reads `Stable tag:` from `readme.txt` and extracts the matching section of `== Changelog ==` as release notes.
+2. Creates a GitHub release `vX.Y.Z` with `build/wp-super-cache.zip` attached.
+3. Prompts whether to also publish to the WordPress.org SVN repository. If accepted, shallow-checks out `plugins.svn.wordpress.org/wp-super-cache/` into `build/svn/`, rsyncs `build/wp-super-cache/` into `trunk/`, stages SVN adds/removes based on `svn status`, commits trunk, then server-side-copies trunk to `tags/X.Y.Z`. SVN prompts for your wp.org credentials.
+
 ## Contributing
 
 1. Branch from `trunk`.
 2. Make your changes.
-3. Add a changelog entry:
-   ```bash
-   vendor/bin/changelogger add
-   ```
-4. Push and open a pull request against `trunk`.
+3. Push and open a pull request against `trunk`.
 
 CI will automatically run:
 - **PHP tests** across PHP 8.2, 8.3, 8.4, and 8.5
 - **PHPCS linting** on changed lines
-- **Changelog validation** (warns if no entry is included)
 
 ### Translations
 
