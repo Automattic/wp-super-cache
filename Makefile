@@ -1,4 +1,5 @@
 .DEFAULT_GOAL := help
+SHELL := /bin/bash
 
 PLUGIN_NAME := wp-super-cache
 WP_ENV := COMPOSE_PROJECT_NAME=$(PLUGIN_NAME) npx --yes @wordpress/env

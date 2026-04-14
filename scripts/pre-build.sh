@@ -48,8 +48,8 @@ echo "Creating branch $BRANCH"
 git checkout -b "$BRANCH"
 
 echo "Bumping version to $VERSION"
-sed -i.bak -E "s/^(Stable tag: ).*/\1$VERSION/" readme.txt && rm readme.txt.bak
-sed -i.bak -E "s/^( \* Version: ).*/\1$VERSION/" wp-cache.php && rm wp-cache.php.bak
+sed -i '' -E "s/^(Stable tag: ).*/\1$VERSION/" readme.txt
+sed -i '' -E "s/^( \* Version: ).*/\1$VERSION/" wp-cache.php
 
 LOG_FILE="$(mktemp -t wpsc-changelog.XXXXXX)"
 if date -v-6m +%Y-%m-%d >/dev/null 2>&1; then
