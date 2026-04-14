@@ -7,6 +7,12 @@
 
 set -euo pipefail
 
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [[ "$CURRENT_BRANCH" != "trunk" ]]; then
+	echo "publish must be run from trunk (currently on: $CURRENT_BRANCH)." >&2
+	exit 1
+fi
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
