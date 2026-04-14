@@ -262,6 +262,8 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 - Add WordPress.org Live Preview Blueprint.
 - Minimum WordPress version bumped to 6.8.
 - Device Detection: use an embedded version instead of the Composer dependency.
+- Fix: str_starts_with() null deprecation on PHP 8.1+.
+- Fix: handle array type for supercache_last_cached option.
 
 --------
 
