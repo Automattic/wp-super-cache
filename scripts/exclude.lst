@@ -8,7 +8,7 @@ wp-super-cache/.github
 wp-super-cache/.gitignore
 wp-super-cache/.phan
 wp-super-cache/.phpcs.xml.dist
-wp-super-cache/.w.org-assets
+wp-super-cache/w.org-assets
 wp-super-cache/.wp-env.json
 wp-super-cache/CHANGELOG.md
 wp-super-cache/Makefile

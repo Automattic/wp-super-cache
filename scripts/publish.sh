@@ -86,7 +86,7 @@ mkdir -p "$SVN_DIR"
 
 echo "Shallow-checking out $SVN_URL"
 svn checkout "$SVN_URL" "$SVN_DIR" --depth=empty
-( cd "$SVN_DIR" && svn up trunk && svn up tags --depth=immediates )
+( cd "$SVN_DIR" && svn up trunk && svn up tags --depth=immediates && svn up assets )
 
 if [[ -e "$SVN_DIR/tags/$VERSION" ]]; then
 	echo "Tag $VERSION already exists in SVN. Aborting." >&2
@@ -95,6 +95,12 @@ fi
 
 echo "Syncing $BUILD_DIR/ into $SVN_DIR/trunk/"
 rsync -a --delete --exclude='.svn/' "$BUILD_DIR/" "$SVN_DIR/trunk/"
+
+if [[ -d w.org-assets ]]; then
+	echo "Syncing w.org-assets/ into $SVN_DIR/assets/"
+	mkdir -p "$SVN_DIR/assets"
+	rsync -a --delete --exclude='.svn/' w.org-assets/ "$SVN_DIR/assets/"
+fi
 
 # Stage SVN adds/removes based on `svn status`.
 (
