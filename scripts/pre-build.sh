@@ -81,7 +81,7 @@ else
 fi
 TODAY="$(date +%Y-%m-%d)"
 {
-	echo "### [$VERSION] - $TODAY"
+	echo "### $VERSION - $TODAY"
 	gh pr list \
 		--state merged \
 		--base trunk \
