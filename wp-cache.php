@@ -160,8 +160,8 @@ add_action( 'init', 'wp_super_cache_init_action' );
 /**
  * Disable caching for pages rendered via wp_die().
  *
- * wp_die() is used to render error and interstitial pages (e.g. "Error
- * establishing a database connection"); caching them causes the error to
+ * The function wp_die() is used to render error and interstitial pages (e.g.
+ * "Error establishing a database connection"); caching them causes the error to
  * persist for subsequent visitors even after the underlying issue is resolved.
  *
  * @param callable $handler The registered wp_die handler, returned unchanged.
