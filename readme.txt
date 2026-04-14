@@ -4,7 +4,7 @@ Tags: performance, caching, wp-cache, wp-super-cache, cache
 Requires at least: 6.8
 Requires PHP: 7.4
 Tested up to: 6.9
-Stable tag: 3.0.4
+Stable tag: 3.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -268,12 +268,6 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 == Changelog ==
-### 3.0.4 - 2026-04-14
-- Harden index.html warning dismissal handler (#1034) — @donnchawp
-- Harden preload settings handler (#1033) — @donnchawp
-- Harden preload status AJAX endpoint (#1032) — @donnchawp
-- Rewrite README.md as a developer/contributor landing page (#1029) — @kraftbj
-- Remove WP Super Cache from the Jetpack monorepo (#852) — @kraftbj
 ### 3.0.3 - 2025-11-11
 #### Added
 - Tested up to WordPress 6.9.
