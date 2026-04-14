@@ -255,7 +255,7 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 == Changelog ==
-### [3.1.0] - 2026-04-14
+### 3.1.0 - 2026-04-14
 - Disable caching for wp_die() error pages
 - Harden the plugin in various ways.
 - Fix: use fileperms() instead of stat() and fix escaping
