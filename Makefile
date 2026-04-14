@@ -54,8 +54,11 @@ build: ## Build build/wp-super-cache.zip (run pre-build and merge the PR first)
 	@read -r -p "Have you run pre-build and merged the release PR? Press RETURN to continue... " _
 	./scripts/build-plugin.sh
 
+publish: ## Create a GitHub release from readme.txt + build/wp-super-cache.zip
+	./scripts/publish.sh
+
 ## Help
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: install up down destroy logs cli wp seed unseed lint lint-all lint-fix pre-build build help
+.PHONY: install up down destroy logs cli wp seed unseed lint lint-all lint-fix pre-build build publish help
