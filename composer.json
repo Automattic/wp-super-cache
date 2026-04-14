@@ -5,7 +5,6 @@
 	"license": "GPL-2.0-or-later",
 	"require-dev": {
 		"yoast/phpunit-polyfills": "^4.0.0",
-		"automattic/jetpack-changelogger": "^6.0.14",
 		"automattic/phpunit-select-config": "^1.0.4",
 		"phan/phan": "^5.4",
 		"php-stubs/wordpress-stubs": "^6.8",
@@ -19,6 +18,18 @@
 		]
 	},
 	"scripts": {
+		"phpcs": [
+			"./tools/phpcs-wrapper.sh --standard=.phpcs.xml.dist ."
+		],
+		"phpcbf": [
+			"./tools/phpcbf-wrapper.sh --standard=.phpcs.xml.dist ."
+		],
+		"lint": [
+			"./tools/run-phpcs-changed.sh"
+		],
+		"lint-fix": [
+			"./tools/run-phpcbf-changed.sh"
+		],
 		"phpunit": [
 			"phpunit-select-config phpunit.#.xml.dist --colors=always"
 		],
@@ -37,14 +48,7 @@
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"extra": {
-		"autorelease": true,
-		"autotagger": true,
-		"changelogger": {
-			"link-template": "https://github.com/Automattic/wp-super-cache/compare/v${old}...v${new}"
-		},
-		"release-branch-prefix": "super-cache",
-		"wp-plugin-slug": "wp-super-cache",
-		"wp-svn-autopublish": true
+		"wp-plugin-slug": "wp-super-cache"
 	},
 	"config": {
 		"autoloader-suffix": "6fe342bc02f0b440f7b3c8d8ade42286_super_cacheⓥ4_0_0_alpha",

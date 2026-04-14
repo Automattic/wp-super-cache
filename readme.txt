@@ -281,4 +281,4 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 --------
 
-[See the previous changelogs here](https://github.com/Automattic/jetpack/blob/trunk/projects/plugins/super-cache/CHANGELOG.md#changelog)
+[See previous releases on GitHub.](https://github.com/Automattic/wp-super-cache/releases)
