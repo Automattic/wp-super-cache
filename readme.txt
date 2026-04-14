@@ -4,7 +4,7 @@ Tags: performance, caching, wp-cache, wp-super-cache, cache
 Requires at least: 6.8
 Requires PHP: 7.4
 Tested up to: 6.9
-Stable tag: 3.0.3
+Stable tag: 3.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -255,16 +255,13 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 == Changelog ==
-### 3.0.3 - 2025-11-11
-#### Added
-- Tested up to WordPress 6.9.
-
-#### Changed
-- Update package dependencies.
-
-#### Fixed
-- Phan: Address PhanRedundantCondition, PhanRedundantArrayValuesCall, and PhanPluginRedundantAssignment violations.
-- Remove redundant code.
+### [3.1.0] - 2026-04-14
+- Disable caching for wp_die() error pages
+- Harden the plugin in various ways.
+- Fix: use fileperms() instead of stat() and fix escaping
+- Add WordPress.org Live Preview Blueprint.
+- Minimum WordPress version bumped to 6.8.
+- Device Detection: use an embedded version instead of the Composer dependency.
 
 --------
 
