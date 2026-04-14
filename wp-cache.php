@@ -157,6 +157,29 @@ function wp_super_cache_init_action() {
 }
 add_action( 'init', 'wp_super_cache_init_action' );
 
+/**
+ * Disable caching for pages rendered via wp_die().
+ *
+ * wp_die() is used to render error and interstitial pages (e.g. "Error
+ * establishing a database connection"); caching them causes the error to
+ * persist for subsequent visitors even after the underlying issue is resolved.
+ *
+ * @param callable $handler The registered wp_die handler, returned unchanged.
+ * @return callable
+ */
+function wpsc_wp_die_disable_cache( $handler ) {
+	/**
+	 * Filters whether to disable caching when wp_die() is invoked.
+	 *
+	 * @param bool $disable Whether to set DONOTCACHEPAGE. Default true.
+	 */
+	if ( apply_filters( 'wpsc_disable_cache_on_wp_die', true ) && ! defined( 'DONOTCACHEPAGE' ) ) {
+		define( 'DONOTCACHEPAGE', true );
+	}
+	return $handler;
+}
+add_filter( 'wp_die_handler', 'wpsc_wp_die_disable_cache' );
+
 function wp_cache_set_home() {
 	global $wp_cache_is_home;
 	$wp_cache_is_home = ( is_front_page() || is_home() );
