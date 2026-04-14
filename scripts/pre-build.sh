@@ -57,14 +57,17 @@ if date -v-6m +%Y-%m-%d >/dev/null 2>&1; then
 else
 	SINCE_DATE="$(date -d '6 months ago' +%Y-%m-%d)"
 fi
-gh pr list \
-	--state merged \
-	--base trunk \
-	--limit 500 \
-	--search "merged:>=$SINCE_DATE" \
-	--json number,title,author,mergedAt \
-	--template '{{range .}}- {{.title}} (#{{.number}}) — @{{.author.login}}{{"\n"}}{{end}}' \
-	> "$LOG_FILE"
+TODAY="$(date +%Y-%m-%d)"
+{
+	echo "### [$VERSION] - $TODAY"
+	gh pr list \
+		--state merged \
+		--base trunk \
+		--limit 500 \
+		--search "merged:>=$SINCE_DATE" \
+		--json number,title,author,mergedAt \
+		--template '{{range .}}- {{.title}} (#{{.number}}) — @{{.author.login}}{{"\n"}}{{end}}'
+} > "$LOG_FILE"
 
 cat <<EOF
 
