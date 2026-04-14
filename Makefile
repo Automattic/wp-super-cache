@@ -43,8 +43,18 @@ lint-all: ## Run PHP CodeSniffer on all files
 lint-fix: ## Auto-fix PHP CodeSniffer issues
 	composer lint-fix
 
+## Release
+pre-build: ## Prepare a release PR. Usage: make pre-build VERSION=x.y.z
+	@test -n "$(VERSION)" || { echo "Usage: make pre-build VERSION=x.y.z"; exit 1; }
+	./scripts/pre-build.sh $(VERSION)
+
+build: ## Build build/wp-super-cache.zip (run pre-build and merge the PR first)
+	@echo "This builds build/wp-super-cache.zip from the current working tree."
+	@read -r -p "Have you run pre-build and merged the release PR? Press RETURN to continue... " _
+	./scripts/build-plugin.sh
+
 ## Help
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: install up down destroy logs cli wp seed unseed lint lint-all lint-fix help
+.PHONY: install up down destroy logs cli wp seed unseed lint lint-all lint-fix pre-build build help
