@@ -50,8 +50,6 @@ pre-build: ## Prepare a release PR. Usage: make pre-build VERSION=x.y.z
 	./scripts/pre-build.sh $(VERSION)
 
 build: ## Build build/wp-super-cache.zip (run pre-build and merge the PR first)
-	@echo "This builds build/wp-super-cache.zip from the current working tree."
-	@read -r -p "Have you run pre-build and merged the release PR? Press RETURN to continue... " _
 	./scripts/build-plugin.sh
 
 publish: ## Create a GitHub release from readme.txt + build/wp-super-cache.zip

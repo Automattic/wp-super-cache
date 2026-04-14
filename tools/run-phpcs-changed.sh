@@ -55,7 +55,7 @@ elif git rev-parse --verify trunk >/dev/null 2>&1; then
 	base_ref="trunk"
 fi
 
-if [ -z "$staged_files$unstaged_files$untracked_files" ] && [ -n "$base_ref" ]; then
+if [ -n "$base_ref" ]; then
 	merge_base="$(git merge-base HEAD "$base_ref")"
 	branch_files="$(collect_files git diff --name-only --diff-filter=ACMR "$merge_base"...HEAD -- '*.php')"
 	if [ -n "$branch_files" ]; then

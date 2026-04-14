@@ -33,6 +33,16 @@ if [[ -z "$VERSION" ]]; then
 	exit 1
 fi
 
+ZIP_VERSION="$(unzip -p "$ZIP_FILE" "$PLUGIN_SLUG/readme.txt" 2>/dev/null | sed -nE 's/^Stable tag: ([0-9A-Za-z.+-]+).*/\1/p' | head -1)"
+if [[ -z "$ZIP_VERSION" ]]; then
+	echo "Could not read Stable tag from $ZIP_FILE. Rebuild with \`make build\`." >&2
+	exit 1
+fi
+if [[ "$ZIP_VERSION" != "$VERSION" ]]; then
+	echo "Stable tag in $ZIP_FILE ($ZIP_VERSION) does not match readme.txt ($VERSION). Rebuild with \`make build\`." >&2
+	exit 1
+fi
+
 TAG="v$VERSION"
 
 if gh release view "$TAG" >/dev/null 2>&1; then
@@ -43,6 +53,7 @@ fi
 # Extract the changelog block for this version: from `### <version>` up to
 # the next `### ` heading or a `--------` divider, whichever comes first.
 NOTES="$(awk -v ver="$VERSION" '
+	BEGIN { gsub(/\./, "\\.", ver) }
 	$0 ~ "^### " ver "( |$|-)" { inblock = 1; print; next }
 	inblock && /^### / { exit }
 	inblock && /^--------/ { exit }
@@ -96,6 +107,11 @@ svn checkout "$SVN_URL" "$SVN_DIR" --depth=empty
 
 if [[ -e "$SVN_DIR/tags/$VERSION" ]]; then
 	echo "Tag $VERSION already exists in SVN. Aborting." >&2
+	exit 1
+fi
+
+if [[ -z "$(ls -A "$BUILD_DIR")" ]]; then
+	echo "$BUILD_DIR is empty. Refusing to rsync --delete into SVN trunk." >&2
 	exit 1
 fi
 

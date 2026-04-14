@@ -20,6 +20,28 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9.-]+)?$ ]]; then
 	exit 1
 fi
 
+CURRENT_VERSION="$(sed -nE 's/^Stable tag: ([0-9A-Za-z.+-]+).*/\1/p' readme.txt | head -1)"
+if [[ -z "$CURRENT_VERSION" ]]; then
+	echo "Could not read current Stable tag from readme.txt." >&2
+	exit 1
+fi
+if [[ "$CURRENT_VERSION" == "$VERSION" ]]; then
+	echo "Version $VERSION already matches the Stable tag in readme.txt." >&2
+	exit 1
+fi
+highest="$(printf '%s\n%s\n' "$CURRENT_VERSION" "$VERSION" | sort -V | tail -1)"
+if [[ "$highest" != "$VERSION" ]]; then
+	echo "Version $VERSION is not greater than current Stable tag $CURRENT_VERSION." >&2
+	exit 1
+fi
+
+# Portable in-place sed across BSD (macOS) and GNU.
+inplace_sed() {
+	local expr="$1" file="$2" tmp
+	tmp="$(mktemp)"
+	sed -E "$expr" "$file" > "$tmp" && mv "$tmp" "$file"
+}
+
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$CURRENT_BRANCH" != "trunk" ]]; then
 	echo "pre-build must be run from trunk (currently on: $CURRENT_BRANCH)." >&2
@@ -48,8 +70,8 @@ echo "Creating branch $BRANCH"
 git checkout -b "$BRANCH"
 
 echo "Bumping version to $VERSION"
-sed -i '' -E "s/^(Stable tag: ).*/\1$VERSION/" readme.txt
-sed -i '' -E "s/^( \* Version: ).*/\1$VERSION/" wp-cache.php
+inplace_sed "s/^(Stable tag: ).*/\1$VERSION/" readme.txt
+inplace_sed "s/^( \* Version: ).*/\1$VERSION/" wp-cache.php
 
 LOG_FILE="$(mktemp -t wpsc-changelog.XXXXXX)"
 if date -v-6m +%Y-%m-%d >/dev/null 2>&1; then

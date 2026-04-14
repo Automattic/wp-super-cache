@@ -8,6 +8,30 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [[ "$CURRENT_BRANCH" != "trunk" ]]; then
+	echo "build must be run from trunk (currently on: $CURRENT_BRANCH)." >&2
+	exit 1
+fi
+
+echo "Fetching origin..."
+git fetch origin trunk
+if ! git merge-base --is-ancestor origin/trunk HEAD; then
+	echo "Local trunk is behind origin/trunk. Pull before running build." >&2
+	exit 1
+fi
+
+if ! git diff-index --quiet HEAD --; then
+	echo "Working tree has uncommitted changes. Commit or stash first." >&2
+	exit 1
+fi
+
+read -r -p "Have you run pre-build and merged the release PR? [y/N] " confirm
+if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+	echo "Aborted."
+	exit 1
+fi
+
 PLUGIN_SLUG="wp-super-cache"
 BUILD_DIR="build"
 PLUGIN_DIR="$BUILD_DIR/$PLUGIN_SLUG"
