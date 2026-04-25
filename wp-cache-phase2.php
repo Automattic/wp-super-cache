@@ -2404,7 +2404,7 @@ function wp_cache_get_ob( &$buffer ) {
 			if ( ! $fr2 ) {
 				wp_cache_debug( 'Error. Supercache could not write to ' . str_replace( ABSPATH, '', $tmp_cache_filename ), 1 );
 				wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) );
-				@fclose( $fr );
+				if ( $fr ) { fclose( $fr ); }
 				@unlink( $tmp_wpcache_filename );
 				wp_cache_writers_exit();
 				return wp_cache_maybe_dynamic( $buffer );
@@ -2416,7 +2416,7 @@ function wp_cache_get_ob( &$buffer ) {
 				if ( ! $gz ) {
 					wp_cache_debug( 'Error. Supercache could not write to ' . str_replace( ABSPATH, '', $tmp_cache_filename ) . '.gz', 1 );
 					wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) . '.gz' );
-					@fclose( $fr );
+					if ( $fr ) { fclose( $fr ); }
 					@unlink( $tmp_wpcache_filename );
 					@fclose( $fr2 );
 					@unlink( $tmp_cache_filename );
@@ -2508,7 +2508,7 @@ function wp_cache_get_ob( &$buffer ) {
 
 	if ( $fr ) {
 		$supercacheonly = false;
-		fclose( $fr );
+		if ( $fr ) { fclose( $fr ); }
 		if ( filesize( $tmp_wpcache_filename ) == 0 ) {
 			wp_cache_debug( "Warning! The file $tmp_wpcache_filename was empty. Did not rename to {$dir}{$cache_filename}", 5 );
 			@unlink( $tmp_wpcache_filename );
@@ -2962,7 +2962,7 @@ function wp_cache_shutdown_callback() {
 			$fr                  = @fopen( $tmp_meta_filename, 'w' );
 			if ( $fr ) {
 				fwrite( $fr, $serial );
-				fclose( $fr );
+				if ( $fr ) { fclose( $fr ); }
 				@chmod( $tmp_meta_filename, 0666 & ~umask() );
 				if ( ! @rename( $tmp_meta_filename, $final_meta_filename ) ) {
 					@unlink( $dir . $final_meta_filename );
@@ -3069,6 +3069,7 @@ function wp_cache_clear_cache_on_menu() {
 
 /* Clear out the cache directory. */
 function wp_cache_clear_cache( $blog_id = 0 ) {
+	$blog_id = (int) $blog_id;
 	global $cache_path;
 
 	if ( $blog_id == 0 ) {
