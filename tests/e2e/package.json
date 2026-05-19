@@ -11,6 +11,11 @@
 		"test:run": "jest --runInBand",
 		"typecheck": "tsgo --noEmit"
 	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"unrs-resolver"
+		]
+	},
 	"devDependencies": {
 		"@jest/globals": "^30.0.0",
 		"@types/node": "^24.12.0",
