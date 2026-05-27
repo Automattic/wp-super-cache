@@ -3020,7 +3020,7 @@ function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 
 	$comment = get_comment( $comment_id, ARRAY_A );
 	if ( ! $comment ) {
-		wp_cache_debug( 'Comment not found; skipping cache update.', 4 );
+		wp_cache_debug( 'Comment not found; skipping cache update.' );
 		return;
 	}
 	if ( $status != 'NA' ) {
