@@ -2191,6 +2191,14 @@ function wp_cache_ob_callback( $buffer ) {
 	}
 }
 
+function wpsc_skip_debug_output( $buffer ) {
+	return strpos( $buffer, '<html' ) === false ||
+		( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
+		( defined( 'JSON_REQUEST' ) && JSON_REQUEST ) ||
+		( defined( 'WC_API_REQUEST' ) && WC_API_REQUEST ) ||
+		( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() );
+}
+
 function wp_cache_append_tag( &$buffer ) {
 	global $wp_cache_gmt_offset, $wp_super_cache_comments;
 	global $cache_enabled, $super_cache_enabled;
@@ -2210,14 +2218,7 @@ function wp_cache_append_tag( &$buffer ) {
 		$msg = "Live page served on $timestamp";
 	}
 
-	// Don't append debug HTML comments to non-HTML responses (REST, Ajax, etc.).
-	if (
-		strpos( $buffer, '<html' ) === false ||
-		( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
-		( defined( 'JSON_REQUEST' ) && JSON_REQUEST ) ||
-		( defined( 'WC_API_REQUEST' ) && WC_API_REQUEST ) ||
-		( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() )
-	) {
+	if ( wpsc_skip_debug_output( $buffer ) ) {
 		wp_cache_debug( site_url( $_SERVER['REQUEST_URI'] ) . ' - ' . $msg );
 		return false;
 	}
@@ -2236,14 +2237,7 @@ function wp_cache_add_to_buffer( &$buffer, $text ) {
 		return false;
 	}
 
-	// Don't append debug HTML comments to non-HTML responses (REST, Ajax, etc.).
-	if (
-		strpos( $buffer, '<html' ) === false ||
-		( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
-		( defined( 'JSON_REQUEST' ) && JSON_REQUEST ) ||
-		( defined( 'WC_API_REQUEST' ) && WC_API_REQUEST ) ||
-		( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() )
-	) {
+	if ( wpsc_skip_debug_output( $buffer ) ) {
 		wp_cache_debug( site_url( $_SERVER['REQUEST_URI'] ) . ' - ' . $text );
 		return false;
 	}
