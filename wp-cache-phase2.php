@@ -2419,7 +2419,7 @@ function wp_cache_get_ob( &$buffer ) {
 				wp_cache_debug( 'Error. Supercache could not write to ' . str_replace( ABSPATH, '', $tmp_cache_filename ), 1 );
 				wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) );
 				if ( $fr ) {
-					fclose( $fr );
+					fclose( $fr ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 				}
 				@unlink( $tmp_wpcache_filename );
 				wp_cache_writers_exit();
@@ -2433,7 +2433,7 @@ function wp_cache_get_ob( &$buffer ) {
 					wp_cache_debug( 'Error. Supercache could not write to ' . str_replace( ABSPATH, '', $tmp_cache_filename ) . '.gz', 1 );
 					wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) . '.gz' );
 					if ( $fr ) {
-						fclose( $fr );
+						fclose( $fr ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 					}
 					@unlink( $tmp_wpcache_filename );
 					@fclose( $fr2 );
