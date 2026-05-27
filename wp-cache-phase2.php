@@ -3089,6 +3089,10 @@ function wp_cache_clear_cache_on_menu() {
 function wp_cache_clear_cache( $blog_id = 0 ) {
 	global $cache_path;
 
+	// Normalize non-integer callers (e.g. 'all', false) to 0 so they take the
+	// single-site path instead of reaching get_blog_option() via the blog branch.
+	$blog_id = (int) $blog_id;
+
 	if ( $blog_id == 0 ) {
 		wp_cache_debug( 'Clearing all cached files in wp_cache_clear_cache()', 4 );
 		prune_super_cache( $cache_path . 'supercache/', true );
