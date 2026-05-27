@@ -3,8 +3,8 @@ Contributors: donncha, automattic, adnan007, dilirity, mikemayhem3030, pyronaur,
 Tags: performance, caching, wp-cache, wp-super-cache, cache
 Requires at least: 6.8
 Requires PHP: 7.4
-Tested up to: 6.9
-Stable tag: 3.1.0
+Tested up to: 7.0
+Stable tag: 3.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -255,6 +255,13 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 == Changelog ==
+### 3.1.1 - 2026-05-27
+- Security: harden supercache filename generation so request-derived data cannot escape the cache directory.
+- Fix: avoid a fatal error on PHP 8+ when closing an unopened file handle in supercache-only mode.
+- Fix: cast the blog ID in wp_cache_clear_cache() so non-integer callers no longer trigger a multisite-only function on single-site installs.
+- Fix: no longer append HTML debug comments to REST API, Ajax, JSON, WooCommerce API, and XML-RPC responses.
+- Fix: avoid a PHP warning when a comment has already been deleted before the cache-clear routine runs.
+
 ### 3.1.0 - 2026-04-14
 - Disable caching for wp_die() error pages
 - Harden the plugin in various ways.
