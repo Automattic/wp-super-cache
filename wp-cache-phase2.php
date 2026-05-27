@@ -1089,6 +1089,11 @@ function supercache_filename() {
 	if ( is_array( $cached_direct_pages ) && in_array( $_SERVER['REQUEST_URI'], $cached_direct_pages ) ) {
 		$extra_str = '';
 	}
+
+	// The filename must always be a single path segment. Filters above may
+	// return arbitrary data, so restrict it to a safe set of characters.
+	$extra_str = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $extra_str );
+
 	$filename = 'index' . $extra_str . '.html';
 
 	return $filename;
