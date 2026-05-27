@@ -2196,6 +2196,7 @@ function wpsc_skip_debug_output( $buffer ) {
 		( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
 		( defined( 'JSON_REQUEST' ) && JSON_REQUEST ) ||
 		( defined( 'WC_API_REQUEST' ) && WC_API_REQUEST ) ||
+		( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) ||
 		( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() );
 }
 
