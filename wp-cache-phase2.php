@@ -2418,7 +2418,9 @@ function wp_cache_get_ob( &$buffer ) {
 			if ( ! $fr2 ) {
 				wp_cache_debug( 'Error. Supercache could not write to ' . str_replace( ABSPATH, '', $tmp_cache_filename ), 1 );
 				wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) );
-				@fclose( $fr );
+				if ( $fr ) {
+					fclose( $fr ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+				}
 				@unlink( $tmp_wpcache_filename );
 				wp_cache_writers_exit();
 				return wp_cache_maybe_dynamic( $buffer );
@@ -2430,7 +2432,9 @@ function wp_cache_get_ob( &$buffer ) {
 				if ( ! $gz ) {
 					wp_cache_debug( 'Error. Supercache could not write to ' . str_replace( ABSPATH, '', $tmp_cache_filename ) . '.gz', 1 );
 					wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) . '.gz' );
-					@fclose( $fr );
+					if ( $fr ) {
+						fclose( $fr ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+					}
 					@unlink( $tmp_wpcache_filename );
 					@fclose( $fr2 );
 					@unlink( $tmp_cache_filename );
@@ -3088,6 +3092,10 @@ function wp_cache_clear_cache_on_menu() {
 /* Clear out the cache directory. */
 function wp_cache_clear_cache( $blog_id = 0 ) {
 	global $cache_path;
+
+	// Normalize non-integer callers (e.g. 'all', false) to 0 so they take the
+	// single-site path instead of reaching get_blog_option() via the blog branch.
+	$blog_id = (int) $blog_id;
 
 	if ( $blog_id == 0 ) {
 		wp_cache_debug( 'Clearing all cached files in wp_cache_clear_cache()', 4 );
