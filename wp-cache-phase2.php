@@ -537,23 +537,77 @@ function wpsc_get_accept_header() {
 		$accept_headers = apply_filters( 'wpsc_accept_headers', array( 'application/json', 'application/activity+json', 'application/ld+json' ) );
 		$accept_headers = array_map( 'strtolower', $accept_headers );
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- $accept is checked and set below.
-		$accept = isset( $_SERVER['HTTP_ACCEPT'] ) ? strtolower( filter_var( $_SERVER['HTTP_ACCEPT'] ) ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- $raw is checked and set below.
+		$raw = isset( $_SERVER['HTTP_ACCEPT'] ) ? strtolower( filter_var( $_SERVER['HTTP_ACCEPT'] ) ) : '';
 
-		foreach ( $accept_headers as $header ) {
-			if ( str_contains( $accept, $header ) ) {
-				$accept = 'application/json';
-			}
-		}
-
-		if ( $accept !== 'application/json' ) {
-			$accept = 'text/html';
-		}
+		$accept = empty( $raw ) ? 'text/html' : wpsc_parse_accept_header( $raw, $accept_headers );
 
 		wp_cache_debug( 'ACCEPT: ' . $accept );
 	}
 
 	return $accept;
+}
+
+/**
+ * Classify an Accept header as 'text/html' or 'application/json'.
+ *
+ * Parses RFC 7231 §5.3.2 quality values (q=) so that a request where
+ * text/html has a higher or equal q-value than any known JSON type is
+ * correctly served from cache. The previous str_contains() approach treated
+ * any mention of a JSON media type as a JSON request, regardless of priority.
+ *
+ * Classification rules:
+ * - Classify as 'application/json' only when a known JSON type has a
+ *   strictly higher q-value than text/html.
+ * - Ties, or text/html strictly higher, resolve to 'text/html'.
+ * - If text/html is absent, its effective q-value is taken from *\/* (if
+ *   present). If neither is present, the effective html q-value is 0.0.
+ * - Malformed q-values (non-numeric, out-of-range) are treated as q=1.0.
+ *
+ * @param string   $raw_accept Lowercased, non-empty Accept header value.
+ * @param string[] $json_types Media types to treat as JSON (from wpsc_accept_headers filter).
+ * @return string 'text/html' or 'application/json'.
+ */
+function wpsc_parse_accept_header( $raw_accept, $json_types ) {
+	$html_q     = null; // null = not explicitly present in Accept header.
+	$wildcard_q = null;
+	$json_q     = 0.0;
+
+	foreach ( explode( ',', $raw_accept ) as $part ) {
+		$segments   = explode( ';', trim( $part ) );
+		$media_type = trim( $segments[0] );
+		$q          = 1.0; // Default q-value per RFC 7231 §5.3.1.
+
+		for ( $i = 1, $len = count( $segments ); $i < $len; $i++ ) {
+			$param = ltrim( $segments[ $i ] );
+			if ( strncmp( $param, 'q=', 2 ) === 0 ) {
+				$q_str = substr( $param, 2 );
+				$q     = is_numeric( $q_str ) ? max( 0.0, min( 1.0, (float) $q_str ) ) : 1.0;
+				break;
+			}
+		}
+
+		if ( 'text/html' === $media_type ) {
+			$html_q = null === $html_q ? $q : max( $html_q, $q );
+		} elseif ( '*/*' === $media_type ) {
+			$wildcard_q = null === $wildcard_q ? $q : max( $wildcard_q, $q );
+		}
+
+		if ( in_array( $media_type, $json_types, true ) ) {
+			$json_q = max( $json_q, $q );
+		}
+	}
+
+	// Effective html q: explicit text/html wins; fall back to */* if absent.
+	if ( null !== $html_q ) {
+		$effective_html_q = $html_q;
+	} elseif ( null !== $wildcard_q ) {
+		$effective_html_q = $wildcard_q;
+	} else {
+		$effective_html_q = 0.0;
+	}
+
+	return $json_q > $effective_html_q ? 'application/json' : 'text/html';
 }
 
 function wp_cache_get_cookies_values() {
