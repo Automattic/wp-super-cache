@@ -560,8 +560,9 @@ function wpsc_get_accept_header() {
  * - Classify as 'application/json' only when a known JSON type has a
  *   strictly higher q-value than text/html.
  * - Ties, or text/html strictly higher, resolve to 'text/html'.
- * - If text/html is absent, its effective q-value is taken from *\/* (if
- *   present). If neither is present, the effective html q-value is 0.0.
+ * - If text/html is absent, its effective q-value is 0.0. The *\/* wildcard
+ *   is intentionally not applied to text/html: a JSON client sending
+ *   "application/json, *\/*" would otherwise receive cached HTML.
  * - Malformed q-values (non-numeric, out-of-range) are treated as q=1.0.
  *
  * @param string   $raw_accept Lowercased, non-empty Accept header value.
@@ -569,9 +570,8 @@ function wpsc_get_accept_header() {
  * @return string 'text/html' or 'application/json'.
  */
 function wpsc_parse_accept_header( $raw_accept, $json_types ) {
-	$html_q     = null; // null = not explicitly present in Accept header.
-	$wildcard_q = null;
-	$json_q     = 0.0;
+	$html_q = null; // null = not explicitly present in Accept header.
+	$json_q = 0.0;
 
 	foreach ( explode( ',', $raw_accept ) as $part ) {
 		$segments   = explode( ';', trim( $part ) );
@@ -589,8 +589,6 @@ function wpsc_parse_accept_header( $raw_accept, $json_types ) {
 
 		if ( 'text/html' === $media_type ) {
 			$html_q = null === $html_q ? $q : max( $html_q, $q );
-		} elseif ( '*/*' === $media_type ) {
-			$wildcard_q = null === $wildcard_q ? $q : max( $wildcard_q, $q );
 		}
 
 		if ( in_array( $media_type, $json_types, true ) ) {
@@ -598,14 +596,10 @@ function wpsc_parse_accept_header( $raw_accept, $json_types ) {
 		}
 	}
 
-	// Effective html q: explicit text/html wins; fall back to */* if absent.
-	if ( null !== $html_q ) {
-		$effective_html_q = $html_q;
-	} elseif ( null !== $wildcard_q ) {
-		$effective_html_q = $wildcard_q;
-	} else {
-		$effective_html_q = 0.0;
-	}
+	// Effective html q: explicit text/html only. A */* wildcard must not lift
+	// text/html above an explicitly requested JSON type, or JSON/Fediverse
+	// clients sending e.g. "application/json, */*" get served cached HTML.
+	$effective_html_q = ( null !== $html_q ) ? $html_q : 0.0;
 
 	return $json_q > $effective_html_q ? 'application/json' : 'text/html';
 }

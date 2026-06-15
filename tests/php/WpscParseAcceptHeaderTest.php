@@ -75,10 +75,18 @@ class WpscParseAcceptHeaderTest extends TestCase {
 
 	// ── Wildcard behaviour ────────────────────────────────────────────────────
 
-	// Wildcard (*/*) covers text/html when text/html is not explicitly listed.
-	public function test_wildcard_covers_html_when_not_explicit(): void {
-		// */* q=1.0 > json q=0.9 → text/html.
-		$this->assertSame( 'text/html', wpsc_parse_accept_header( '*/*,application/json;q=0.9', $this->json_types ) );
+	// */* wildcard does NOT cover text/html when text/html is not explicit.
+	// A JSON client sending "*/*,application/json;q=0.9" must classify as JSON,
+	// not as text/html, to avoid serving cached HTML to non-browser clients.
+	public function test_wildcard_does_not_cover_html_when_not_explicit(): void {
+		// html absent → effective_html_q = 0.0; json q=0.9 > 0.0 → application/json.
+		$this->assertSame( 'application/json', wpsc_parse_accept_header( '*/*,application/json;q=0.9', $this->json_types ) );
+	}
+
+	// Fediverse regression: "application/json, */*" must NOT serve cached HTML.
+	public function test_fediverse_json_with_wildcard_classifies_as_json(): void {
+		// html absent → effective_html_q = 0.0; json q=1.0 > 0.0 → application/json.
+		$this->assertSame( 'application/json', wpsc_parse_accept_header( 'application/json, */*', $this->json_types ) );
 	}
 
 	// Explicit text/html;q=0.5 wins over */*;q=1.0 — wildcard does not boost an explicit html q.
