@@ -5,26 +5,19 @@
  * @package automattic/wp-super-cache
  */
 
-// wpsc_parse_accept_header() has no WordPress dependencies — include only the
-// containing file. wp_cache_debug() is defined inside wp-cache-phase2.php and
-// returns early when its globals are unset, so no stub is needed. apply_filters()
-// is a WP core function not defined in the file; stub it for completeness.
-if ( ! function_exists( 'apply_filters' ) ) {
-	function apply_filters( $tag, $value ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement
-		return $value;
-	}
-}
-
 require_once dirname( __DIR__, 2 ) . '/wp-cache-phase2.php';
 
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers wpsc_parse_accept_header
- */
+#[CoversFunction( 'wpsc_parse_accept_header' )]
 class WpscParseAcceptHeaderTest extends TestCase {
 
-	/** Default JSON types mirroring the wpsc_accept_headers default. */
+	/**
+	 * Default JSON types mirroring the wpsc_accept_headers default.
+	 *
+	 * @var string[]
+	 */
 	private array $json_types = array(
 		'application/json',
 		'application/activity+json',
@@ -64,7 +57,7 @@ class WpscParseAcceptHeaderTest extends TestCase {
 
 	/** Malformed q-value (non-numeric) treated as q=1.0, no warning/fatal. */
 	public function test_malformed_q_value_treated_as_default(): void {
-		// application/json;q=bad → treated as q=1.0; text/html is absent → effective html_q from */*=0.7.
+		// application/json;q=bad → treated as q=1.0; text/html absent → effective_html_q = 0.0; 1.0 > 0.0 → application/json.
 		$this->assertSame( 'application/json', wpsc_parse_accept_header( 'application/json;q=bad,*/*;q=0.7', $this->json_types ) );
 	}
 
@@ -75,27 +68,29 @@ class WpscParseAcceptHeaderTest extends TestCase {
 
 	// ── Wildcard behaviour ────────────────────────────────────────────────────
 
-	// */* wildcard does NOT cover text/html when text/html is not explicit.
-	// A JSON client sending "*/*,application/json;q=0.9" must classify as JSON,
-	// not as text/html, to avoid serving cached HTML to non-browser clients.
+	/**
+	 * The *\/* wildcard does NOT cover text/html when text/html is not explicit.
+	 * A JSON client sending "*\/*,application/json;q=0.9" must classify as JSON,
+	 * not as text/html, to avoid serving cached HTML to non-browser clients.
+	 */
 	public function test_wildcard_does_not_cover_html_when_not_explicit(): void {
 		// html absent → effective_html_q = 0.0; json q=0.9 > 0.0 → application/json.
 		$this->assertSame( 'application/json', wpsc_parse_accept_header( '*/*,application/json;q=0.9', $this->json_types ) );
 	}
 
-	// Fediverse regression: "application/json, */*" must NOT serve cached HTML.
+	/** Fediverse regression: "application/json, *\/*" must NOT serve cached HTML. */
 	public function test_fediverse_json_with_wildcard_classifies_as_json(): void {
 		// html absent → effective_html_q = 0.0; json q=1.0 > 0.0 → application/json.
 		$this->assertSame( 'application/json', wpsc_parse_accept_header( 'application/json, */*', $this->json_types ) );
 	}
 
-	// Explicit text/html;q=0.5 wins over */*;q=1.0 — wildcard does not boost an explicit html q.
+	/** Explicit text/html;q=0.5 wins over *\/*;q=1.0 — wildcard does not boost an explicit html q. */
 	public function test_explicit_html_takes_precedence_over_wildcard(): void {
 		// html explicit q=0.5; wildcard q=1.0; json q=0.8 → 0.8 > 0.5 → application/json.
 		$this->assertSame( 'application/json', wpsc_parse_accept_header( 'text/html;q=0.5,*/*;q=1.0,application/json;q=0.8', $this->json_types ) );
 	}
 
-	// No text/html and no wildcard, but JSON present — effective html_q = 0.0 → application/json.
+	/** No explicit text/html and no wildcard, but JSON present — effective html_q = 0.0 → application/json. */
 	public function test_no_html_no_wildcard_json_present(): void {
 		$this->assertSame( 'application/json', wpsc_parse_accept_header( 'application/json;q=0.5', $this->json_types ) );
 	}
@@ -107,7 +102,7 @@ class WpscParseAcceptHeaderTest extends TestCase {
 		$this->assertSame( 'text/html', wpsc_parse_accept_header( ' text/html , application/json;q=0.9 ', $this->json_types ) );
 	}
 
-	/** application/activity+json classified as JSON. */
+	/** Classifies application/activity+json as JSON. */
 	public function test_activity_json_classified_as_json(): void {
 		$this->assertSame( 'application/json', wpsc_parse_accept_header( 'application/activity+json', $this->json_types ) );
 	}
