@@ -11,24 +11,16 @@
  * @package automattic/wp-super-cache
  */
 
-// The integration tier runs against an isolated PHPUnit 9 toolchain (see
-// tests/php/tools/) because WordPress's WP_UnitTestCase is not PHPUnit 10+
-// compatible. `make test-integration` points WPSC_INTEGRATION_AUTOLOAD at that
-// toolchain's autoloader; fall back to the root vendor for other setups.
-$_autoload = getenv( 'WPSC_INTEGRATION_AUTOLOAD' );
-if ( ! $_autoload || ! file_exists( $_autoload ) ) {
-	$_autoload = dirname( __DIR__, 2 ) . '/vendor/autoload.php';
-}
-require_once $_autoload;
+require_once dirname( __DIR__, 2 ) . '/vendor/autoload.php';
 
 // wp-phpunit's autoload (__loaded.php) sets WP_PHPUNIT__DIR; honour an explicit
-// WP_TESTS_DIR override, then fall back to the toolchain's bundled library path.
+// WP_TESTS_DIR override, then fall back to the bundled library path.
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 if ( ! $_tests_dir ) {
 	$_tests_dir = getenv( 'WP_PHPUNIT__DIR' );
 }
 if ( ! $_tests_dir ) {
-	$_tests_dir = __DIR__ . '/tools/vendor/wp-phpunit/wp-phpunit';
+	$_tests_dir = dirname( __DIR__, 2 ) . '/vendor/wp-phpunit/wp-phpunit';
 }
 
 if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {

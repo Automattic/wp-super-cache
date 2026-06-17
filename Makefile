@@ -41,18 +41,11 @@ WPSC_TESTS_CONFIG := $(PLUGIN_DIR_IN_CONTAINER)/tests/php/wp-tests-config.php
 test: ## Run the fast PHP smoke suite (no database, no Docker)
 	composer test-php
 
-# WordPress's WP_UnitTestCase is not compatible with PHPUnit 10+, so the
-# integration tier uses an isolated PHPUnit 9 toolchain (tests/php/tools/) rather
-# than the modern PHPUnit the smoke tier runs.
-WPSC_INTEGRATION_AUTOLOAD := $(PLUGIN_DIR_IN_CONTAINER)/tests/php/tools/vendor/autoload.php
-
 test-integration: ## Run the full WordPress integration suite in Docker (auto-starts wp-env)
 	$(WP_ENV) start
-	@test -f tests/php/tools/vendor/bin/phpunit || composer install -d tests/php/tools --no-interaction
 	$(WP_ENV) run tests-cli --env-cwd=wp-content/plugins/wp-super-cache \
 		env WP_PHPUNIT__TESTS_CONFIG=$(WPSC_TESTS_CONFIG) \
-		    WPSC_INTEGRATION_AUTOLOAD=$(WPSC_INTEGRATION_AUTOLOAD) \
-		tests/php/tools/vendor/bin/phpunit -c phpunit-integration.9.xml.dist --colors=always
+		vendor/bin/phpunit -c phpunit-integration.9.xml.dist --colors=always
 
 ## Lint
 lint: ## Run PHP CodeSniffer

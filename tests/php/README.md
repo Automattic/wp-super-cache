@@ -14,6 +14,10 @@ The caching engine lives in procedural files (`wp-cache-phase2.php`, …) that a
 not autoloaded. Each tier's bootstrap loads them; test files do not need to
 `require` them.
 
+Both tiers run on **PHPUnit 9.6** — the newest version WordPress's
+`WP_UnitTestCase` supports (PHPUnit 10+ removed the annotation API it relies on).
+This matches the version WordPress core itself tests against.
+
 ---
 
 ## Smoke tier (`tests/php/smoke/`)
