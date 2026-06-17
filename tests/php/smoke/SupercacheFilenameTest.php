@@ -11,10 +11,11 @@
 
 // wp-cache-phase2.php is loaded by the smoke bootstrap (tests/php/bootstrap-smoke.php).
 
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
-#[CoversFunction( 'supercache_filename' )]
+/**
+ * @covers ::supercache_filename
+ */
 class SupercacheFilenameTest extends TestCase {
 
 	protected function setUp(): void {

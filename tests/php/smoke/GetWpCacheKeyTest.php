@@ -12,10 +12,11 @@
 
 // wp-cache-phase2.php is loaded by the smoke bootstrap (tests/php/bootstrap-smoke.php).
 
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
-#[CoversFunction( 'get_wp_cache_key' )]
+/**
+ * @covers ::get_wp_cache_key
+ */
 class GetWpCacheKeyTest extends TestCase {
 
 	protected function setUp(): void {

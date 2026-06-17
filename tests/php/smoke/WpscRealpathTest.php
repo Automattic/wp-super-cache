@@ -16,11 +16,12 @@
 
 // wp-cache-phase2.php is loaded by the smoke bootstrap (tests/php/bootstrap-smoke.php).
 
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
-#[CoversFunction( 'wpsc_get_realpath' )]
-#[CoversFunction( 'wpsc_is_in_cache_directory' )]
+/**
+ * @covers ::wpsc_get_realpath
+ * @covers ::wpsc_is_in_cache_directory
+ */
 class WpscRealpathTest extends TestCase {
 
 	/** @var string Temporary cache directory used as $cache_path. */

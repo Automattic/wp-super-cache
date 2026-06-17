@@ -7,10 +7,11 @@
 
 // wp-cache-phase2.php is loaded by the smoke bootstrap (tests/php/bootstrap-smoke.php).
 
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
-#[CoversFunction( 'wpsc_parse_accept_header' )]
+/**
+ * @covers ::wpsc_parse_accept_header
+ */
 class WpscParseAcceptHeaderTest extends TestCase {
 
 	/**

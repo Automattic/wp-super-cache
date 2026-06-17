@@ -39,10 +39,11 @@ Create `tests/php/smoke/<Name>Test.php`:
 
 ```php
 <?php
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
-#[CoversFunction( 'my_wpsc_function' )]
+/**
+ * @covers ::my_wpsc_function
+ */
 class MyWpscFunctionTest extends TestCase {
 
 	protected function setUp(): void {
