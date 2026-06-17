@@ -5,7 +5,7 @@
  * @package automattic/wp-super-cache
  */
 
-require_once dirname( __DIR__, 2 ) . '/wp-cache-phase2.php';
+// wp-cache-phase2.php is loaded by the smoke bootstrap (tests/php/bootstrap-smoke.php).
 
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;

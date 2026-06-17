@@ -33,11 +33,17 @@
 		"phpunit": [
 			"phpunit-select-config phpunit.#.xml.dist --colors=always"
 		],
+		"phpunit-integration": [
+			"phpunit-select-config phpunit-integration.#.xml.dist --colors=always"
+		],
 		"test-coverage": [
 			"php -dpcov.directory=. ./vendor/bin/phpunit-select-config phpunit.#.xml.dist --coverage-php \"$COVERAGE_DIR/php.cov\""
 		],
 		"test-php": [
 			"@composer phpunit"
+		],
+		"test-php-integration": [
+			"@composer phpunit-integration"
 		],
 		"test-e2e": [
 			"cd tests/e2e && pnpm i && pnpm env:up && pnpm test:run"

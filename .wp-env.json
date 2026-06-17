@@ -10,6 +10,5 @@
 		"wp-content/plugins/wp-super-cache": ".",
 		"wp-content/mu-plugins": "./tests/dev/mu-plugins"
 	},
-	"testsEnvironment": false,
-	"phpVersion": "8.1"
+	"phpVersion": "8.3"
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-	bootstrap="tests/php/bootstrap.php"
+	bootstrap="tests/php/bootstrap-smoke.php"
 	cacheDirectory=".phpunit.cache"
 	colors="true"
 	executionOrder="depends"
@@ -18,8 +18,8 @@
 	failOnWarning="true"
 >
 	<testsuites>
-		<testsuite name="main">
-			<directory suffix="Test.php">tests/php</directory>
+		<testsuite name="smoke">
+			<directory suffix="Test.php">tests/php/smoke</directory>
 		</testsuite>
 	</testsuites>
 </phpunit>
