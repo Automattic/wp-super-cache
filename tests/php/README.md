@@ -70,7 +70,12 @@ $this->assertSame( 'indexetcpasswd.html', supercache_filename() );
 > `wpsc_is_in_cache_directory()`): the first call in the process locks the cached
 > value, so keep the relevant inputs constant within a test class.
 
-Run it: `composer test-php`.
+Run it: `composer test-php` (or `make test`).
+
+> The `composer test-php` / `phpunit` scripts select the config via
+> `phpunit-select-config`, which uses the `pcntl` extension. On a PHP build
+> without `pcntl`, run PHPUnit directly instead:
+> `vendor/bin/phpunit -c phpunit.9.xml.dist`.
 
 ---
 

@@ -41,7 +41,12 @@ require_once $_tests_dir . '/includes/functions.php';
  * is available, so its functions are defined under a genuine WP runtime.
  */
 function _wpsc_manually_load_procedural_files() {
-	require_once dirname( __DIR__, 2 ) . '/wp-cache-phase2.php';
+	// Guard against a redeclaration fatal if the plugin is ever active in the
+	// tests env and loads wp-cache-phase2.php via a different (WPCACHEHOME) path,
+	// which would defeat require_once's path-based idempotency.
+	if ( ! function_exists( 'supercache_filename' ) ) {
+		require_once dirname( __DIR__, 2 ) . '/wp-cache-phase2.php';
+	}
 }
 tests_add_filter( 'muplugins_loaded', '_wpsc_manually_load_procedural_files' );
 
