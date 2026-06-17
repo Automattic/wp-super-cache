@@ -5,36 +5,44 @@ PLUGIN_NAME := wp-super-cache
 # Use the locally-installed @wordpress/env (a devDependency) rather than fetching
 # it via `npx --yes` on every call, which needs registry access on each run.
 # Run `make install` (npm install) once to populate it.
-WP_ENV := COMPOSE_PROJECT_NAME=$(PLUGIN_NAME) node_modules/.bin/wp-env
+WP_ENV_BIN := node_modules/.bin/wp-env
+WP_ENV := COMPOSE_PROJECT_NAME=$(PLUGIN_NAME) $(WP_ENV_BIN)
+
+# Guard: any wp-env target depends on this. If the binary is missing the recipe
+# below runs and exits with a helpful message; if it exists, it's up to date and
+# the recipe is skipped.
+$(WP_ENV_BIN):
+	@echo "Error: wp-env is not installed. Run 'make install' first." >&2
+	@exit 1
 
 ## Development environment
 install: ## Install PHP (Composer) and JS (npm) dependencies
 	composer install
 	npm install
 
-up: ## Start WordPress in Docker (http://localhost:8888, admin/password)
+up: $(WP_ENV_BIN) ## Start WordPress in Docker (http://localhost:8888, admin/password)
 	$(WP_ENV) start
 
-down: ## Stop the WordPress containers
+down: $(WP_ENV_BIN) ## Stop the WordPress containers
 	$(WP_ENV) stop
 
-destroy: ## Remove the WordPress containers and database
+destroy: $(WP_ENV_BIN) ## Remove the WordPress containers and database
 	$(WP_ENV) destroy
 
-logs: ## Tail the WordPress container logs
+logs: $(WP_ENV_BIN) ## Tail the WordPress container logs
 	$(WP_ENV) logs
 
-cli: ## Open a shell inside the cli container
+cli: $(WP_ENV_BIN) ## Open a shell inside the cli container
 	$(WP_ENV) run cli bash
 
-wp: ## Run an arbitrary wp-cli command, e.g. `make wp CMD="plugin list"`
+wp: $(WP_ENV_BIN) ## Run an arbitrary wp-cli command, e.g. `make wp CMD="plugin list"`
 	$(WP_ENV) run cli wp $(CMD)
 
 ## Test content
-seed: ## Create 100 randomly named posts and 100 pages for cache testing
+seed: $(WP_ENV_BIN) ## Create 100 randomly named posts and 100 pages for cache testing
 	$(WP_ENV) run cli wp eval-file wp-content/plugins/wp-super-cache/tests/dev/seed.php
 
-unseed: ## Delete content created by `make seed`
+unseed: $(WP_ENV_BIN) ## Delete content created by `make seed`
 	$(WP_ENV) run cli wp eval-file wp-content/plugins/wp-super-cache/tests/dev/unseed.php
 
 ## Test
@@ -44,7 +52,7 @@ WPSC_TESTS_CONFIG := $(PLUGIN_DIR_IN_CONTAINER)/tests/php/wp-tests-config.php
 test: ## Run the fast PHP smoke suite (no database, no Docker)
 	composer test-php
 
-test-integration: ## Run the full WordPress integration suite in Docker (auto-starts wp-env)
+test-integration: $(WP_ENV_BIN) ## Run the full WordPress integration suite in Docker (auto-starts wp-env)
 	$(WP_ENV) start
 	$(WP_ENV) run tests-cli --env-cwd=wp-content/plugins/wp-super-cache \
 		env WP_PHPUNIT__TESTS_CONFIG=$(WPSC_TESTS_CONFIG) \
