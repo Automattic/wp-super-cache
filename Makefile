@@ -2,7 +2,10 @@
 SHELL := /bin/bash
 
 PLUGIN_NAME := wp-super-cache
-WP_ENV := COMPOSE_PROJECT_NAME=$(PLUGIN_NAME) npx --yes @wordpress/env
+# Use the locally-installed @wordpress/env (a devDependency) rather than fetching
+# it via `npx --yes` on every call, which needs registry access on each run.
+# Run `make install` (npm install) once to populate it.
+WP_ENV := COMPOSE_PROJECT_NAME=$(PLUGIN_NAME) node_modules/.bin/wp-env
 
 ## Development environment
 install: ## Install PHP (Composer) and JS (npm) dependencies
