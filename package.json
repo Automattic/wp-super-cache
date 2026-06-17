@@ -22,6 +22,7 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.0",
+		"@wordpress/env": "^11.8.1",
 		"eslint": "^9.0",
 		"globals": "^15.0"
 	}
