@@ -56,4 +56,11 @@
 			<property name="ignoreUnusedRegexp" value="/^_/"/>
 		</properties>
 	</rule>
+
+	<!-- PHP test fixtures legitimately use direct filesystem calls (creating and
+	     tearing down temporary cache trees); WP_Filesystem is not available or
+	     appropriate in that context. -->
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>/tests/php/*</exclude-pattern>
+	</rule>
 </ruleset>
