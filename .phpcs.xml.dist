@@ -63,4 +63,24 @@
 	<rule ref="WordPress.WP.AlternativeFunctions">
 		<exclude-pattern>/tests/php/*</exclude-pattern>
 	</rule>
+
+	<!--
+	  Relocated procedural includes (#1061): these inc/ files are verbatim,
+	  byte-for-byte moves of legacy function clusters out of wp-cache.php. The
+	  pure relocation intentionally makes no behaviour change, so the pre-existing
+	  WPCS debt in wp-cache.php travels with the code unchanged. wp-cache.php
+	  itself carries the same debt and is only ever lint-checked on changed lines;
+	  excluding these relocations keeps that de-facto treatment. WPCS
+	  modernization of the relocated files is a tracked follow-up, out of scope
+	  for the move. Newly authored inc/ files (e.g. inc/boost.php) are NOT listed
+	  here and remain fully linted.
+	-->
+	<exclude-pattern>/inc/plugins-cookies\.php</exclude-pattern>
+	<exclude-pattern>/inc/cache-files\.php</exclude-pattern>
+	<exclude-pattern>/inc/htaccess\.php</exclude-pattern>
+	<exclude-pattern>/inc/settings-forms\.php</exclude-pattern>
+	<exclude-pattern>/inc/preload\.php</exclude-pattern>
+	<exclude-pattern>/inc/lifecycle\.php</exclude-pattern>
+	<exclude-pattern>/inc/admin-notices\.php</exclude-pattern>
+	<exclude-pattern>/inc/admin-ui\.php</exclude-pattern>
 </ruleset>
