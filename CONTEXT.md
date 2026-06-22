@@ -47,6 +47,18 @@ defined in time for their hooks.
   follow-up, separate from the relocation. Newly authored `inc/` files remain
   fully linted.
 
+## Config write path
+
+`src/config/class-config.php` (`Automattic\WPSC\Config`) is the single owner of
+the on-disk `wp-cache-config.php` format. All config-file writes flow through
+`Config::set()` / `Config::write_line()`. The global functions `wp_cache_setting()`
+and `wp_cache_replace_line()` in `wp-cache-phase2.php` are delegating shims kept
+for third-party compatibility; they lazy-load the class so engine-only loads
+remain safe. `$GLOBALS` variables remain the canonical, supported read API —
+reads are not migrated. See `docs/adr/0002-config-module-write-path.md` for the
+full decision, constraints, and the catalog of writes that deliberately bypass
+`Config::set()`.
+
 ## Tests
 
 Two tiers (see `tests/php/README.md`):
