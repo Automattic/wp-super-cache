@@ -1445,19 +1445,13 @@ function is_writeable_ACLSafe( $path ) {
 function wp_cache_setting( $field, $value ) {
 	global $wp_cache_config_file;
 
-	$GLOBALS[ $field ] = $value;
-	if ( is_numeric( $value ) ) {
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $value;", $wp_cache_config_file );
-	} elseif ( is_bool( $value ) ) {
-		$output_value = $value === true ? 'true' : 'false';
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $output_value;", $wp_cache_config_file );
-	} elseif ( is_object( $value ) || is_array( $value ) ) {
-		$text = var_export( $value, true );
-		$text = preg_replace( '/[\s]+/', ' ', $text );
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
-	} else {
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
+	if ( ! class_exists( 'Automattic\WPSC\Config' ) ) {
+		if ( file_exists( WPCACHEHOME . 'src/config/class-config.php' ) ) {
+			require_once WPCACHEHOME . 'src/config/class-config.php';
+		}
 	}
+
+	return \Automattic\WPSC\Config::set( $field, $value, $wp_cache_config_file );
 }
 
 function wp_cache_replace_line( $old, $new, $my_file ) {
