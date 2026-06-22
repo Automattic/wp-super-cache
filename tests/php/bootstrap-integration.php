@@ -37,15 +37,27 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 require_once $_tests_dir . '/includes/functions.php';
 
 /**
- * Load the procedural caching engine once WordPress (with the real hook system)
- * is available, so its functions are defined under a genuine WP runtime.
+ * Load the procedural caching engine and the main plugin file once WordPress
+ * (with the real hook system) is available, so their functions are defined under
+ * a genuine WP runtime.
  */
 function _wpsc_manually_load_procedural_files() {
+	$plugin_dir = dirname( __DIR__, 2 );
+
 	// Guard against a redeclaration fatal if the plugin is ever active in the
 	// tests env and loads wp-cache-phase2.php via a different (WPCACHEHOME) path,
 	// which would defeat require_once's path-based idempotency.
 	if ( ! function_exists( 'supercache_filename' ) ) {
-		require_once dirname( __DIR__, 2 ) . '/wp-cache-phase2.php';
+		require_once $plugin_dir . '/wp-cache-phase2.php';
+	}
+
+	// Load the main plugin file so the admin / lifecycle procedural functions
+	// (cache-file stats, htaccess generation, settings-form updaters, preload,
+	// ...) are defined under a real WP runtime. wp-cache.php pulls in the inc/
+	// files and runs wpsc_init() at top level. Guarded for the same reason as
+	// above (plugin active in the tests env loading via a different path).
+	if ( ! function_exists( 'wpsc_init' ) ) {
+		require_once $plugin_dir . '/wp-cache.php';
 	}
 }
 tests_add_filter( 'muplugins_loaded', '_wpsc_manually_load_procedural_files' );
