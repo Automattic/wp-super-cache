@@ -1446,9 +1446,10 @@ function wp_cache_setting( $field, $value ) {
 	global $wp_cache_config_file;
 
 	if ( ! class_exists( 'Automattic\WPSC\Config' ) ) {
-		if ( file_exists( WPCACHEHOME . 'src/config/class-config.php' ) ) {
-			require_once WPCACHEHOME . 'src/config/class-config.php';
+		if ( ! file_exists( WPCACHEHOME . 'src/config/class-config.php' ) ) {
+			return false;
 		}
+		require_once WPCACHEHOME . 'src/config/class-config.php';
 	}
 
 	return \Automattic\WPSC\Config::set( $field, $value, $wp_cache_config_file );
@@ -1456,9 +1457,10 @@ function wp_cache_setting( $field, $value ) {
 
 function wp_cache_replace_line( $old, $new, $my_file ) {
 	if ( ! class_exists( 'Automattic\WPSC\Config' ) ) {
-		if ( file_exists( WPCACHEHOME . 'src/config/class-config.php' ) ) {
-			require_once WPCACHEHOME . 'src/config/class-config.php';
+		if ( ! file_exists( WPCACHEHOME . 'src/config/class-config.php' ) ) {
+			return false;
 		}
+		require_once WPCACHEHOME . 'src/config/class-config.php';
 	}
 
 	return \Automattic\WPSC\Config::write_line( $old, $new, $my_file );

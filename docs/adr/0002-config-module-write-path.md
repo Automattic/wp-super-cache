@@ -101,7 +101,8 @@ simple `$field = value;` key/value assignments. These are intentional, not misse
 | `cache_rejected_user_agent` | The `___`↔space round-trip leaves the in-memory array holding `___` placeholders at write time while the written string has spaces restored, so `Config::set()` (which formats the array) would write different bytes |
 | `sem_id` write in `inc/lifecycle.php` | Uses a bare unanchored regex (`'sem_id'`), not the `'^ *\$sem_id'` anchored form `Config::set()` generates; migrating would change which lines the regex matches |
 | Debug-log writes in `wp-cache-phase2.php` | Stay on `wp_cache_setting()` for engine-only load safety (the lazy-load guard); the shim handles this correctly |
-| `plugins/*` and `rest/*` direct calls | Third-party-facing callers are out of scope for this refactor |
+| `plugins/*` direct calls | Third-party-facing plugin integrations shipped with the plugin; out of scope for this refactor |
+| `set_ossdlcdn` in `rest/class.wp-super-cache-rest-update-settings.php` | Raw integer-in-string write (`"\$ossdlcdn = $ossdlcdn;"`); matches `format_value`'s unquoted-int output but was left on the raw call. The handler's other `wp_cache_setting()` calls (already routed through the same `is_numeric` logic) were migrated to `Config::set()` |
 
 ## Consequences
 
