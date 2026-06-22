@@ -18,7 +18,15 @@
 - **No new locking/concurrency.** Preserve the existing `tempnam` → `rename` → `chmod` → `opcache_invalidate` sequence exactly.
 - **Stay-on-raw callers:** all `plugins/*` callers, the 4 `wp-cache-phase2.php` internal (debug-log) callers, and `rest/*` direct `wp_cache_replace_line()` callers are NOT migrated. Third-party + non-key/value.
 - **Tiering:** Config write tests run in the **integration tier** (`tests/php/integration/`, `make test-integration`) — the rewriter calls `wp_rand()` and `set_transient()` unconditionally/optionally, which the no-WordPress smoke bootstrap does not provide. CI stays lint + smoke.
-- **Verification commands:** `composer lint` (changed-lines PHPCS — check full output, not just the tail), `composer test-php` (smoke), `make test-integration` (local WP+DB), `composer test-e2e` (settings specs — essential for Phase C).
+- **Verification commands:** `composer lint` (changed-lines PHPCS — check full output, not just the tail), `composer test-php` (smoke), `make test-integration` (local WP+DB, runs the FULL integration suite — it takes no args), `composer test-e2e` (settings specs — essential for Phase C).
+- **Filtered integration runs:** `make test-integration` cannot filter. Where a step says `make test-integration -- --filter NAME`, run this verified form instead:
+  ```bash
+  docker exec -w /var/www/html/wp-content/plugins/wp-super-cache \
+    -e WP_PHPUNIT__TESTS_CONFIG=/var/www/html/wp-content/plugins/wp-super-cache/tests/php/wp-tests-config.php \
+    wp-super-cache-tests-cli-1 \
+    vendor/bin/phpunit -c phpunit-integration.9.xml.dist --filter NAME --colors=never
+  ```
+  (Container `wp-super-cache-tests-cli-1` must be up; confirmed working this session.)
 - **No `make pre-build`/`publish`/tag/SVN** steps anywhere.
 
 ---
