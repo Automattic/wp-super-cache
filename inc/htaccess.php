@@ -41,8 +41,8 @@ function wpsc_remove_marker( $filename, $marker ) {
 
 function update_cached_mobile_ua_list( $mobile_browsers, $mobile_prefixes = 0, $mobile_groups = 0 ) {
 	global $wp_cache_config_file, $wp_cache_mobile_browsers, $wp_cache_mobile_prefixes, $wp_cache_mobile_groups;
-	wp_cache_setting( 'wp_cache_mobile_browsers', $mobile_browsers );
-	wp_cache_setting( 'wp_cache_mobile_prefixes', $mobile_prefixes );
+	\Automattic\WPSC\Config::set( 'wp_cache_mobile_browsers', $mobile_browsers );
+	\Automattic\WPSC\Config::set( 'wp_cache_mobile_prefixes', $mobile_prefixes );
 	if ( is_array( $mobile_groups ) ) {
 		$wp_cache_mobile_groups = $mobile_groups;
 		wp_cache_replace_line('^ *\$wp_cache_mobile_groups', "\$wp_cache_mobile_groups = '" . implode( ', ', $mobile_groups ) . "';", $wp_cache_config_file);

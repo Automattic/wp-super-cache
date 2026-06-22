@@ -131,7 +131,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			return false;
 		}
 
-		wp_cache_setting( $global_name, (int)$value );
+		\Automattic\WPSC\Config::set( $global_name, (int) $value );
 	}
 
 	/**
@@ -164,7 +164,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			}
 
 			$cache_path = $new_cache_path;
-			wp_cache_setting( 'cache_path', $cache_path );
+			\Automattic\WPSC\Config::set( 'cache_path', $cache_path );
 		}
 	}
 
@@ -220,7 +220,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 
 			}
 
-			wp_cache_setting( 'wp_cache_mod_rewrite', $wp_cache_mod_rewrite );
+			\Automattic\WPSC\Config::set( 'wp_cache_mod_rewrite', $wp_cache_mod_rewrite );
 		}
 		return true;
 	}
@@ -242,7 +242,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			$wp_cache_not_logged_in = 0;
 		}
 
-		wp_cache_setting( 'wp_cache_not_logged_in', $wp_cache_not_logged_in );
+		\Automattic\WPSC\Config::set( 'wp_cache_not_logged_in', $wp_cache_not_logged_in );
 	}
 
 	/**
@@ -262,7 +262,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			$wp_cache_make_known_anon = 0;
 		}
 
-		wp_cache_setting( 'wp_cache_make_known_anon', $wp_cache_make_known_anon );
+		\Automattic\WPSC\Config::set( 'wp_cache_make_known_anon', $wp_cache_make_known_anon );
 	}
 
 	/**
@@ -286,7 +286,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 			$wp_cache_object_cache = 0;
 		}
 
-		wp_cache_setting( 'wp_cache_object_cache', $wp_cache_object_cache );
+		\Automattic\WPSC\Config::set( 'wp_cache_object_cache', $wp_cache_object_cache );
 	}
 
 	/**
@@ -300,7 +300,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 		$new_cache_compression = 0;
 		if ( defined( 'WPSC_DISABLE_COMPRESSION' ) ) {
 			$cache_compression = 0;
-			wp_cache_setting( 'cache_compression', $cache_compression );
+			\Automattic\WPSC\Config::set( 'cache_compression', $cache_compression );
 
 		} else {
 			if ( 1 == $value ) {
@@ -313,7 +313,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 
 			if ( $new_cache_compression != $cache_compression ) {
 				$cache_compression = $new_cache_compression;
-				wp_cache_setting( 'cache_compression', $cache_compression );
+				\Automattic\WPSC\Config::set( 'cache_compression', $cache_compression );
 				if ( function_exists( 'prune_super_cache' ) ) {
 					prune_super_cache( $cache_path, true );
 				}
@@ -603,7 +603,7 @@ class WP_Super_Cache_Rest_Update_Settings extends WP_REST_Controller {
 		if ( file_exists( $wp_cache_config_file_sample ) ) {
 			copy( $wp_cache_config_file_sample, $wp_cache_config_file );
 			$cache_page_secret = md5( gmdate( 'H:i:s' ) . wp_rand() );
-			wp_cache_setting( 'cache_page_secret', $cache_page_secret );
+			\Automattic\WPSC\Config::set( 'cache_page_secret', $cache_page_secret );
 
 			if ( function_exists( "opcache_invalidate" ) ) {
 				@opcache_invalidate( $wp_cache_config_file );

@@ -161,7 +161,7 @@ function wp_cron_preload_cache() {
 
 	if ( $wp_cache_preload_email_volume == 'none' && $wp_cache_preload_email_me == 1 ) {
 		$wp_cache_preload_email_me = 0;
-		wp_cache_setting( 'wp_cache_preload_email_me', 0 );
+		\Automattic\WPSC\Config::set( 'wp_cache_preload_email_me', 0 );
 	}
 
 	$just_started_preloading = false;
@@ -656,7 +656,7 @@ function wpsc_preload_settings() {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$wp_cache_preload_interval = (int) $_POST['wp_cache_preload_interval'];
-		wp_cache_setting( 'wp_cache_preload_interval', $wp_cache_preload_interval );
+		\Automattic\WPSC\Config::set( 'wp_cache_preload_interval', $wp_cache_preload_interval );
 	}
 
 	if ( $_POST[ 'wp_cache_preload_posts' ] == 'all' ) {
@@ -664,33 +664,33 @@ function wpsc_preload_settings() {
 	} else {
 		$wp_cache_preload_posts = (int)$_POST[ 'wp_cache_preload_posts' ];
 	}
-	wp_cache_setting( 'wp_cache_preload_posts', $wp_cache_preload_posts );
+	\Automattic\WPSC\Config::set( 'wp_cache_preload_posts', $wp_cache_preload_posts );
 
 	if ( isset( $_POST[ 'wp_cache_preload_email_volume' ] ) && in_array( $_POST[ 'wp_cache_preload_email_volume' ], array( 'none', 'less', 'medium', 'many' ) ) ) {
 		$wp_cache_preload_email_volume = $_POST[ 'wp_cache_preload_email_volume' ];
 	} else {
 		$wp_cache_preload_email_volume = 'none';
 	}
-	wp_cache_setting( 'wp_cache_preload_email_volume', $wp_cache_preload_email_volume );
+	\Automattic\WPSC\Config::set( 'wp_cache_preload_email_volume', $wp_cache_preload_email_volume );
 
 	if ( $wp_cache_preload_email_volume == 'none' )
-		wp_cache_setting( 'wp_cache_preload_email_me', 0 );
+		\Automattic\WPSC\Config::set( 'wp_cache_preload_email_me', 0 );
 	else
-		wp_cache_setting( 'wp_cache_preload_email_me', 1 );
+		\Automattic\WPSC\Config::set( 'wp_cache_preload_email_me', 1 );
 
 	if ( isset( $_POST[ 'wp_cache_preload_taxonomies' ] ) ) {
 		$wp_cache_preload_taxonomies = 1;
 	} else {
 		$wp_cache_preload_taxonomies = 0;
 	}
-	wp_cache_setting( 'wp_cache_preload_taxonomies', $wp_cache_preload_taxonomies );
+	\Automattic\WPSC\Config::set( 'wp_cache_preload_taxonomies', $wp_cache_preload_taxonomies );
 
 	if ( isset( $_POST[ 'wp_cache_preload_on' ] ) ) {
 		$wp_cache_preload_on = 1;
 	} else {
 		$wp_cache_preload_on = 0;
 	}
-	wp_cache_setting( 'wp_cache_preload_on', $wp_cache_preload_on );
+	\Automattic\WPSC\Config::set( 'wp_cache_preload_on', $wp_cache_preload_on );
 
 	// Ensure that preload settings are applied to scheduled cron.
 	$next_preload    = wp_next_scheduled( 'wp_cache_full_preload_hook' );
