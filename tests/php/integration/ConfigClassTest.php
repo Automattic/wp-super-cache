@@ -22,10 +22,13 @@ class ConfigClassTest extends WP_UnitTestCase {
 		$dir = trailingslashit( get_temp_dir() ) . 'wpsc-cfg-' . uniqid();
 		mkdir( $dir, 0700, true );
 		$this->temp_dirs[] = $dir;
+
 		$config = trailingslashit( $dir ) . 'wp-cache-config.php';
 		file_put_contents( $config, "<?php\n" . implode( "\n", $lines ) . "\n" );
+
 		$GLOBALS['cache_path']           = trailingslashit( $dir );
 		$GLOBALS['wp_cache_config_file'] = $config;
+
 		return $config;
 	}
 
