@@ -98,6 +98,7 @@ simple `$field = value;` key/value assignments. These are intentional, not misse
 | `cache_max_time` | Written unquoted in `inc/settings-forms.php` but quoted in `inc/admin-ui.php` — same field, inconsistent legacy formatting across callers; migrating would resolve the inconsistency but would change the on-disk bytes from at least one path |
 | `cache_page_secret` | An `md5()` value written quoted unconditionally; an all-digit md5 would be classified as numeric by `format_value` and emitted unquoted |
 | `$wp_cache_pages[ "..." ]` | Array sub-key writes, not a simple `$field = value;` line |
+| `cache_rejected_user_agent` | The `___`↔space round-trip leaves the in-memory array holding `___` placeholders at write time while the written string has spaces restored, so `Config::set()` (which formats the array) would write different bytes |
 | `sem_id` write in `inc/lifecycle.php` | Uses a bare unanchored regex (`'sem_id'`), not the `'^ *\$sem_id'` anchored form `Config::set()` generates; migrating would change which lines the regex matches |
 | Debug-log writes in `wp-cache-phase2.php` | Stay on `wp_cache_setting()` for engine-only load safety (the lazy-load guard); the shim handles this correctly |
 | `plugins/*` and `rest/*` direct calls | Third-party-facing callers are out of scope for this refactor |
@@ -107,6 +108,12 @@ simple `$field = value;` key/value assignments. These are intentional, not misse
 - Config-file writes have a single testable owner with documented format rules.
   The `format_value` and `write_line` methods can be unit-tested in isolation
   without a WordPress runtime.
+- Direct `wp_cache_replace_line()` callers that were migrated to `Config::set()`
+  now also write `$GLOBALS[$field]` (the raw rewriter never did). At every
+  migrated site the on-disk bytes are unchanged; the added global write keeps the
+  runtime state and the file consistent and was verified to be inert (no site
+  re-reads the global later in the same request in a way that would observe a
+  difference). This is intentional, not a behavioural regression.
 - The public shim surface (`wp_cache_setting` / `wp_cache_replace_line`) is
   unchanged, so third-party plugins are unaffected.
 - The exception catalog above is the authoritative list of writes that are not
