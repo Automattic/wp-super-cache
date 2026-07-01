@@ -416,7 +416,19 @@ function wp_cache_postload() {
 	global $wp_cache_request_uri;
 
 	if ( empty( $wp_cache_request_uri ) ) {
-		wp_cache_debug( 'wp_cache_postload: no request uri configured. Not running.' );
+		wp_cache_debug( 'wp_cache_postload: no request uri configured. Not serving cached files.' );
+
+		// A request with no URI (WP-CLI, and some cron runners) never serves a
+		// cached page, so the serving path below is correctly skipped. The
+		// cache-invalidation hooks are a separate concern: without them, publishing
+		// a scheduled post from WP-CLI leaves the stale page in the cache. Register
+		// them here so content changes still clear the cache. wpsc_register_post_hooks()
+		// wires only the content-change hooks (not the serving ones) and is
+		// idempotent, so this is safe alongside the normal request path.
+		if ( $cache_enabled ) {
+			wpsc_register_post_hooks();
+		}
+
 		return false;
 	}
 
