@@ -1,0 +1,52 @@
+name: Create Plugin Release
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - 'trunk'
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true && startsWith( github.head_ref, 'release/' )
+    runs-on: ubuntu-latest
+    name: WPSC Release
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - name: Comment on PR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.number }} --body "🚀 **[Release workflow started](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**"
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '7.4'
+          tools: composer
+          coverage: none
+      - name: Install JS dependencies
+        run: npm install --no-audit --no-fund
+      - name: Install PHP dependencies
+        run: composer install --no-ansi --no-interaction --prefer-dist --no-progress
+      - name: Setup Git
+        run: |
+          git config user.name "WPSC Bot"
+          git config user.email "<robot@wp-super-cache.com>"
+      - name: Create Release
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/create-release.mjs ${{ github.event.number }}
+      - name: Install SVN
+        run: sudo apt-get update && sudo apt-get install -y subversion
+      - name: Deploy to WordPress.org
+        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        env:
+          SVN_PASSWORD: ${{ secrets.WORDPRESSORG_SVN_PASSWORD }}
+          SVN_USERNAME: ${{ secrets.WORDPRESSORG_SVN_USERNAME }}
+          BUILD_DIR: build/wp-super-cache
+          SLUG: wp-super-cache
+          VERSION: ${{ steps.create_release.outputs.version }}
+      - name: Comment on PR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.number }} --body "✅ Release **${{ steps.create_release.outputs.version }}** [deployed to WordPress.org](https://wordpress.org/plugins/wp-super-cache/)."

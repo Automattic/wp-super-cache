@@ -1,0 +1,9 @@
+{
+	"repo": "Automattic/wp-super-cache",
+	"slug": "wp-super-cache",
+	"mainFile": "wp-cache.php",
+	"versionConstant": null,
+	"readme": "readme.txt",
+	"bumpPackageJson": false,
+	"nextVersionPlaceholder": false
+}
