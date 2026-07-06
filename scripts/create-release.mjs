@@ -65,7 +65,9 @@ await success();
  * @return {string} The release notes.
  */
 function getReleaseNotes() {
-	const prDescription = JSON.parse( execSync( `gh pr view ${ prNumber } -R ${ cfg.repo } --json body` ).toString() ).body;
+	// Normalize CRLF to LF: GitHub stores PR bodies edited in the web UI with
+	// CRLF line endings, which would break the `\n`-based fence regex below.
+	const prDescription = JSON.parse( execSync( `gh pr view ${ prNumber } -R ${ cfg.repo } --json body` ).toString() ).body.replace( /\r\n/g, '\n' );
 	// Both fences must sit on their own lines, and the capture is GREEDY so it
 	// runs to the LAST `---` line — the real closing fence. A non-greedy match
 	// would stop at the first interior `---` (e.g. a Markdown horizontal rule in
