@@ -3287,6 +3287,16 @@ function wp_cache_post_edit( $post_id ) {
 	global $wp_cache_clear_on_post_edit, $cache_path, $blog_cache_dir;
 	static $last_post_edited = -1;
 
+	// Normalize $post_id to always be an integer (handles both int and WP_Post object)
+	if ( is_object( $post_id ) && isset( $post_id->ID ) ) {
+		$post_id = $post_id->ID;
+	}
+	$post_id = (int) $post_id;
+
+	if ( $post_id === 0 ) {
+		return $post_id;
+	}
+
 	if ( $post_id == $last_post_edited ) {
 		$action = current_filter();
 		wp_cache_debug( "wp_cache_post_edit({$action}): Already processed post $post_id.", 4 );
@@ -3359,6 +3369,16 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 function wp_cache_post_change( $post_id ) {
 	global $file_prefix, $cache_path, $blog_id, $super_cache_enabled, $blog_cache_dir, $wp_cache_refresh_single_only;
 	static $last_processed = -1;
+
+	// Normalize $post_id to always be an integer (handles both int and WP_Post object)
+	if ( is_object( $post_id ) && isset( $post_id->ID ) ) {
+		$post_id = $post_id->ID;
+	}
+	$post_id = (int) $post_id;
+
+	if ( $post_id === 0 ) {
+		return $post_id;
+	}
 
 	if ( $post_id == $last_processed ) {
 		$action = current_filter();
