@@ -41,21 +41,33 @@ const prNumber = process.argv[ 2 ];
 // changelog fence aborts the run before it tags or ships anything.
 const releaseNotes = getReleaseNotes();
 
-// If the release already completed on a prior run, do nothing but emit the
-// version so the SVN deploy step can self-skip the existing tag.
-if ( remoteTagExists() && githubReleaseExists() ) {
-	console.log( chalk.yellow( `Release ${ pluginVersion } is already tagged and published on GitHub — nothing to do.` ) );
-	setWorkflowStepOutput();
-	process.exit( 0 );
+// If the release already completed on a prior run, skip the changelog/tag/GitHub
+// steps. Don't exit early, though: the SVN deploy step runs regardless and reads
+// from BUILD_DIR, which is absent on a fresh rerun runner — so we still rebuild
+// below so a rerun can recover a failed WordPress.org deploy. On a rerun the
+// changelog is already committed to the checked-out branch, so the rebuilt
+// package includes it.
+const alreadyReleased = remoteTagExists() && githubReleaseExists();
+
+if ( alreadyReleased ) {
+	console.log( chalk.yellow( `Release ${ pluginVersion } is already tagged and published on GitHub — rebuilding for the deploy step.` ) );
+} else {
+	updateChangelog();
+	commitChangelog();
+	tagRelease();
 }
 
-updateChangelog();
-commitChangelog();
-tagRelease();
 buildPluginZip();
-await createGithubRelease();
+
+if ( ! alreadyReleased ) {
+	await createGithubRelease();
+}
+
 setWorkflowStepOutput();
-await success();
+
+if ( ! alreadyReleased ) {
+	await success();
+}
 
 /**
  * Extract the release notes from the release PR body. Throws an explicit error
