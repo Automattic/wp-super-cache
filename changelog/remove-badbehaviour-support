@@ -1,4 +1,0 @@
-Significance: patch
-Type: removed
-
-Remove the Bad Behavior cache plugin integration. The Bad Behavior plugin is no longer available, and the integration code was non-functional.
