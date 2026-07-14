@@ -29,7 +29,7 @@ partials/                 Admin settings page tab templates
 tests/php/                PHPUnit tests
 tests/e2e/                End-to-end tests (Docker + Jest)
 
-scripts/                  Release tooling (pre-build, build, publish, exclude list)
+scripts/                  Release tooling (prepare-release, create-release, build, exclude list)
 .phan/                    Phan static analysis configuration and stubs
 ```
 
@@ -113,41 +113,32 @@ pnpm test
 
 ## Releases
 
-Releases are cut manually from `trunk` in three stages. See `scripts/pre-build.sh`, `scripts/build-plugin.sh`, and `scripts/publish.sh` for the full implementation; `scripts/exclude.lst` is the single source of truth for which files are excluded from the shipped plugin (shared by `rsync` and `zip`).
+Releases use a two-phase flow: you prepare a PR locally, edit the changelog in the PR, and merging it deploys automatically. `scripts/exclude.lst` is the single source of truth for which files are excluded from the shipped plugin (shared by `rsync` and `zip`).
 
 ### 1. Prepare the release PR
 
 ```bash
-make pre-build VERSION=x.y.z
+make release VERSION=x.y.z
 ```
 
-Run from a clean, up-to-date `trunk`. This target:
+Run from `trunk`. This target (`scripts/prepare-release.mjs`):
 
-1. Creates a `release/x.y.z` branch.
-2. Bumps `Stable tag:` in `readme.txt` and `Version:` in `wp-cache.php`.
-3. Generates a list of PRs merged in the last six months (via `gh pr list`) into a temp file and opens it alongside `readme.txt` in `vim` for manual changelog editing.
-4. Shows the diff and prompts for confirmation.
-5. Pushes the branch and opens a PR via `gh pr create`.
+1. Creates a `release/wp-super-cache-x.y.z` branch.
+2. Bumps `Version:` in `wp-cache.php` and `Stable tag:` in `readme.txt`.
+3. Assembles the changelog from the GitHub milestone `x.y.z` — every merged PR assigned to it, pulling each PR's `### Release Notes` section (falling back to the PR title).
+4. Pushes the branch and opens a PR whose body holds the changelog, **editable between the two `---` lines**.
 
-Review, merge the PR into `trunk`, and pull the merge commit locally.
+Create a GitHub milestone named exactly `x.y.z` and assign the release's PRs to it beforehand.
 
-### 2. Build the zip
+### 2. Edit and merge
 
-```bash
-make build
-```
+Edit the changelog in the PR body, review, and merge into `trunk`. On merge, `.github/workflows/create-release.yml` runs `scripts/create-release.mjs`, which:
 
-Rsyncs the plugin tree into `build/wp-super-cache/` (excluding everything in `scripts/exclude.lst`) and zips it to `build/wp-super-cache.zip`.
+1. Writes the edited release notes into `readme.txt`'s `== Changelog ==` (newest 5 entries).
+2. Tags the release and creates a GitHub release with `build/wp-super-cache.zip` attached.
+3. Deploys to the WordPress.org SVN repository via the 10up deploy action, using the `WORDPRESSORG_SVN_USERNAME` / `WORDPRESSORG_SVN_PASSWORD` repository secrets.
 
-### 3. Publish
-
-```bash
-make publish
-```
-
-1. Reads `Stable tag:` from `readme.txt` and extracts the matching section of `== Changelog ==` as release notes.
-2. Creates a GitHub release `vX.Y.Z` with `build/wp-super-cache.zip` attached.
-3. Prompts whether to also publish to the WordPress.org SVN repository. If accepted, shallow-checks out `plugins.svn.wordpress.org/wp-super-cache/` into `build/svn/`, rsyncs `build/wp-super-cache/` into `trunk/`, stages SVN adds/removes based on `svn status`, commits trunk, then server-side-copies trunk to `tags/X.Y.Z`. SVN prompts for your wp.org credentials.
+`make build` builds `build/wp-super-cache/` and `build/wp-super-cache.zip` from the working tree; it runs in CI but is also useful locally to inspect the packaged plugin.
 
 ## Contributing
 

@@ -22,6 +22,7 @@ wp-super-cache/node_modules
 wp-super-cache/package-lock.json
 wp-super-cache/package.json
 wp-super-cache/phpunit.*.xml.dist
+wp-super-cache/release.config.json
 wp-super-cache/scripts
 wp-super-cache/tests
 wp-super-cache/tools

@@ -69,18 +69,18 @@ lint-fix: ## Auto-fix PHP CodeSniffer issues
 	composer lint-fix
 
 ## Release
-pre-build: ## Prepare a release PR. Usage: make pre-build VERSION=x.y.z
-	@test -n "$(VERSION)" || { echo "Usage: make pre-build VERSION=x.y.z"; exit 1; }
-	./scripts/pre-build.sh $(VERSION)
+release: ## Prepare a release PR. Usage: make release VERSION=x.y.z
+	@test -n "$(VERSION)" || { echo "Usage: make release VERSION=x.y.z"; exit 1; }
+	node scripts/prepare-release.mjs $(VERSION)
 
-build: ## Build build/wp-super-cache.zip (run pre-build and merge the PR first)
+build: ## Build build/wp-super-cache.zip from the current working tree
 	./scripts/build-plugin.sh
 
-publish: ## Create a GitHub release from readme.txt + build/wp-super-cache.zip
-	./scripts/publish.sh
+i18n: ## Regenerate translation files (no-op: WPSC translations come from translate.wordpress.org)
+	@echo "No POT generation step for WP Super Cache."
 
 ## Help
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: install up down destroy logs cli wp seed unseed test test-integration lint lint-all lint-fix pre-build build publish help
+.PHONY: install up down destroy logs cli wp seed unseed test test-integration lint lint-all lint-fix release build i18n help

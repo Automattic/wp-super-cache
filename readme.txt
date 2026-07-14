@@ -271,7 +271,3 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 - Device Detection: use an embedded version instead of the Composer dependency.
 - Fix: str_starts_with() null deprecation on PHP 8.1+.
 - Fix: handle array type for supercache_last_cached option.
-
---------
-
-[See previous releases on GitHub.](https://github.com/Automattic/wp-super-cache/releases)
