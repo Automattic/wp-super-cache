@@ -150,6 +150,12 @@ CI will automatically run:
 - **PHP tests** across PHP 8.2, 8.3, 8.4, and 8.5
 - **PHPCS linting** on changed lines
 
+### Versioning new code
+
+When you add a `@since`, `@deprecated`, or a WordPress `_deprecated_*()` call for code that will ship in the **next** release, tag it with the next-version placeholder token instead of guessing the version number. Run `bash scripts/replace-next-version-tag.sh -h` for the exact token and the recognized patterns.
+
+At release time, `make release` replaces the placeholder with the version being shipped and **fails** if any malformed token is left behind — so you never need to know the next version number while writing a PR. (The token is deliberately not written literally here; the release step rewrites it wherever it appears in a tracked file.)
+
 ### Translations
 
 Help translate WP Super Cache on the [WordPress.org translation page](https://translate.wordpress.org/projects/wp-plugins/wp-super-cache).

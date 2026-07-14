@@ -5,5 +5,5 @@
 	"versionConstant": null,
 	"readme": "readme.txt",
 	"bumpPackageJson": false,
-	"nextVersionPlaceholder": false
+	"nextVersionPlaceholder": true
 }
