@@ -11,6 +11,9 @@ wp-super-cache/.phpcs.xml.dist
 wp-super-cache/w.org-assets
 wp-super-cache/.wp-env.json
 wp-super-cache/CHANGELOG.md
+wp-super-cache/AGENTS.md
+wp-super-cache/CLAUDE.md
+wp-super-cache/docs
 wp-super-cache/Makefile
 wp-super-cache/README.md
 wp-super-cache/build
