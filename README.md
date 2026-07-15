@@ -113,7 +113,7 @@ pnpm test
 
 ## Releases
 
-Releases use a two-phase flow: you prepare a PR locally, edit the changelog in the PR, and merging it deploys automatically. `scripts/exclude.lst` is the single source of truth for which files are excluded from the shipped plugin (shared by `rsync` and `zip`).
+Releases use a two-phase flow: you prepare a PR locally, edit the changelog in the PR, and merging it deploys automatically. The shipped plugin is built from an allow-list: `ship_paths` in `scripts/build-plugin.sh` is the single source of truth for which files are packaged, so a newly-added dev file can never leak into the release unless it is explicitly added there.
 
 ### 1. Prepare the release PR
 
