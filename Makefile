@@ -20,6 +20,10 @@ install: ## Install PHP (Composer) and JS (npm) dependencies
 	composer install
 	npm install
 
+install-hooks: ## Install git hooks (fail-fast guard against direct pushes to the default branch)
+	git config core.hooksPath .githooks
+	@echo "Git hooks installed (core.hooksPath = .githooks)."
+
 up: $(WP_ENV_BIN) ## Start WordPress in Docker (http://localhost:8888, admin/password)
 	$(WP_ENV) start
 
@@ -83,4 +87,4 @@ i18n: ## Regenerate translation files (no-op: WPSC translations come from transl
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: install up down destroy logs cli wp seed unseed test test-integration lint lint-all lint-fix release build i18n help
+.PHONY: install install-hooks up down destroy logs cli wp seed unseed test test-integration lint lint-all lint-fix release build i18n help
