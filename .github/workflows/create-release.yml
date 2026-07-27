@@ -37,7 +37,7 @@ jobs:
       - name: Install JS dependencies
         run: npm install --no-audit --no-fund
       - name: Install PHP dependencies
-        run: composer install --no-ansi --no-interaction --prefer-dist --no-progress
+        run: composer install --no-dev --no-ansi --no-interaction --prefer-dist --no-progress
       - name: Setup Git
         run: |
           git config user.name "WPSC Bot"
