@@ -909,13 +909,6 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		}
 	} else {
 		$uri = strtolower( $wp_cache_request_uri );
-		$uri = preg_replace_callback(
-			'/%[a-f0-9]{2}/',
-			function ( $matches ) {
-				return strtoupper( $matches[0] );
-			},
-			$uri
-		);
 	}
 	$uri      = preg_replace_callback(
 		'/%[a-f0-9]{2}/',
