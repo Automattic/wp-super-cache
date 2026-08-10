@@ -917,6 +917,13 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 			$uri
 		);
 	}
+	$uri      = preg_replace_callback(
+		'/%[a-f0-9]{2}/',
+		function ( $matches ) {
+			return strtoupper( $matches[0] );
+		},
+		$uri
+	);
 	$uri      = wpsc_deep_replace( array( '..', '\\', 'index.php' ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( '/(\?.*)?(#.*)?$/', '', $uri ) ) );
 	$hostname = $WPSC_HTTP_HOST;
 	// Get hostname from wp options for wp-cron, wp-cli and similar requests.
