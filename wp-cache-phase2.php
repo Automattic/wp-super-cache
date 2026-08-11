@@ -882,7 +882,7 @@ function get_supercache_dir( $blog_id = 0 ) {
  * Order matters: lowercase first, then uppercase the escapes. Doing it the other
  * way round drags the escapes back down with the surrounding ASCII.
  *
- * @since 3.1.2
+ * @since $$next-version$$
  *
  * @param string $uri URI or path fragment.
  * @return string Normalised URI.
@@ -913,7 +913,7 @@ function wpsc_normalize_uri_case( $uri ) {
  * that do still matter run later: the '..' strip, wp_cache_confirm_delete(), and
  * the check that the resolved path sits inside the supercache directory.
  *
- * @since 3.1.2
+ * @since $$next-version$$
  *
  * @param string $path Path from the request.
  * @return string Path with anything that cannot appear in a URL path removed.
