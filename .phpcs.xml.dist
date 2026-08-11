@@ -51,6 +51,18 @@
 		<exclude name="Squiz.Commenting.VariableComment.Missing"/>
 	</rule>
 
+	<!-- wpsc_sanitize_cache_path() is the sanitiser for request paths that name a
+	     supercache directory. sanitize_text_field() cannot be used there: it
+	     strips percent escapes, which is most of what such a path consists of
+	     (#1081). Teach PHPCS to recognise the replacement. -->
+	<rule ref="WordPress.Security.ValidatedSanitizedInput">
+		<properties>
+			<property name="customSanitizingFunctions" type="array">
+				<element value="wpsc_sanitize_cache_path"/>
+			</property>
+		</properties>
+	</rule>
+
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
 		<properties>
 			<property name="ignoreUnusedRegexp" value="/^_/"/>

@@ -226,7 +226,11 @@ function wp_cron_preload_cache() {
 					}
 
 					$url_info = wp_parse_url( $url );
-					$dir      = get_supercache_dir() . $url_info['path'];
+					// get_term_link() spells percent escapes in lowercase; the
+					// directory on disk has them uppercased. Without this the
+					// delete misses and the wp_remote_get() below is served the
+					// stale file it was meant to replace. See #1081.
+					$dir = get_supercache_dir() . wpsc_normalize_uri_case( $url_info['path'] );
 					wp_cache_debug( "wp_cron_preload_cache: delete $dir" );
 					wpsc_delete_files( $dir );
 					prune_super_cache( trailingslashit( $dir ) . 'feed/', true );

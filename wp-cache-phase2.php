@@ -869,6 +869,57 @@ function get_supercache_dir( $blog_id = 0 ) {
 	}
 	return trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
 }
+/**
+ * Normalise a URI to the spelling used by supercache directory names.
+ *
+ * Supercache directories are lowercase, with any percent escapes uppercased.
+ * The same path reaches us spelled two ways: sanitize_title_with_dashes()
+ * lowercases the escapes it stores in post_name, while a URL encoder emits them
+ * uppercase, so a visitor following a permalink and one pasting the unicode URL
+ * send different strings for one page. Uppercase is the target because RFC 3986
+ * section 2.1 recommends it and because it is the shape already on disk.
+ *
+ * Order matters: lowercase first, then uppercase the escapes. Doing it the other
+ * way round drags the escapes back down with the surrounding ASCII.
+ *
+ * @since 1.13.0
+ *
+ * @param string $uri URI or path fragment.
+ * @return string Normalised URI.
+ */
+function wpsc_normalize_uri_case( $uri ) {
+	return preg_replace_callback(
+		'/%[a-f0-9]{2}/',
+		function ( $matches ) {
+			return strtoupper( $matches[0] );
+		},
+		strtolower( (string) $uri )
+	);
+}
+
+/**
+ * Sanitise a cache path taken from the request.
+ *
+ * Deliberately not sanitize_text_field(): _sanitize_text_fields() strips every
+ * percent escape it finds, and a supercache directory for a non-ASCII slug is
+ * largely made of percent escapes, so that call quietly turned
+ * /category/%d2%b1lytau/ into /category/lytau/ and the deletion never found
+ * anything. See #1081.
+ *
+ * An allow-list of the characters a URL path can use is enough here. Everything
+ * that contains this value still applies afterwards: the '..' strip, the
+ * truncation at ':', wp_cache_confirm_delete(), and the check that the resolved
+ * path sits inside the supercache directory.
+ *
+ * @since 1.13.0
+ *
+ * @param string $path Path from the request.
+ * @return string Path with anything that cannot appear in a URL path removed.
+ */
+function wpsc_sanitize_cache_path( $path ) {
+	return preg_replace( '#[^A-Za-z0-9%_./~-]#', '', (string) $path );
+}
+
 function get_current_url_supercache_dir( $post_id = 0 ) {
 	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST, $wp_cache_home_path;
 	static $saved_supercache_dir = array();
@@ -911,15 +962,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$uri = $wp_cache_request_uri;
 	}
 
-	// Supercache directories are lowercase, with any percent escapes uppercased.
-	$uri      = strtolower( $uri );
-	$uri      = preg_replace_callback(
-		'/%[a-f0-9]{2}/',
-		function ( $matches ) {
-			return strtoupper( $matches[0] );
-		},
-		$uri
-	);
+	$uri      = wpsc_normalize_uri_case( $uri );
 	$uri      = wpsc_deep_replace( array( '..', '\\', 'index.php' ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( '/(\?.*)?(#.*)?$/', '', $uri ) ) );
 	$hostname = $WPSC_HTTP_HOST;
 	// Get hostname from wp options for wp-cron, wp-cli and similar requests.
@@ -1398,7 +1441,9 @@ function wpsc_delete_url_cache( $url ) {
 		wp_cache_debug( 'wpsc_delete_url_cache: URL contains the character "?". Not deleting URL: ' . $url );
 		return false;
 	}
-	$dir = str_replace( get_option( 'home' ), '', $url );
+	// $url is a WordPress-generated permalink, so its percent escapes are
+	// lowercase while the directory on disk has them uppercased. See #1081.
+	$dir = wpsc_normalize_uri_case( str_replace( get_option( 'home' ), '', $url ) );
 	if ( $dir != '' ) {
 		$supercachedir = get_supercache_dir();
 		wpsc_rebuild_files( $supercachedir . $dir );
@@ -3236,8 +3281,11 @@ function wpsc_delete_cats_tags( $post ) {
 		}
 		$category_base = trailingslashit( $category_base ); // paranoid much?
 		foreach ( $categories as $cat ) {
-			prune_super_cache( get_supercache_dir() . $category_base . $cat->slug . '/', true );
-			wp_cache_debug( 'wpsc_post_transition: deleting category: ' . get_supercache_dir() . $category_base . $cat->slug . '/' );
+			// Term slugs are stored with lowercase percent escapes; the directory
+			// on disk has them uppercased. See #1081.
+			$cat_dir = get_supercache_dir() . wpsc_normalize_uri_case( $category_base . $cat->slug ) . '/';
+			prune_super_cache( $cat_dir, true );
+			wp_cache_debug( 'wpsc_post_transition: deleting category: ' . $cat_dir );
 		}
 	}
 	$posttags = get_the_tags( $post->ID );
@@ -3248,8 +3296,9 @@ function wpsc_delete_cats_tags( $post ) {
 		}
 		$tag_base = trailingslashit( str_replace( '..', '', $tag_base ) ); // maybe!
 		foreach ( $posttags as $tag ) {
-			prune_super_cache( get_supercache_dir() . $tag_base . $tag->slug . '/', true );
-			wp_cache_debug( 'wpsc_post_transition: deleting tag: ' . get_supercache_dir() . $tag_base . $tag->slug . '/' );
+			$tag_dir = get_supercache_dir() . wpsc_normalize_uri_case( $tag_base . $tag->slug ) . '/';
+			prune_super_cache( $tag_dir, true );
+			wp_cache_debug( 'wpsc_post_transition: deleting tag: ' . $tag_dir );
 		}
 	}
 }
