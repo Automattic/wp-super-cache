@@ -908,8 +908,11 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 			}
 		}
 	} else {
-		$uri = strtolower( $wp_cache_request_uri );
+		$uri = $wp_cache_request_uri;
 	}
+
+	// Supercache directories are lowercase, with any percent escapes uppercased.
+	$uri      = strtolower( $uri );
 	$uri      = preg_replace_callback(
 		'/%[a-f0-9]{2}/',
 		function ( $matches ) {
