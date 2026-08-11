@@ -74,10 +74,10 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	/**
 	 * Assert that nothing earlier in the process has already memoised $post_id = 0.
 	 *
-	 * get_current_url_supercache_dir() caches into a function static keyed by
-	 * $post_id and offers no way to reset it, so the first caller with key 0 wins
-	 * for the rest of the run. Without this check, a key poisoned by another test
-	 * class surfaces here as an unexplained directory mismatch.
+	 * The function caches into a static keyed by $post_id and offers no way to
+	 * reset it, so the first caller with key 0 wins for the rest of the run.
+	 * Without this check, a key poisoned by another test class surfaces here as
+	 * an unexplained directory mismatch.
 	 */
 	private function assertRequestUriBranchNotMemoised() {
 		$statics = ( new ReflectionFunction( 'get_current_url_supercache_dir' ) )->getStaticVariables();
