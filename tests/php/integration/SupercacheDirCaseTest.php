@@ -4,9 +4,11 @@
  *
  * WordPress stores a non-ASCII post slug with LOWERCASE percent escapes:
  * utf8_uri_encode() builds them with dechex(), and sanitize_title_with_dashes()
- * lowercases the result afterwards. The supercache directory on disk, however,
- * is written with those escapes UPPERCASED, because browsers send them that way
- * and the mod_rewrite rules do a literal file test on the request path.
+ * lowercases the result afterwards. A URL encoder emits UPPERCASE escapes, so a
+ * visitor who follows a permalink and one who pastes the unicode URL send two
+ * different spellings of the same path. The plugin normalises both to uppercase
+ * so they land on one directory, the same way inc/htaccess.php lowercases the
+ * home root to keep that segment single-spelled.
  *
  * Only the $post_id = 0 branch ever creates a supercache directory; the
  * $post_id != 0 branch is used exclusively by the deletion paths. So whatever
@@ -27,21 +29,65 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	 */
 	const NON_ASCII_TITLE = 'Ұlytau oblysy ortasha ajlyқ zhalaқy kөlemi';
 
+	/**
+	 * Globals this class overwrites, snapshotted in set_up() and put back in
+	 * tear_down() so the values here do not leak into later test classes.
+	 *
+	 * @var array<string,mixed>
+	 */
+	private $saved_globals = array();
+
 	public function set_up() {
 		parent::set_up();
 
-		$GLOBALS['cache_path']           = '/tmp/wpsc-supercache-dir-test/';
-		$GLOBALS['WPSC_HTTP_HOST']       = 'example.org';
-		$GLOBALS['wp_cache_home_path']   = '/';
-		$GLOBALS['wp_cache_request_uri'] = '/';
-		$GLOBALS['cached_direct_pages']  = array();
+		$overrides = array(
+			'cache_path'           => '/tmp/wpsc-supercache-dir-test/',
+			'WPSC_HTTP_HOST'       => 'example.org',
+			'wp_cache_home_path'   => '/',
+			'wp_cache_request_uri' => '/',
+			'cached_direct_pages'  => array(),
+		);
+
+		$this->saved_globals = array();
+		foreach ( $overrides as $key => $value ) {
+			$this->saved_globals[ $key ] = array_key_exists( $key, $GLOBALS ) ? $GLOBALS[ $key ] : null;
+			$GLOBALS[ $key ]             = $value;
+		}
 
 		$this->set_permalink_structure( '/%postname%/' );
 	}
 
 	public function tear_down() {
+		foreach ( $this->saved_globals as $key => $value ) {
+			if ( null === $value ) {
+				unset( $GLOBALS[ $key ] );
+			} else {
+				$GLOBALS[ $key ] = $value;
+			}
+		}
+		$this->saved_globals = array();
+
 		$this->set_permalink_structure( '' );
 		parent::tear_down();
+	}
+
+	/**
+	 * Assert that nothing earlier in the process has already memoised $post_id = 0.
+	 *
+	 * get_current_url_supercache_dir() caches into a function static keyed by
+	 * $post_id and offers no way to reset it, so the first caller with key 0 wins
+	 * for the rest of the run. Without this check, a key poisoned by another test
+	 * class surfaces here as an unexplained directory mismatch.
+	 */
+	private function assertRequestUriBranchNotMemoised() {
+		$statics = ( new ReflectionFunction( 'get_current_url_supercache_dir' ) )->getStaticVariables();
+		$saved   = isset( $statics['saved_supercache_dir'] ) ? $statics['saved_supercache_dir'] : array();
+
+		$this->assertArrayNotHasKey(
+			0,
+			$saved,
+			'get_current_url_supercache_dir() has already memoised $post_id = 0 earlier in this process, so the request URI branch cannot be exercised here. Only one test per run may use key 0.'
+		);
 	}
 
 	/**
@@ -67,9 +113,12 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	 *
 	 * Note: get_current_url_supercache_dir() memoises into a static keyed by
 	 * $post_id and never resets it, so key 0 may only be used by ONE test in the
-	 * suite. That test is this one.
+	 * suite. That test is this one, and the precondition below says so out loud
+	 * if that ever stops being true.
 	 */
 	public function test_post_id_and_request_uri_branches_agree_for_non_ascii_slug() {
+		$this->assertRequestUriBranchNotMemoised();
+
 		list( $post_id, $path ) = $this->publish( self::NON_ASCII_TITLE );
 
 		$this->assertStringContainsString( '%', $path, 'Expected the slug to be percent-encoded.' );
