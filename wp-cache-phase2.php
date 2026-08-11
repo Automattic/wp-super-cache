@@ -882,7 +882,7 @@ function get_supercache_dir( $blog_id = 0 ) {
  * Order matters: lowercase first, then uppercase the escapes. Doing it the other
  * way round drags the escapes back down with the surrounding ASCII.
  *
- * @since 1.13.0
+ * @since 3.1.2
  *
  * @param string $uri URI or path fragment.
  * @return string Normalised URI.
@@ -906,12 +906,14 @@ function wpsc_normalize_uri_case( $uri ) {
  * /category/%d2%b1lytau/ into /category/lytau/ and the deletion never found
  * anything. See #1081.
  *
- * An allow-list of the characters a URL path can use is enough here. Everything
- * that contains this value still applies afterwards: the '..' strip, the
- * truncation at ':', wp_cache_confirm_delete(), and the check that the resolved
- * path sits inside the supercache directory.
+ * An allow-list of the characters a URL path can use is enough here. ':' is not
+ * on the list, so the truncation at ':' that wpsc_delete_cache_directory() does
+ * afterwards no longer has anything to find; it is left in place because that
+ * function should not depend on the exact shape of this allow-list. The guards
+ * that do still matter run later: the '..' strip, wp_cache_confirm_delete(), and
+ * the check that the resolved path sits inside the supercache directory.
  *
- * @since 1.13.0
+ * @since 3.1.2
  *
  * @param string $path Path from the request.
  * @return string Path with anything that cannot appear in a URL path removed.
@@ -3508,7 +3510,7 @@ function wp_cache_post_change( $post_id ) {
 			 */
 			wp_cache_debug( 'Post change: page_for_posts ' . get_option( 'page_for_posts' ), 4 );
 			if ( get_option( 'page_for_posts' ) ) {
-				$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( get_option( 'page_for_posts' ) ) ) );
+				$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( get_option( 'page_for_posts' ) ) ) ) );
 				wp_cache_debug( 'Post change: Deleting files in: ' . str_replace( '//', '/', $dir . $permalink ) );
 				wpsc_rebuild_files( $dir . $permalink );
 				do_action( 'gc_cache', 'prune', $permalink );
@@ -3538,7 +3540,7 @@ function wp_cache_post_change( $post_id ) {
 						continue;
 					}
 					if ( $post_id > 0 && $meta ) {
-						$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
+						$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) ) );
 						if ( $meta['blog_id'] == $blog_id && ( ( $all == true && ! $meta['post'] ) || $meta['post'] == $post_id ) ) {
 							wp_cache_debug( "Post change: deleting post wp-cache files for {$meta[ 'uri' ]}: $file", 4 );
 							@unlink( $blog_cache_dir . 'meta/' . $file );

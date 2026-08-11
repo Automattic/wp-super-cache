@@ -68,10 +68,16 @@ class WpscSanitizeCachePathTest extends TestCase {
 	}
 
 	/**
-	 * A colon is kept here and truncated later by the caller, which is where that
-	 * rule has always lived. This pins the division of labour.
+	 * Colons go. wpsc_delete_cache_directory() truncates at ':' after calling
+	 * this, so that line now has nothing left to find, but it is kept as a guard
+	 * against this allow-list changing. Pinned here so the two stay in step.
 	 */
-	public function test_query_and_colon_handling(): void {
+	public function test_colons_are_dropped(): void {
+		$this->assertSame( '/blog/x/8080/evil', wpsc_sanitize_cache_path( '/blog/x/:8080/evil' ) );
+	}
+
+	/** A query string loses the characters that make it one. */
+	public function test_query_string_punctuation_is_dropped(): void {
 		$this->assertSame( '/blog/x/idsomething', wpsc_sanitize_cache_path( '/blog/x/?id=something' ) );
 	}
 
