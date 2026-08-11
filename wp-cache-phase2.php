@@ -906,20 +906,43 @@ function wpsc_normalize_uri_case( $uri ) {
  * /category/%d2%b1lytau/ into /category/lytau/ and the deletion never found
  * anything. See #1081.
  *
- * An allow-list of the characters a URL path can use is enough here. ':' is not
- * on the list, so the truncation at ':' that wpsc_delete_cache_directory() does
- * afterwards no longer has anything to find; it is left in place because that
- * function should not depend on the exact shape of this allow-list. The guards
- * that do still matter run later: the '..' strip, wp_cache_confirm_delete(), and
- * the check that the resolved path sits inside the supercache directory.
+ * The allow-list is the pchar set of RFC 3986 section 3.3, less the characters
+ * that never reach a directory name anyway: ':' because no permalink uses it,
+ * and ' ( ) because wpsc_admin_bar_render() strips them from REQUEST_URI before
+ * building the link. Raw bytes above \x7F are allowed because
+ * get_current_url_supercache_dir() does not strip them either, so a directory on
+ * disk really can be named with them.
+ *
+ * Anything else means the whole value is rejected rather than cleaned up. A path
+ * with the offending characters removed is still a path, and it still resolves,
+ * so stripping would turn a delete of /@donncha/ into a delete of /donncha/ and
+ * point a nonce-checked operation at a directory the nonce never covered.
+ *
+ * A query string fails the allow-list for the same reason. Dropping the '?s=foo'
+ * off a search page would leave '/', which is the site root and a real directory.
+ *
+ * Rejecting means the truncation at ':' that wpsc_delete_cache_directory() does
+ * afterwards has nothing left to find; it is kept because that function should
+ * not depend on the exact shape of this allow-list. The guards that do still
+ * matter run later: the '..' strip, wp_cache_confirm_delete(), and the check that
+ * the resolved path sits inside the supercache directory.
  *
  * @since $$next-version$$
  *
  * @param string $path Path from the request.
- * @return string Path with anything that cannot appear in a URL path removed.
+ * @return string The path unchanged, or '' if it is not one.
  */
 function wpsc_sanitize_cache_path( $path ) {
-	return preg_replace( '#[^A-Za-z0-9%_./~-]#', '', (string) $path );
+	if ( ! is_string( $path ) ) {
+		return '';
+	}
+
+	// \z rather than $ so a trailing newline cannot slip past the anchor.
+	if ( ! preg_match( '#^[A-Za-z0-9%_.~!$&*+,;=@/\x80-\xFF-]*\z#', $path ) ) {
+		return '';
+	}
+
+	return $path;
 }
 
 function get_current_url_supercache_dir( $post_id = 0 ) {

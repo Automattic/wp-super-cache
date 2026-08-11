@@ -21,7 +21,9 @@ class WP_Super_Cache_Rest_Delete_Cache extends WP_REST_Controller {
 		} elseif ( isset( $params['url'] ) ) {
 			global $cache_path;
 
-			$directory = $cache_path . 'supercache/' . $params[ 'url' ];
+			// The caller sends whatever spelling it has, but the directory on disk
+			// is lowercase with the percent escapes uppercased. See #1081.
+			$directory = $cache_path . 'supercache/' . wpsc_normalize_uri_case( $params['url'] );
 			wpsc_delete_files( $directory );
 			prune_super_cache( $directory . '/page', true );
 
