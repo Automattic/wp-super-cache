@@ -1033,8 +1033,11 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	$uri      = wpsc_deep_replace( array( '..', '\\', 'index.php' ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( '/(\?.*)?(#.*)?$/', '', $uri ) ) );
 	$hostname = $WPSC_HTTP_HOST;
 	// Get hostname from wp options for wp-cron, wp-cli and similar requests.
+	// Lowercased because $WPSC_HTTP_HOST already is, and the two have to name the
+	// same directory. See #1081.
 	if ( empty( $hostname ) && function_exists( 'get_option' ) ) {
 		$hostname = (string) parse_url( get_option( 'home' ), PHP_URL_HOST );
+		$hostname = function_exists( 'mb_strtolower' ) ? mb_strtolower( $hostname ) : strtolower( $hostname );
 	}
 	$dir = preg_replace( '/:.*$/', '', $hostname ) . $uri; // To avoid XSS attacks
 	if ( function_exists( 'apply_filters' ) ) {
