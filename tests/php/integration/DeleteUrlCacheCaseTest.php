@@ -42,6 +42,13 @@ class DeleteUrlCacheCaseTest extends WP_UnitTestCase {
 	private $saved_globals = array();
 
 	/**
+	 * Fixture directories created by cache_page(), removed in tear_down().
+	 *
+	 * @var string[]
+	 */
+	private $created_dirs = array();
+
+	/**
 	 * Establish a cache directory that the deletion functions will accept.
 	 *
 	 * The function wpsc_is_in_cache_directory() resolves $cache_path once and keeps it in a
@@ -111,10 +118,16 @@ class DeleteUrlCacheCaseTest extends WP_UnitTestCase {
 		}
 		$this->saved_globals = array();
 
-		$supercache_dir = self::$cache_path . 'supercache';
-		if ( is_dir( $supercache_dir ) ) {
-			self::rmdir_recursive( $supercache_dir );
+		// Only what this class made. set_up_before_class() may have adopted a
+		// cache_path it did not create, and in a wp-env run that is the site's real
+		// wp-content/cache, so removing 'supercache' wholesale would take the
+		// installation's cache with it.
+		foreach ( array_reverse( $this->created_dirs ) as $dir ) {
+			if ( is_dir( $dir ) ) {
+				self::rmdir_recursive( $dir );
+			}
 		}
+		$this->created_dirs = array();
 
 		$this->set_permalink_structure( '' );
 		parent::tear_down();
@@ -165,6 +178,7 @@ class DeleteUrlCacheCaseTest extends WP_UnitTestCase {
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- test fixture.
 		mkdir( $dir, 0777, true );
+		$this->created_dirs[] = $dir;
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_put_contents -- test fixture.
 		file_put_contents( $dir . 'index.html', '<html>cached</html>' );
 
@@ -268,6 +282,123 @@ class DeleteUrlCacheCaseTest extends WP_UnitTestCase {
 
 		// This path prunes rather than rebuilds, so the file is removed outright.
 		$this->assertFileDoesNotExist( $cached );
+	}
+
+	/**
+	 * The seam wp_cron_preload_cache() uses to pick the directory it deletes.
+	 *
+	 * That caller deletes and then immediately refetches, so a delete that misses
+	 * is served the stale file it was meant to replace, which is why it matters
+	 * most and why the computation was pulled out where a test can reach it.
+	 */
+	public function test_supercache_dir_for_url_normalises_a_term_link() {
+		$term_id  = self::factory()->category->create( array( 'name' => self::NON_ASCII_NAME ) );
+		$term_url = get_term_link( $term_id, 'category' );
+		$this->assertIsString( $term_url );
+
+		$path = (string) wp_parse_url( $term_url, PHP_URL_PATH );
+		$this->assertMatchesRegularExpression( '/%[0-9a-f]{2}/', $path, 'Fixture has no lowercase escapes to normalise.' );
+
+		$dir = wpsc_supercache_dir_for_url( $term_url );
+
+		// get_supercache_dir() is already trailingslashed and the path opens with a
+		// slash, so the result carries a doubled one. That is what the inline
+		// version produced too, and realpath() collapses it.
+		$this->assertSame( get_supercache_dir() . wpsc_normalize_uri_case( $path ), $dir );
+		$this->assertNotSame(
+			get_supercache_dir() . $path,
+			$dir,
+			'The raw and normalised directories have to differ, or this proves nothing.'
+		);
+	}
+
+	/**
+	 * A URL with no path at all. wp_parse_url() omits the key entirely, which the
+	 * inline version this replaced dereferenced anyway.
+	 */
+	public function test_supercache_dir_for_url_handles_a_url_with_no_path() {
+		$this->assertSame(
+			get_supercache_dir() . '/',
+			wpsc_supercache_dir_for_url( 'https://example.com' )
+		);
+	}
+
+	/**
+	 * A URL with a query string is a no-op, not a nonce failure.
+	 *
+	 * The admin bar renders the delete button on any URL, so on a site using plain
+	 * permalinks every path is '/?p=123' and on a search page it is '/?s=foo'.
+	 * Those have never had a supercache directory and the delete has always done
+	 * nothing, quietly. What must not happen is the path being emptied before the
+	 * nonce check, because then wpsc_admin_bar_delete_cache() dies with "Problem
+	 * with nonce" on a request whose nonce was perfectly good.
+	 */
+	public function test_query_string_path_is_a_no_op_rather_than_a_nonce_failure() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		foreach ( array( '/?p=123', '/?s=foo' ) as $path ) {
+			$_POST['path']  = $path;
+			$_POST['admin'] = 0;
+			$_POST['nonce'] = wp_create_nonce( 'delete-cache-' . $path . '_0' );
+
+			$result = wpsc_delete_cache_directory();
+
+			unset( $_POST['path'], $_POST['admin'], $_POST['nonce'] );
+
+			$this->assertNotFalse(
+				$result,
+				"Path {$path} was rejected before the nonce check, so the caller would report a nonce failure that did not happen."
+			);
+		}
+	}
+
+	/**
+	 * The REST endpoint's 'url' branch, which is the one caller that hands the
+	 * helpers a value straight out of JSON.
+	 *
+	 * Note the path it wants is host-prefixed: it builds from $cache_path
+	 * . 'supercache/' rather than get_supercache_dir(), so the host segment has to
+	 * come from the caller.
+	 */
+	public function test_rest_url_deletion_normalises_the_posted_url() {
+		require_once __DIR__ . '/../../../rest/class.wp-super-cache-rest-delete-cache.php';
+
+		$term_id  = self::factory()->category->create( array( 'name' => self::NON_ASCII_NAME ) );
+		$term_url = get_term_link( $term_id, 'category' );
+		$this->assertIsString( $term_url );
+
+		$cached = $this->cache_page( $term_url );
+		$host   = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+		$path   = (string) wp_parse_url( $term_url, PHP_URL_PATH );
+
+		$request = new WP_REST_Request( 'POST', '/wp-super-cache/v1/cache' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body( wp_json_encode( array( 'url' => $host . $path ) ) );
+
+		$controller = new WP_Super_Cache_Rest_Delete_Cache();
+		$response   = $controller->callback( $request );
+
+		$this->assertNotWPError( $response );
+		$this->assertFileDoesNotExist( $cached );
+	}
+
+	/**
+	 * A 'url' that is not a path is refused rather than being cleaned up into one.
+	 * Without the check it would build the site's supercache root, which
+	 * wpsc_delete_files() protects, but refusing says so out loud.
+	 */
+	public function test_rest_url_deletion_refuses_a_url_it_cannot_use() {
+		require_once __DIR__ . '/../../../rest/class.wp-super-cache-rest-delete-cache.php';
+
+		$controller = new WP_Super_Cache_Rest_Delete_Cache();
+
+		foreach ( array( '/blog/<script>/', array( 'x' ), "/blog/x\n" ) as $bad_url ) {
+			$request = new WP_REST_Request( 'POST', '/wp-super-cache/v1/cache' );
+			$request->set_header( 'Content-Type', 'application/json' );
+			$request->set_body( wp_json_encode( array( 'url' => $bad_url ) ) );
+
+			$this->assertWPError( $controller->callback( $request ) );
+		}
 	}
 
 	/**

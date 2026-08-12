@@ -88,12 +88,41 @@ class WpscNormalizeUriCaseTest extends TestCase {
 	}
 
 	/**
-	 * Raw UTF-8 bytes survive. strtolower() is byte-wise ASCII, so the high bytes
-	 * of an unencoded unicode path pass through unchanged rather than being
-	 * mangled.
+	 * Raw UTF-8 bytes survive. Only [A-Z] is lowercased, so the high bytes of an
+	 * unencoded unicode path are never in range. Doing this with strtolower() on
+	 * the whole string would hold on PHP 8.2+, where it is locale-independent, but
+	 * not on 7.4-8.1, which this plugin still supports.
 	 */
 	public function test_raw_utf8_is_not_mangled(): void {
 		$this->assertSame( '/Ұlytau/', wpsc_normalize_uri_case( '/Ұlytau/' ) );
+	}
+
+	/**
+	 * The uppercase Cyrillic above is 0xD2 0xB1, inside the 0xC0-0xDE range a
+	 * single-byte locale would have lowercased. Pinned under such a locale so the
+	 * claim above is tested rather than asserted. setlocale() is a no-op if the
+	 * locale is missing, in which case this just repeats the test above.
+	 */
+	public function test_raw_utf8_is_not_mangled_under_a_single_byte_locale(): void {
+		$previous = setlocale( LC_CTYPE, '0' );
+		setlocale( LC_CTYPE, 'de_DE.ISO-8859-1', 'de_DE', 'en_US.ISO-8859-1' );
+
+		try {
+			$this->assertSame( '/Ұlytau/', wpsc_normalize_uri_case( '/Ұlytau/' ) );
+		} finally {
+			setlocale( LC_CTYPE, $previous );
+		}
+	}
+
+	/**
+	 * Not a string means '' rather than a cast. The REST delete-cache endpoint
+	 * feeds this straight from get_json_params(), where 'url' can be an array, and
+	 * (string) would have made that the directory name "Array". See #1081.
+	 */
+	public function test_non_string_input_is_rejected(): void {
+		$this->assertSame( '', wpsc_normalize_uri_case( array( 'x' ) ) );
+		$this->assertSame( '', wpsc_normalize_uri_case( null ) );
+		$this->assertSame( '', wpsc_normalize_uri_case( false ) );
 	}
 
 	/** An empty string is not a special case. */

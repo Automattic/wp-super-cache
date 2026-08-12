@@ -879,21 +879,33 @@ function get_supercache_dir( $blog_id = 0 ) {
  * send different strings for one page. Uppercase is the target because RFC 3986
  * section 2.1 recommends it and because it is the shape already on disk.
  *
- * Order matters: lowercase first, then uppercase the escapes. Doing it the other
- * way round drags the escapes back down with the surrounding ASCII.
+ * Escapes and unencoded ASCII are matched in one pass so neither can undo the
+ * other: lowercasing the whole string first and then uppercasing the escapes
+ * works too, but only in that order, and the alternation removes the trap.
+ *
+ * Only ASCII is touched. strtolower() on the whole string would be simpler, but
+ * it is locale-dependent before PHP 8.2 and this plugin supports 7.4, where a
+ * single-byte LC_CTYPE would lowercase bytes 0xC0-0xDE and corrupt a path that
+ * carries raw UTF-8. Matching [A-Z] keeps that out of reach on every version.
  *
  * @since $$next-version$$
  *
  * @param string $uri URI or path fragment.
- * @return string Normalised URI.
+ * @return string Normalised URI, or '' if $uri is not a string.
  */
 function wpsc_normalize_uri_case( $uri ) {
+	// Not a cast: the REST endpoint feeds this straight from get_json_params(),
+	// where 'url' can be an array, and "Array" is a plausible directory name.
+	if ( ! is_string( $uri ) ) {
+		return '';
+	}
+
 	return preg_replace_callback(
-		'/%[a-f0-9]{2}/',
+		'/%[0-9A-Fa-f]{2}|[A-Z]+/',
 		function ( $matches ) {
-			return strtoupper( $matches[0] );
+			return '%' === $matches[0][0] ? strtoupper( $matches[0] ) : strtolower( $matches[0] );
 		},
-		strtolower( (string) $uri )
+		$uri
 	);
 }
 
@@ -918,8 +930,15 @@ function wpsc_normalize_uri_case( $uri ) {
  * so stripping would turn a delete of /@donncha/ into a delete of /donncha/ and
  * point a nonce-checked operation at a directory the nonce never covered.
  *
- * A query string fails the allow-list for the same reason. Dropping the '?s=foo'
- * off a search page would leave '/', which is the site root and a real directory.
+ * '?' is on the list for that same reason, inverted. Supercache never names a
+ * directory after a query string, so a value carrying one simply fails to
+ * resolve and the delete is a no-op, which is what it has always been. Removing
+ * the '?s=foo' off a search page instead would leave '/', the site root, which
+ * is a real directory and very much not the one the nonce covered. Keeping the
+ * query is what makes it harmless. Rejecting the whole value is not an option
+ * here either: the admin bar renders this button on any URL, so on a site using
+ * plain permalinks every path is '/?p=123', and a rejected path takes the caller
+ * down a branch that reports a nonce failure that did not happen.
  *
  * Rejecting means the truncation at ':' that wpsc_delete_cache_directory() does
  * afterwards has nothing left to find; it is kept because that function should
@@ -938,11 +957,34 @@ function wpsc_sanitize_cache_path( $path ) {
 	}
 
 	// \z rather than $ so a trailing newline cannot slip past the anchor.
-	if ( ! preg_match( '#^[A-Za-z0-9%_.~!$&*+,;=@/\x80-\xFF-]*\z#', $path ) ) {
+	if ( ! preg_match( '#^[A-Za-z0-9%_.~!$&*+,;=@/?\x80-\xFF-]*\z#', $path ) ) {
 		return '';
 	}
 
 	return $path;
+}
+
+/**
+ * Supercache directory for an absolute URL.
+ *
+ * Pulled out of wp_cron_preload_cache() so the rule it applies can be tested.
+ * That caller deletes a directory and immediately refetches the page, so a delete
+ * that misses is served the stale file it was meant to replace, which made it the
+ * most damaging of the sites #1081 covers and the only one with no seam to test.
+ *
+ * wp_parse_url() omits 'path' entirely for a URL like 'https://example.com', so
+ * the fallback is not decoration; the old inline version emitted a notice there.
+ *
+ * @since $$next-version$$
+ *
+ * @param string $url Absolute URL.
+ * @return string Supercache directory for $url, without a trailing slash.
+ */
+function wpsc_supercache_dir_for_url( $url ) {
+	$url_info = wp_parse_url( (string) $url );
+	$path     = isset( $url_info['path'] ) ? $url_info['path'] : '/';
+
+	return get_supercache_dir() . wpsc_normalize_uri_case( $path );
 }
 
 function get_current_url_supercache_dir( $post_id = 0 ) {
@@ -3420,7 +3462,10 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 		return true;
 	}
 
-	$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
+	// Normalised so the gc_cache payload below is spelled the same way
+	// wp_cache_post_change() spells it. Consumers build a supercache path out of
+	// it, so the two firing sites disagreeing is a bug of its own. See #1081.
+	$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) ) );
 	if ( str_contains( $permalink, '?' ) ) {
 		wp_cache_debug( 'wp_cache_post_id_gc: NOT CLEARING CACHE. Permalink has a "?". ' . $permalink );
 		return false;

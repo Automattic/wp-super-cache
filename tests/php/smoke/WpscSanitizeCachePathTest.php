@@ -99,17 +99,6 @@ class WpscSanitizeCachePathTest extends TestCase {
 	}
 
 	/**
-	 * A query string is rejected rather than having its punctuation removed.
-	 * Dropping the '?s=foo' off a search page would leave '/', and the site root
-	 * is a real directory, so the delete would move to a page nobody asked to
-	 * clear.
-	 */
-	public function test_query_string_is_rejected(): void {
-		$this->assertSame( '', wpsc_sanitize_cache_path( '/blog/x/?id=something' ) );
-		$this->assertSame( '', wpsc_sanitize_cache_path( '/?s=foo' ) );
-	}
-
-	/**
 	 * The anchor is \z, not $, so a trailing newline cannot ride along on an
 	 * otherwise valid path.
 	 */
@@ -125,6 +114,37 @@ class WpscSanitizeCachePathTest extends TestCase {
 	public function test_non_string_input_is_rejected(): void {
 		$this->assertSame( '', wpsc_sanitize_cache_path( array( '/blog/' ) ) );
 		$this->assertSame( '', wpsc_sanitize_cache_path( null ) );
+	}
+
+	/**
+	 * A query string is kept whole rather than rejected or trimmed.
+	 *
+	 * The admin bar puts the delete button on any URL, so on a site using plain
+	 * permalinks every path is '/?p=123' and on a search page it is '/?s=foo'.
+	 * Rejecting those would empty $req_path and send wpsc_delete_cache_directory()
+	 * down the branch that reports a nonce failure that did not happen. Trimming
+	 * them would leave '/', the site root, which is a real directory and not the
+	 * one the nonce covered. Keeping them means the path simply does not resolve,
+	 * because supercache never names a directory after a query string, and the
+	 * delete is the no-op it has always been.
+	 */
+	public function test_query_string_is_kept_whole(): void {
+		$this->assertSame( '/?p=123', wpsc_sanitize_cache_path( '/?p=123' ) );
+		$this->assertSame( '/?s=foo', wpsc_sanitize_cache_path( '/?s=foo' ) );
+		$this->assertSame( '/blog/x/?utm_source=y', wpsc_sanitize_cache_path( '/blog/x/?utm_source=y' ) );
+	}
+
+	/**
+	 * Encoded traversal passes the allow-list, deliberately.
+	 *
+	 * '%2e%2e%2f' is only percent escapes, which the whole point of this function
+	 * is to preserve. It is safe because nothing downstream decodes it: realpath()
+	 * looks for a directory literally named '%2E%2E%2F' and does not find one. The
+	 * assertion is here so that if anything ever does decode it, this stops being
+	 * a passing test.
+	 */
+	public function test_encoded_traversal_is_passed_through_undecoded(): void {
+		$this->assertSame( '/%2e%2e%2f', wpsc_sanitize_cache_path( '/%2e%2e%2f' ) );
 	}
 
 	/** An empty string is not a special case. */
