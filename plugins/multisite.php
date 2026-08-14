@@ -22,7 +22,7 @@ function wp_super_cache_blogs_field( $name, $blog_id ) {
 
 	$blog_id = (int) $blog_id;
 
-	if ( isset( $_GET['id'], $_GET['action'], $_GET['_wpnonce'] )
+	if ( isset( $_GET['id'] ) && isset( $_GET['action'] ) && isset( $_GET['_wpnonce'] )
 		&& $blog_id === filter_input( INPUT_GET, 'id', FILTER_VALIDATE_INT )
 		&& wp_verify_nonce( $_GET['_wpnonce'], 'wp-cache' . $blog_id )
 	) {

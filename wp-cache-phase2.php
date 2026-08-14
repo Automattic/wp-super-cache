@@ -870,7 +870,7 @@ function get_supercache_dir( $blog_id = 0 ) {
 	return trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
 }
 function get_current_url_supercache_dir( $post_id = 0 ) {
-	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST, $wp_cache_home_path;
+	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 	static $saved_supercache_dir = array();
 
 	if ( isset( $saved_supercache_dir[ $post_id ] ) ) {
@@ -879,14 +879,18 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 
 	$DONOTREMEMBER = 0;
 	if ( $post_id != 0 ) {
-		$site_url  = site_url();
+		$home_url  = home_url();
 		$permalink = get_permalink( $post_id );
-		if ( ! str_contains( $permalink, $site_url ) ) {
+		if ( ! is_string( $permalink ) ) {
+			$DONOTREMEMBER = 1; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+			wp_cache_debug( "get_current_url_supercache_dir: WARNING! get_permalink($post_id) did not return a valid string. Using front page.", 1 );
+			$uri = '';
+		} elseif ( ! str_contains( $permalink, $home_url ) ) {
 			/*
-			 * Sometimes site_url doesn't return the siteurl. See https://wordpress.org/support/topic/wp-super-cache-not-refreshing-post-after-comments-made
+			 * Sometimes home_url doesn't return the home url. See https://wordpress.org/support/topic/wp-super-cache-not-refreshing-post-after-comments-made
 			 */
 			$DONOTREMEMBER = 1;
-			wp_cache_debug( "get_current_url_supercache_dir: WARNING! site_url ($site_url) not found in permalink ($permalink).", 1 );
+			wp_cache_debug( "get_current_url_supercache_dir: WARNING! home_url ($home_url) not found in permalink ($permalink).", 1 );
 			if ( preg_match( '`^(https?:)?//([^/]+)(/.*)?$`i', $permalink, $matches ) ) {
 				if ( $WPSC_HTTP_HOST != $matches[2] ) {
 					wp_cache_debug( "get_current_url_supercache_dir: WARNING! SERVER_NAME ({$WPSC_HTTP_HOST}) not found in permalink ($permalink).", 1 );
@@ -901,10 +905,9 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 				$uri = '';
 			}
 		} else {
-			$uri       = str_replace( $site_url, '', $permalink );
-			$home_path = $wp_cache_home_path ?? '';
-			if ( $home_path !== '' && ! str_starts_with( $uri, $home_path ) ) {
-				$uri = rtrim( $home_path, '/' ) . $uri;
+			$uri = wp_parse_url( $permalink, PHP_URL_PATH );
+			if ( ! is_string( $uri ) ) {
+				$uri = '';
 			}
 		}
 	} else {
@@ -933,7 +936,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$dir = do_cacheaction( 'supercache_dir', $dir );
 	}
 	$dir = $cache_path . 'supercache/' . $dir . '/';
-	if ( is_array( $cached_direct_pages ) && in_array( $_SERVER['REQUEST_URI'], $cached_direct_pages ) ) {
+	if ( is_array( $cached_direct_pages ) && isset( $_SERVER['REQUEST_URI'] ) && in_array( $_SERVER['REQUEST_URI'], $cached_direct_pages, true ) ) {
 		$dir = ABSPATH . $uri . '/';
 	}
 	$dir = str_replace( '..', '', str_replace( '//', '/', $dir ) );
