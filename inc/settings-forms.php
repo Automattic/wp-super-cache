@@ -63,7 +63,10 @@ function wpsc_update_direct_pages() {
 			$out .= "'$page', ";
 
 			@unlink( trailingslashit( ABSPATH . $page ) . "index.html" );
-			wpsc_delete_files( get_supercache_dir() . $page );
+			// $page is typed by an admin, so its case is whatever they typed, while
+			// the supercache directory for it is lowercased. The unlink above is a
+			// real file under ABSPATH and must keep the spelling as given. See #1081.
+			wpsc_delete_files( get_supercache_dir() . wpsc_normalize_uri_case( $page ) );
 		}
 	}
 

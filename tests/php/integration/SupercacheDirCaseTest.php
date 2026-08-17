@@ -150,6 +150,41 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The host segment is lowercased when it comes from the home option.
+	 *
+	 * $WPSC_HTTP_HOST is empty under WP-CLI and cron, and the fallback reads the
+	 * host out of the home option. wp-cache-base.php lowercases the HTTP_HOST it
+	 * normally uses, so an install whose home option carries uppercase had those
+	 * requests name a different directory than its web requests did.
+	 *
+	 * Nothing here memoises: a home option that site_url() does not appear in
+	 * sends the function down its DONOTREMEMBER branch, so key 0 stays free for
+	 * the test above.
+	 */
+	public function test_host_from_the_home_option_is_lowercased() {
+		$GLOBALS['WPSC_HTTP_HOST'] = '';
+
+		// Filtered rather than saved with update_option(): WP_HOME is defined in the
+		// test config, and core's _config_wp_home() puts that back on option_home at
+		// priority 10, so a stored value never survives to be read.
+		$uppercase_home = static function () {
+			return 'https://Example.ORG';
+		};
+		add_filter( 'option_home', $uppercase_home, 20 );
+
+		try {
+			list( $post_id ) = $this->publish( 'Hello There' );
+
+			$dir = get_current_url_supercache_dir( $post_id );
+		} finally {
+			remove_filter( 'option_home', $uppercase_home, 20 );
+		}
+
+		$this->assertStringContainsString( 'supercache/example.org/', $dir );
+		$this->assertStringNotContainsString( 'Example.ORG', $dir );
+	}
+
+	/**
 	 * The rest of the path is lowercased on the post ID branch too. An install in
 	 * a subdirectory with a capital in it used to produce /Blog/... here while the
 	 * directory on disk was /blog/..., because inc/htaccess.php lowercases the

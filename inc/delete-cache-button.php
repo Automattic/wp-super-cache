@@ -105,7 +105,8 @@ function wpsc_admin_bar_delete_cache() {
 	}
 	wpsc_delete_cache_directory();
 
-	$req_path = isset( $_POST['path'] ) ? sanitize_text_field( stripslashes( $_POST['path'] ) ) : '';
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce is verified on the next line.
+	$req_path    = isset( $_POST['path'] ) ? wpsc_sanitize_cache_path( wp_unslash( $_POST['path'] ) ) : '';
 	$valid_nonce = ( $req_path && isset( $_POST['nonce'] ) ) ? wp_verify_nonce( $_POST['nonce'], 'delete-cache-' . $_POST['path'] . '_' . $_POST['admin'] ) : false;
 
 	if (
@@ -147,7 +148,8 @@ function wpsc_delete_cache_directory() {
 		return false;
 	}
 
-	$req_path    = isset( $_POST['path'] ) ? sanitize_text_field( stripslashes( $_POST['path'] ) ) : '';
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce is verified on the next line.
+	$req_path    = isset( $_POST['path'] ) ? wpsc_sanitize_cache_path( wp_unslash( $_POST['path'] ) ) : '';
 	$valid_nonce = ( $req_path && isset( $_POST['nonce'] ) ) ? wp_verify_nonce( $_POST['nonce'], 'delete-cache-' . $_POST['path'] . '_' . $_POST['admin'] ) : false;
 
 	if ( ! $valid_nonce ) {
@@ -155,7 +157,9 @@ function wpsc_delete_cache_directory() {
 		return false;
 	}
 
-	$path = realpath( trailingslashit( get_supercache_dir() . str_replace( '..', '', preg_replace( '/:.*$/', '', $req_path ) ) ) );
+	// $req_path comes from the browser's REQUEST_URI, so its case is whatever the
+	// visitor's browser sent. Normalise it to the spelling on disk. See #1081.
+	$path = realpath( trailingslashit( get_supercache_dir() . wpsc_normalize_uri_case( str_replace( '..', '', preg_replace( '/:.*$/', '', $req_path ) ) ) ) );
 
 	if ( $path ) {
 		if ( isset( $_POST['admin'] ) && (int) $_POST['admin'] === 1 ) {

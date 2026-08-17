@@ -8,6 +8,11 @@ if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 	$WPSC_HTTP_HOST = htmlentities( $WPSC_HTTP_HOST, ENT_COMPAT );
 } elseif ( PHP_SAPI === 'cli' && function_exists( 'get_option' ) ) {
 	$WPSC_HTTP_HOST = (string) parse_url( get_option( 'home' ), PHP_URL_HOST );
+	// Lowercased like the branch above. The supercache directory is named after
+	// this, so a home option carrying uppercase would have WP-CLI and cron
+	// disagree with web requests about where the cache lives. See #1081.
+	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	$WPSC_HTTP_HOST = function_exists( 'mb_strtolower' ) ? mb_strtolower( $WPSC_HTTP_HOST ) : strtolower( $WPSC_HTTP_HOST );
 } else {
 	$cache_enabled  = false;
 	$WPSC_HTTP_HOST = '';

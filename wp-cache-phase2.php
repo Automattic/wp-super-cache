@@ -869,6 +869,124 @@ function get_supercache_dir( $blog_id = 0 ) {
 	}
 	return trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
 }
+/**
+ * Normalise a URI to the spelling used by supercache directory names.
+ *
+ * Supercache directories are lowercase, with any percent escapes uppercased.
+ * The same path reaches us spelled two ways: sanitize_title_with_dashes()
+ * lowercases the escapes it stores in post_name, while a URL encoder emits them
+ * uppercase, so a visitor following a permalink and one pasting the unicode URL
+ * send different strings for one page. Uppercase is the target because RFC 3986
+ * section 2.1 recommends it and because it is the shape already on disk.
+ *
+ * Escapes and unencoded ASCII are matched in one pass so neither can undo the
+ * other: lowercasing the whole string first and then uppercasing the escapes
+ * works too, but only in that order, and the alternation removes the trap.
+ *
+ * Only ASCII is touched. strtolower() on the whole string would be simpler, but
+ * it is locale-dependent before PHP 8.2 and this plugin supports 7.4, where a
+ * single-byte LC_CTYPE would lowercase bytes 0xC0-0xDE and corrupt a path that
+ * carries raw UTF-8. Matching [A-Z] keeps that out of reach on every version.
+ *
+ * @since $$next-version$$
+ *
+ * @param string $uri URI or path fragment.
+ * @return string Normalised URI, or '' if $uri is not a string.
+ */
+function wpsc_normalize_uri_case( $uri ) {
+	// Not a cast: the REST endpoint feeds this straight from get_json_params(),
+	// where 'url' can be an array, and "Array" is a plausible directory name.
+	if ( ! is_string( $uri ) ) {
+		return '';
+	}
+
+	return preg_replace_callback(
+		'/%[0-9A-Fa-f]{2}|[A-Z]+/',
+		function ( $matches ) {
+			return '%' === $matches[0][0] ? strtoupper( $matches[0] ) : strtolower( $matches[0] );
+		},
+		$uri
+	);
+}
+
+/**
+ * Sanitise a cache path taken from the request.
+ *
+ * Deliberately not sanitize_text_field(): _sanitize_text_fields() strips every
+ * percent escape it finds, and a supercache directory for a non-ASCII slug is
+ * largely made of percent escapes, so that call quietly turned
+ * /category/%d2%b1lytau/ into /category/lytau/ and the deletion never found
+ * anything. See #1081.
+ *
+ * The allow-list is the pchar set of RFC 3986 section 3.3, less the characters
+ * that never reach a directory name anyway: ':' because no permalink uses it,
+ * and ' ( ) because wpsc_admin_bar_render() strips them from REQUEST_URI before
+ * building the link. Raw bytes above \x7F are allowed because
+ * get_current_url_supercache_dir() does not strip them either, so a directory on
+ * disk really can be named with them.
+ *
+ * Anything else means the whole value is rejected rather than cleaned up. A path
+ * with the offending characters removed is still a path, and it still resolves,
+ * so stripping would turn a delete of /@donncha/ into a delete of /donncha/ and
+ * point a nonce-checked operation at a directory the nonce never covered.
+ *
+ * '?' is on the list for that same reason, inverted. Supercache never names a
+ * directory after a query string, so a value carrying one simply fails to
+ * resolve and the delete is a no-op, which is what it has always been. Removing
+ * the '?s=foo' off a search page instead would leave '/', the site root, which
+ * is a real directory and very much not the one the nonce covered. Keeping the
+ * query is what makes it harmless. Rejecting the whole value is not an option
+ * here either: the admin bar renders this button on any URL, so on a site using
+ * plain permalinks every path is '/?p=123', and a rejected path takes the caller
+ * down a branch that reports a nonce failure that did not happen.
+ *
+ * Rejecting means the truncation at ':' that wpsc_delete_cache_directory() does
+ * afterwards has nothing left to find; it is kept because that function should
+ * not depend on the exact shape of this allow-list. The guards that do still
+ * matter run later: the '..' strip, wp_cache_confirm_delete(), and the check that
+ * the resolved path sits inside the supercache directory.
+ *
+ * @since $$next-version$$
+ *
+ * @param string $path Path from the request.
+ * @return string The path unchanged, or '' if it is not one.
+ */
+function wpsc_sanitize_cache_path( $path ) {
+	if ( ! is_string( $path ) ) {
+		return '';
+	}
+
+	// \z rather than $ so a trailing newline cannot slip past the anchor.
+	if ( ! preg_match( '#^[A-Za-z0-9%_.~!$&*+,;=@/?\x80-\xFF-]*\z#', $path ) ) {
+		return '';
+	}
+
+	return $path;
+}
+
+/**
+ * Supercache directory for an absolute URL.
+ *
+ * Pulled out of wp_cron_preload_cache() so the rule it applies can be tested.
+ * That caller deletes a directory and immediately refetches the page, so a delete
+ * that misses is served the stale file it was meant to replace, which made it the
+ * most damaging of the sites #1081 covers and the only one with no seam to test.
+ *
+ * wp_parse_url() omits 'path' entirely for a URL like 'https://example.com', so
+ * the fallback is not decoration; the old inline version emitted a notice there.
+ *
+ * @since $$next-version$$
+ *
+ * @param string $url Absolute URL.
+ * @return string Supercache directory for $url, without a trailing slash.
+ */
+function wpsc_supercache_dir_for_url( $url ) {
+	$url_info = wp_parse_url( (string) $url );
+	$path     = isset( $url_info['path'] ) ? $url_info['path'] : '/';
+
+	return get_supercache_dir() . wpsc_normalize_uri_case( $path );
+}
+
 function get_current_url_supercache_dir( $post_id = 0 ) {
 	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST, $wp_cache_home_path;
 	static $saved_supercache_dir = array();
@@ -911,20 +1029,15 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$uri = $wp_cache_request_uri;
 	}
 
-	// Supercache directories are lowercase, with any percent escapes uppercased.
-	$uri      = strtolower( $uri );
-	$uri      = preg_replace_callback(
-		'/%[a-f0-9]{2}/',
-		function ( $matches ) {
-			return strtoupper( $matches[0] );
-		},
-		$uri
-	);
+	$uri      = wpsc_normalize_uri_case( $uri );
 	$uri      = wpsc_deep_replace( array( '..', '\\', 'index.php' ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( '/(\?.*)?(#.*)?$/', '', $uri ) ) );
 	$hostname = $WPSC_HTTP_HOST;
 	// Get hostname from wp options for wp-cron, wp-cli and similar requests.
+	// Lowercased because $WPSC_HTTP_HOST already is, and the two have to name the
+	// same directory. See #1081.
 	if ( empty( $hostname ) && function_exists( 'get_option' ) ) {
 		$hostname = (string) parse_url( get_option( 'home' ), PHP_URL_HOST );
+		$hostname = function_exists( 'mb_strtolower' ) ? mb_strtolower( $hostname ) : strtolower( $hostname );
 	}
 	$dir = preg_replace( '/:.*$/', '', $hostname ) . $uri; // To avoid XSS attacks
 	if ( function_exists( 'apply_filters' ) ) {
@@ -1398,7 +1511,9 @@ function wpsc_delete_url_cache( $url ) {
 		wp_cache_debug( 'wpsc_delete_url_cache: URL contains the character "?". Not deleting URL: ' . $url );
 		return false;
 	}
-	$dir = str_replace( get_option( 'home' ), '', $url );
+	// $url is a WordPress-generated permalink, so its percent escapes are
+	// lowercase while the directory on disk has them uppercased. See #1081.
+	$dir = wpsc_normalize_uri_case( str_replace( get_option( 'home' ), '', $url ) );
 	if ( $dir != '' ) {
 		$supercachedir = get_supercache_dir();
 		wpsc_rebuild_files( $supercachedir . $dir );
@@ -3236,8 +3351,11 @@ function wpsc_delete_cats_tags( $post ) {
 		}
 		$category_base = trailingslashit( $category_base ); // paranoid much?
 		foreach ( $categories as $cat ) {
-			prune_super_cache( get_supercache_dir() . $category_base . $cat->slug . '/', true );
-			wp_cache_debug( 'wpsc_post_transition: deleting category: ' . get_supercache_dir() . $category_base . $cat->slug . '/' );
+			// Term slugs are stored with lowercase percent escapes; the directory
+			// on disk has them uppercased. See #1081.
+			$cat_dir = get_supercache_dir() . wpsc_normalize_uri_case( $category_base . $cat->slug ) . '/';
+			prune_super_cache( $cat_dir, true );
+			wp_cache_debug( 'wpsc_post_transition: deleting category: ' . $cat_dir );
 		}
 	}
 	$posttags = get_the_tags( $post->ID );
@@ -3248,8 +3366,9 @@ function wpsc_delete_cats_tags( $post ) {
 		}
 		$tag_base = trailingslashit( str_replace( '..', '', $tag_base ) ); // maybe!
 		foreach ( $posttags as $tag ) {
-			prune_super_cache( get_supercache_dir() . $tag_base . $tag->slug . '/', true );
-			wp_cache_debug( 'wpsc_post_transition: deleting tag: ' . get_supercache_dir() . $tag_base . $tag->slug . '/' );
+			$tag_dir = get_supercache_dir() . wpsc_normalize_uri_case( $tag_base . $tag->slug ) . '/';
+			prune_super_cache( $tag_dir, true );
+			wp_cache_debug( 'wpsc_post_transition: deleting tag: ' . $tag_dir );
 		}
 	}
 }
@@ -3346,7 +3465,10 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 		return true;
 	}
 
-	$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
+	// Normalised so the gc_cache payload below is spelled the same way
+	// wp_cache_post_change() spells it. Consumers build a supercache path out of
+	// it, so the two firing sites disagreeing is a bug of its own. See #1081.
+	$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) ) );
 	if ( str_contains( $permalink, '?' ) ) {
 		wp_cache_debug( 'wp_cache_post_id_gc: NOT CLEARING CACHE. Permalink has a "?". ' . $permalink );
 		return false;
@@ -3459,7 +3581,7 @@ function wp_cache_post_change( $post_id ) {
 			 */
 			wp_cache_debug( 'Post change: page_for_posts ' . get_option( 'page_for_posts' ), 4 );
 			if ( get_option( 'page_for_posts' ) ) {
-				$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( get_option( 'page_for_posts' ) ) ) );
+				$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( get_option( 'page_for_posts' ) ) ) ) );
 				wp_cache_debug( 'Post change: Deleting files in: ' . str_replace( '//', '/', $dir . $permalink ) );
 				wpsc_rebuild_files( $dir . $permalink );
 				do_action( 'gc_cache', 'prune', $permalink );
@@ -3489,7 +3611,7 @@ function wp_cache_post_change( $post_id ) {
 						continue;
 					}
 					if ( $post_id > 0 && $meta ) {
-						$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
+						$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) ) );
 						if ( $meta['blog_id'] == $blog_id && ( ( $all == true && ! $meta['post'] ) || $meta['post'] == $post_id ) ) {
 							wp_cache_debug( "Post change: deleting post wp-cache files for {$meta[ 'uri' ]}: $file", 4 );
 							@unlink( $blog_cache_dir . 'meta/' . $file );

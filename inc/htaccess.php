@@ -154,7 +154,9 @@ function wpsc_get_htaccess_info() {
 	}
 
 	$home_path = trailingslashit( $home_path );
-	$home_root_lc = str_replace( '//', '/', strtolower( $home_root ) );
+	// The rewrite rules point at supercache directories, so the home root has to
+	// be spelled the way those directories are. See #1081.
+	$home_root_lc = str_replace( '//', '/', wpsc_normalize_uri_case( $home_root ) );
 	$inst_root = str_replace( '//', '/', '/' . trailingslashit( str_replace( $content_dir_root, '', str_replace( '\\', '/', WP_CONTENT_DIR ) ) ) );
 	$wprules = implode( "\n", extract_from_markers( $home_path.'.htaccess', 'WordPress' ) );
 	$wprules = str_replace( "RewriteEngine On\n", '', $wprules );

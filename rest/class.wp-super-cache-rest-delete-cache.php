@@ -21,7 +21,18 @@ class WP_Super_Cache_Rest_Delete_Cache extends WP_REST_Controller {
 		} elseif ( isset( $params['url'] ) ) {
 			global $cache_path;
 
-			$directory = $cache_path . 'supercache/' . $params[ 'url' ];
+			// This is the one caller that hands the helpers raw JSON, so the value is
+			// checked here rather than trusted. An empty result would build the site's
+			// supercache root, which wpsc_delete_files() protects, but it is clearer to
+			// refuse than to rely on that.
+			$url = wpsc_sanitize_cache_path( $params['url'] );
+			if ( '' === $url ) {
+				return new WP_Error( 'invalid_url', __( 'Not a path this cache can delete.', 'wp-super-cache' ), array( 'status' => 400 ) );
+			}
+
+			// The caller sends whatever spelling it has, but the directory on disk
+			// is lowercase with the percent escapes uppercased. See #1081.
+			$directory = $cache_path . 'supercache/' . wpsc_normalize_uri_case( $url );
 			wpsc_delete_files( $directory );
 			prune_super_cache( $directory . '/page', true );
 
