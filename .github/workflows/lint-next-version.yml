@@ -5,6 +5,15 @@ on:
 
 jobs:
   next-version-tags:
+    # Release PRs are exempt. prepare-release.mjs rewrites every $$next-version$$
+    # to the real version as part of cutting the branch, so the substituted @since
+    # lines fail this check on every release. Feature PRs, where a hand-written
+    # version is a genuine mistake, are what it exists for.
+    #
+    # This has to be a head_ref test rather than a `branches-ignore:` filter,
+    # because for pull_request those filters match the base branch, and a release
+    # PR targets trunk like any other.
+    if: ${{ ! startsWith(github.head_ref, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
