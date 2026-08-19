@@ -971,6 +971,13 @@ function wpsc_sanitize_cache_path( $path ) {
  * off for the request at the same time it returns this. It exists so callers get
  * an absolute path inside the cache directory rather than a truncated one or an
  * empty string, both of which are worse. See wpsc_path_is_too_long().
+ *
+ * It sits directly under $cache_path, not under supercache/, because the first
+ * segment there is named after the request hostname and $WPSC_HTTP_HOST is
+ * whatever Host header arrived. A request carrying this name as its host would
+ * otherwise cache a real page into the directory, and the serving path reads the
+ * placeholder even though the writing path does not, so that page would then be
+ * served for every URL too long to build a path from.
  */
 define( 'WPSC_PATH_TOO_LONG_DIR', '.wpsc-path-too-long' );
 
@@ -1109,7 +1116,7 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 			$super_cache_enabled = false;
 		}
 
-		return $cache_path . 'supercache/' . WPSC_PATH_TOO_LONG_DIR . '/';
+		return $cache_path . WPSC_PATH_TOO_LONG_DIR . '/';
 	}
 
 	wp_cache_debug( "supercache dir: $dir", 5 );

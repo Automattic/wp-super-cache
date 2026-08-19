@@ -213,6 +213,11 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 		$this->assertFalse( wpsc_path_is_too_long( $dir ), "Returned path is still too long: {$dir}" );
 		$this->assertStringStartsWith( $GLOBALS['cache_path'], $dir, 'The path has to stay inside the cache directory.' );
 		$this->assertStringContainsString( WPSC_PATH_TOO_LONG_DIR, $dir );
+		$this->assertStringNotContainsString(
+			'supercache/',
+			$dir,
+			'The placeholder has to stay out of supercache/, where the first segment is named after the Host header and a request could claim it.'
+		);
 		$this->assertStringNotContainsString( str_repeat( 'a', 64 ), $dir, 'The long URI must not survive into the result, truncated or otherwise.' );
 	}
 
