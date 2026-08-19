@@ -255,6 +255,17 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 == Changelog ==
+### 3.1.2 - 2026-08-19
+* Fix: stop the error log filling with path length warnings when a request URL is too long to build a cache directory from.
+* Fix: clear the cache for category, tag and archive pages whose slug contains non-ASCII characters. The delete cache button could not clear those pages either, and now can.
+* Fix: clear the cache correctly when saving a post whose slug contains non-ASCII characters.
+* Removed the Bad Behavior plugin integration. The upstream plugin is no longer maintained and a long-standing inverted guard meant the integration never actually ran.
+* Fix: ignore a post ID of 0 when clearing the cache after a post edit, which could delete the front page cache unexpectedly.
+* Split wp-cache.php into per-responsibility inc/ files (#1061) (#1065)
+* Fix: cache modern security headers, including Permissions-Policy, the Cross-Origin-Opener/Embedder/Resource-Policy family and the remaining CORS headers, so they are sent on cached responses.
+* Fix: honour quality values in the Accept header, so monitoring tools and browsers that list JSON below HTML are served the cached page instead of rebuilding it on every request.
+* Fix: hide debug HTML comments in REST and Ajax responses (#1021)
+
 ### 3.1.1 - 2026-05-27
 - Security: harden supercache filename generation so request-derived data cannot escape the cache directory.
 - Fix: avoid a fatal error on PHP 8+ when closing an unopened file handle in supercache-only mode.
