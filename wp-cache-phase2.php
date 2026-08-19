@@ -1097,6 +1097,12 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		 * other branch is used by the deletion paths, and switching caching off
 		 * there would disable it for whatever admin request happened to be
 		 * saving a post.
+		 *
+		 * Both flags have to go. wp_cache_shutdown_callback() writes the legacy
+		 * meta file into this same directory and gates that on $cache_enabled
+		 * alone, so clearing only $super_cache_enabled would leave the
+		 * placeholder being written to, which is the one thing it relies on not
+		 * happening.
 		 */
 		if ( 0 === $post_id ) {
 			$cache_enabled       = false;
