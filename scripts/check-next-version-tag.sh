@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Read-only lint for the $$next-version$$ placeholder convention.
+# Read-only lint for the 3.1.2 placeholder convention.
 #
 # Inspects only the lines ADDED in this branch (vs. a base ref) and fails when a
 # new @since / @deprecated / _deprecated_*() introduces either:
@@ -53,20 +53,20 @@ check_line() { # file line content
 	# Deliberate opt-out.
 	case "$line" in *next-version-ok*) return ;; esac
 	# Correct usage — the exact token.
-	case "$line" in *'$$next-version$$'*) return ;; esac
+	case "$line" in *'3.1.2'*) return ;; esac
 
 	# (a) Near-miss placeholder the exact-match release replacer would skip.
 	if printf '%s' "$line" | grep -Eiq \
 		'@(since|deprecated)([[:space:]]+since)?[[:space:]]+[^[:space:]]*next[-_]version|@(since|deprecated)([[:space:]]+since)?[[:space:]]+next([^[:alnum:]]|$)|_deprecated_[a-z]*\([^)]*next[-_]version'
 	then
-		emit "$f" "$ln" 'Malformed next-version placeholder — use the exact token $$next-version$$ (run scripts/replace-next-version-tag.sh -h).'
+		emit "$f" "$ln" 'Malformed next-version placeholder — use the exact token 3.1.2 (run scripts/replace-next-version-tag.sh -h).'
 		return
 	fi
 
 	# (b) Hard-coded version where the placeholder should be used.
 	if printf '%s' "$line" | grep -Eiq '@(since|deprecated)([[:space:]]+since)?[[:space:]]+v?[0-9]+\.[0-9]+'
 	then
-		emit "$f" "$ln" 'Hard-coded version in a new @since/@deprecated — use $$next-version$$ for unreleased code, or add "next-version-ok" if this records a real past release.'
+		emit "$f" "$ln" 'Hard-coded version in a new @since/@deprecated — use 3.1.2 for unreleased code, or add "next-version-ok" if this records a real past release.'
 	fi
 }
 

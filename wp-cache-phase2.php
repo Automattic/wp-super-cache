@@ -888,7 +888,7 @@ function get_supercache_dir( $blog_id = 0 ) {
  * single-byte LC_CTYPE would lowercase bytes 0xC0-0xDE and corrupt a path that
  * carries raw UTF-8. Matching [A-Z] keeps that out of reach on every version.
  *
- * @since $$next-version$$
+ * @since 3.1.2
  *
  * @param string $uri URI or path fragment.
  * @return string Normalised URI, or '' if $uri is not a string.
@@ -946,7 +946,7 @@ function wpsc_normalize_uri_case( $uri ) {
  * matter run later: the '..' strip, wp_cache_confirm_delete(), and the check that
  * the resolved path sits inside the supercache directory.
  *
- * @since $$next-version$$
+ * @since 3.1.2
  *
  * @param string $path Path from the request.
  * @return string The path unchanged, or '' if it is not one.
@@ -994,7 +994,7 @@ define( 'WPSC_PATH_TOO_LONG_DIR', '.wpsc-path-too-long' );
  * The headroom is because callers append a filename to the directory this
  * measures, 'index.html' or 'meta-<32 hex chars>.meta' being the long ones.
  *
- * @since $$next-version$$
+ * @since 3.1.2
  *
  * @param string $path Path to measure.
  * @return bool True if the path cannot be used.
@@ -1016,7 +1016,7 @@ function wpsc_path_is_too_long( $path ) {
  * wp_parse_url() omits 'path' entirely for a URL like 'https://example.com', so
  * the fallback is not decoration; the old inline version emitted a notice there.
  *
- * @since $$next-version$$
+ * @since 3.1.2
  *
  * @param string $url Absolute URL.
  * @return string Supercache directory for $url, without a trailing slash.
