@@ -46,6 +46,9 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 			'wp_cache_home_path'   => '/',
 			'wp_cache_request_uri' => '/',
 			'cached_direct_pages'  => array(),
+			// Snapshotted because the overlong-path guard switches these off.
+			'cache_enabled'        => true,
+			'super_cache_enabled'  => true,
 		);
 
 		$this->saved_globals = array();
@@ -108,6 +111,34 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * An overlong path switches caching off for the request, so nothing is ever
+	 * written to the placeholder directory and no two long URLs can share it.
+	 *
+	 * Declared first on purpose. It needs the $post_id = 0 branch, which the test
+	 * below also needs, and only one test per run may memoise key 0. This one is
+	 * safe to pair with it because the guard returns before the memoise, so it
+	 * leaves the key free. Reverse the order and this fails rather than passing
+	 * quietly, which is what the precondition is for.
+	 */
+	public function test_a_path_too_long_for_the_filesystem_disables_caching() {
+		$this->assertRequestUriBranchNotMemoised();
+
+		$GLOBALS['cache_enabled']       = true;
+		$GLOBALS['super_cache_enabled'] = true;
+
+		// Sized from the platform limit: 1024 on macOS, 4096 on Linux, which is
+		// what CI and the wp-env container run.
+		$GLOBALS['wp_cache_request_uri'] = '/' . str_repeat( 'b', PHP_MAXPATHLEN ) . '/';
+
+		get_current_url_supercache_dir( 0 );
+
+		$this->assertFalse( $GLOBALS['cache_enabled'], 'Caching has to be off, or the placeholder directory gets written to.' );
+		$this->assertFalse( $GLOBALS['super_cache_enabled'] );
+
+		$this->assertRequestUriBranchNotMemoised();
+	}
+
+	/**
 	 * The deletion branch has to land on the same directory the serving branch
 	 * creates. This is the regression from the bug report.
 	 *
@@ -147,6 +178,47 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 		preg_match_all( '/%[0-9a-fA-F]{2}/', $dir, $matches );
 		$this->assertNotEmpty( $matches[0], "Expected percent escapes in {$dir}." );
 		$this->assertSame( array_map( 'strtoupper', $matches[0] ), $matches[0] );
+	}
+
+	/**
+	 * A path the filesystem cannot accept is never handed back to a caller.
+	 *
+	 * Every filesystem call made with an overlong path emits a PHP warning, and
+	 * `wpcache_do_rebuild( get_current_url_supercache_dir() )` runs on more or
+	 * less every cacheable GET, so an error log fills up with them. See #1085.
+	 *
+	 * The two obvious answers are both worse than the bug. Truncating maps two
+	 * different URLs onto one directory, so the wrong page gets served. Returning
+	 * an empty string turns supercache_filename() into the relative path
+	 * 'index.html', which file_exists() may well find in the WordPress root. So
+	 * the function returns a short absolute path inside the cache directory that
+	 * nothing writes to, having switched caching off for the request.
+	 *
+	 * Driven through $wp_cache_home_path rather than a long slug, because
+	 * post_name is capped well below the limit. Uses a fresh post ID, so it does
+	 * not compete for the memoised key 0.
+	 */
+	public function test_a_path_too_long_for_the_filesystem_is_not_returned() {
+		$GLOBALS['wp_cache_home_path']  = '/' . str_repeat( 'a', PHP_MAXPATHLEN ) . '/';
+		$GLOBALS['cache_enabled']       = true;
+		$GLOBALS['super_cache_enabled'] = true;
+
+		list( $post_id ) = $this->publish( 'Hello There' );
+
+		$dir = get_current_url_supercache_dir( $post_id );
+
+		$this->assertTrue( $GLOBALS['cache_enabled'], 'The deletion branch must not switch caching off for the admin request that is saving the post.' );
+		$this->assertTrue( $GLOBALS['super_cache_enabled'] );
+		$this->assertNotSame( '', $dir, 'An empty path would be resolved relative to the working directory.' );
+		$this->assertFalse( wpsc_path_is_too_long( $dir ), "Returned path is still too long: {$dir}" );
+		$this->assertStringStartsWith( $GLOBALS['cache_path'], $dir, 'The path has to stay inside the cache directory.' );
+		$this->assertStringContainsString( WPSC_PATH_TOO_LONG_DIR, $dir );
+		$this->assertStringNotContainsString(
+			'supercache/',
+			$dir,
+			'The placeholder has to stay out of supercache/, where the first segment is named after the Host header and a request could claim it.'
+		);
+		$this->assertStringNotContainsString( str_repeat( 'a', 64 ), $dir, 'The long URI must not survive into the result, truncated or otherwise.' );
 	}
 
 	/**

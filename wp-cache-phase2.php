@@ -965,6 +965,47 @@ function wpsc_sanitize_cache_path( $path ) {
 }
 
 /**
+ * Directory name returned in place of a supercache path that will not fit.
+ *
+ * Nothing is ever written here: get_current_url_supercache_dir() switches caching
+ * off for the request at the same time it returns this. It exists so callers get
+ * an absolute path inside the cache directory rather than a truncated one or an
+ * empty string, both of which are worse. See wpsc_path_is_too_long().
+ *
+ * It sits directly under $cache_path, not under supercache/, because the first
+ * segment there is named after the request hostname and $WPSC_HTTP_HOST is
+ * whatever Host header arrived. A request carrying this name as its host would
+ * otherwise cache a real page into the directory, and the serving path reads the
+ * placeholder even though the writing path does not, so that page would then be
+ * served for every URL too long to build a path from.
+ */
+define( 'WPSC_PATH_TOO_LONG_DIR', '.wpsc-path-too-long' );
+
+/**
+ * Whether a path is too long for the filesystem to accept.
+ *
+ * PHP emits "File name is longer than the maximum allowed path length on this
+ * platform" from every filesystem call made with such a path, so an error log can
+ * fill up with them. Two ways to get there: a malformed srcset makes a browser
+ * request the whole attribute as one URL, and a genuinely long URL on a site
+ * whose cache_path is already deep spends the budget before the URI is added.
+ * See #1085.
+ *
+ * The headroom is because callers append a filename to the directory this
+ * measures, 'index.html' or 'meta-<32 hex chars>.meta' being the long ones.
+ *
+ * @since $$next-version$$
+ *
+ * @param string $path Path to measure.
+ * @return bool True if the path cannot be used.
+ */
+function wpsc_path_is_too_long( $path ) {
+	$max = defined( 'PHP_MAXPATHLEN' ) ? PHP_MAXPATHLEN : 1024;
+
+	return ( strlen( (string) $path ) + 64 ) > $max;
+}
+
+/**
  * Supercache directory for an absolute URL.
  *
  * Pulled out of wp_cron_preload_cache() so the rule it applies can be tested.
@@ -989,7 +1030,11 @@ function wpsc_supercache_dir_for_url( $url ) {
 
 function get_current_url_supercache_dir( $post_id = 0 ) {
 	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST, $wp_cache_home_path;
+	global $cache_enabled, $super_cache_enabled;
 	static $saved_supercache_dir = array();
+
+	// Normalised once so the branch test below and the too-long guard agree on what zero is.
+	$post_id = (int) $post_id;
 
 	if ( isset( $saved_supercache_dir[ $post_id ] ) ) {
 		return $saved_supercache_dir[ $post_id ];
@@ -1050,6 +1095,30 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$dir = ABSPATH . $uri . '/';
 	}
 	$dir = str_replace( '..', '', str_replace( '//', '/', $dir ) );
+
+	if ( wpsc_path_is_too_long( $dir ) ) {
+		wp_cache_debug( 'get_current_url_supercache_dir: path is ' . strlen( $dir ) . ' bytes, too long for this platform. Not caching this request.' );
+
+		/*
+		 * Only the $post_id = 0 branch describes the request being served. The
+		 * other branch is used by the deletion paths, and switching caching off
+		 * there would disable it for whatever admin request happened to be
+		 * saving a post.
+		 *
+		 * Both flags have to go. wp_cache_shutdown_callback() writes the legacy
+		 * meta file into this same directory and gates that on $cache_enabled
+		 * alone, so clearing only $super_cache_enabled would leave the
+		 * placeholder being written to, which is the one thing it relies on not
+		 * happening.
+		 */
+		if ( 0 === $post_id ) {
+			$cache_enabled       = false;
+			$super_cache_enabled = false;
+		}
+
+		return $cache_path . WPSC_PATH_TOO_LONG_DIR . '/';
+	}
+
 	wp_cache_debug( "supercache dir: $dir", 5 );
 	if ( $DONOTREMEMBER == 0 ) {
 		$saved_supercache_dir[ $post_id ] = $dir;
