@@ -5,7 +5,7 @@ on:
 
 jobs:
   next-version-tags:
-    # Release PRs are exempt. prepare-release.mjs rewrites every $$next-version$$
+    # Release PRs are exempt. prepare-release.mjs rewrites every 3.1.2
     # to the real version as part of cutting the branch, so the substituted @since
     # lines fail this check on every release. Feature PRs, where a hand-written
     # version is a genuine mistake, are what it exists for.
@@ -19,5 +19,5 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
-      - name: Check $$next-version$$ usage in added lines
+      - name: Check 3.1.2 usage in added lines
         run: bash scripts/check-next-version-tag.sh "${{ github.event.pull_request.base.sha }}"
