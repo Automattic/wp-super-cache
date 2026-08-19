@@ -1026,6 +1026,9 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 	global $cache_enabled, $super_cache_enabled;
 	static $saved_supercache_dir = array();
 
+	// Normalised once so the branch test below and the too-long guard agree on what zero is.
+	$post_id = (int) $post_id;
+
 	if ( isset( $saved_supercache_dir[ $post_id ] ) ) {
 		return $saved_supercache_dir[ $post_id ];
 	}

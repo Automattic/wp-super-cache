@@ -199,12 +199,16 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	 * not compete for the memoised key 0.
 	 */
 	public function test_a_path_too_long_for_the_filesystem_is_not_returned() {
-		$GLOBALS['wp_cache_home_path'] = '/' . str_repeat( 'a', PHP_MAXPATHLEN ) . '/';
+		$GLOBALS['wp_cache_home_path']  = '/' . str_repeat( 'a', PHP_MAXPATHLEN ) . '/';
+		$GLOBALS['cache_enabled']       = true;
+		$GLOBALS['super_cache_enabled'] = true;
 
 		list( $post_id ) = $this->publish( 'Hello There' );
 
 		$dir = get_current_url_supercache_dir( $post_id );
 
+		$this->assertTrue( $GLOBALS['cache_enabled'], 'The deletion branch must not switch caching off for the admin request that is saving the post.' );
+		$this->assertTrue( $GLOBALS['super_cache_enabled'] );
 		$this->assertNotSame( '', $dir, 'An empty path would be resolved relative to the working directory.' );
 		$this->assertFalse( wpsc_path_is_too_long( $dir ), "Returned path is still too long: {$dir}" );
 		$this->assertStringStartsWith( $GLOBALS['cache_path'], $dir, 'The path has to stay inside the cache directory.' );
