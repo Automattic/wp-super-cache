@@ -81,7 +81,7 @@ function wpsupercache_deactivate() {
 	wp_clear_scheduled_hook( 'wp_cache_check_site_hook' );
 	wp_clear_scheduled_hook( 'wp_cache_gc' );
 	wp_clear_scheduled_hook( 'wp_cache_gc_watcher' );
-	wp_cache_replace_line('^ *\$cache_enabled', '$cache_enabled = false;', $wp_cache_config_file);
+	\Automattic\WPSC\Config::set( 'cache_enabled', false, $wp_cache_config_file );
 	wp_cache_disable_plugin( false ); // don't delete configuration file
 	delete_user_option( get_current_user_id(), 'wpsc_dismissed_boost_banner' );
 }
@@ -140,7 +140,7 @@ function wp_cache_enable() {
 		return true;
 	}
 
-	wp_cache_setting( 'cache_enabled', true );
+	\Automattic\WPSC\Config::set( 'cache_enabled', true );
 	wp_cache_debug( 'wp_cache_enable: enable cache' );
 
 	$cache_enabled = true;
@@ -162,7 +162,7 @@ function wp_cache_disable() {
 		return true;
 	}
 
-	wp_cache_setting( 'cache_enabled', false );
+	\Automattic\WPSC\Config::set( 'cache_enabled', false );
 	wp_cache_debug( 'wp_cache_disable: disable cache' );
 
 	$cache_enabled = false;
@@ -180,7 +180,7 @@ function wp_super_cache_enable() {
 		return true;
 	}
 
-	wp_cache_setting( 'super_cache_enabled', true );
+	\Automattic\WPSC\Config::set( 'super_cache_enabled', true );
 	wp_cache_debug( 'wp_super_cache_enable: enable cache' );
 
 	$super_cache_enabled = true;
@@ -207,7 +207,7 @@ function wp_super_cache_disable() {
 		return true;
 	}
 
-	wp_cache_setting( 'super_cache_enabled', false );
+	\Automattic\WPSC\Config::set( 'super_cache_enabled', false );
 	wp_cache_debug( 'wp_super_cache_disable: disable cache' );
 
 	$super_cache_enabled = false;
@@ -727,11 +727,11 @@ function wpsc_set_default_gc( $force = false ) {
 		$cache_max_time          = 1800;
 		$cache_schedule_interval = 'hourly';
 		$cache_gc_email_me       = 0;
-		wp_cache_setting( 'cache_schedule_type', $cache_schedule_type );
-		wp_cache_setting( 'cache_time_interval', $cache_time_interval );
-		wp_cache_setting( 'cache_max_time', $cache_max_time );
-		wp_cache_setting( 'cache_schedule_interval', $cache_schedule_interval );
-		wp_cache_setting( 'cache_gc_email_me', $cache_gc_email_me );
+		\Automattic\WPSC\Config::set( 'cache_schedule_type', $cache_schedule_type );
+		\Automattic\WPSC\Config::set( 'cache_time_interval', $cache_time_interval );
+		\Automattic\WPSC\Config::set( 'cache_max_time', $cache_max_time );
+		\Automattic\WPSC\Config::set( 'cache_schedule_interval', $cache_schedule_interval );
+		\Automattic\WPSC\Config::set( 'cache_gc_email_me', $cache_gc_email_me );
 
 		wp_schedule_single_event( time() + 600, 'wp_cache_gc' );
 	}
@@ -746,7 +746,7 @@ function wpsc_update_check() {
 		! isset( $wpsc_version ) ||
 		$wpsc_version != 169
 	) {
-		wp_cache_setting( 'wpsc_version', 169 );
+		\Automattic\WPSC\Config::set( 'wpsc_version', 169 );
 		global $wp_cache_debug_log, $cache_path;
 		$log_file = $cache_path . str_replace('/', '', str_replace('..', '', $wp_cache_debug_log));
 		if ( ! file_exists( $log_file ) ) {

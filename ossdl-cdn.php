@@ -254,7 +254,7 @@ function scossdl_off_update() {
 		$ossdlcdn    = empty( $_POST['ossdlcdn'] ) ? 0 : 1;
 
 		update_option( 'ossdl_https', $ossdl_https );
-		wp_cache_setting( 'ossdlcdn', $ossdlcdn );
+		\Automattic\WPSC\Config::set( 'ossdlcdn', $ossdlcdn );
 	}
 }
 

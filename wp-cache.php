@@ -41,6 +41,7 @@ require_once __DIR__ . '/inc/preload.php';
 require_once __DIR__ . '/inc/lifecycle.php';
 require_once __DIR__ . '/inc/admin-notices.php';
 require_once __DIR__ . '/inc/admin-ui.php';
+require_once __DIR__ . '/src/config/class-config.php';
 
 // Plugin activation/deactivation/uninstall hooks must be registered from the
 // main plugin file so __FILE__ resolves to wp-cache.php; the handlers live in

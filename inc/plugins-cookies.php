@@ -44,7 +44,7 @@ function wpsc_update_plugin_list( $update ) {
 	foreach( $update as $key => $enabled ) {
 		$plugin_toggle = "cache_{$key}";
 		if ( isset( $GLOBALS[ $plugin_toggle ] ) || isset( $list[ $key ] ) ) {
-			wp_cache_setting( $plugin_toggle, (int)$enabled );
+			\Automattic\WPSC\Config::set( $plugin_toggle, (int)$enabled );
 		}
 	}
 }
@@ -60,7 +60,7 @@ function wpsc_add_plugin( $file ) {
 		! in_array( $file, $wpsc_plugins )
 	) {
 		$wpsc_plugins[] = $file;
-		wp_cache_setting( 'wpsc_plugins', $wpsc_plugins );
+		\Automattic\WPSC\Config::set( 'wpsc_plugins', $wpsc_plugins );
 	}
 	return $file;
 }
@@ -77,7 +77,7 @@ function wpsc_delete_plugin( $file ) {
 		in_array( $file, $wpsc_plugins )
 	) {
 		unset( $wpsc_plugins[ array_search( $file, $wpsc_plugins ) ] );
-		wp_cache_setting( 'wpsc_plugins', $wpsc_plugins );
+		\Automattic\WPSC\Config::set( 'wpsc_plugins', $wpsc_plugins );
 	}
 	return $file;
 }
@@ -96,7 +96,7 @@ function wpsc_add_cookie( $name ) {
 		! in_array( $name, $wpsc_cookies )
 	) {
 		$wpsc_cookies[] = $name;
-		wp_cache_setting( 'wpsc_cookies', $wpsc_cookies );
+		\Automattic\WPSC\Config::set( 'wpsc_cookies', $wpsc_cookies );
 	}
 	return $name;
 }
@@ -110,7 +110,7 @@ function wpsc_delete_cookie( $name ) {
 		in_array( $name, $wpsc_cookies )
 	) {
 		unset( $wpsc_cookies[ array_search( $name, $wpsc_cookies ) ] );
-		wp_cache_setting( 'wpsc_cookies', $wpsc_cookies );
+		\Automattic\WPSC\Config::set( 'wpsc_cookies', $wpsc_cookies );
 	}
 	return $name;
 }

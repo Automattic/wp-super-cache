@@ -162,6 +162,138 @@ class SettingsFormUpdatersTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Characterizes wp_cache_time_update() interval-schedule path.
+	 *
+	 * Critical contract: cache_max_time is written as an UNQUOTED integer
+	 * (e.g. `$cache_max_time = 3600;`) while cache_time_interval is written
+	 * QUOTED even though it is also numeric (e.g. `$cache_time_interval = '600';`).
+	 *
+	 * This distinction is preserved verbatim across the #1062 migration: L145/L155
+	 * (max_time) are migrated to Config::set() whose format_value() emits numeric
+	 * values unquoted, while L150/L176 (time_interval) are left on raw
+	 * wp_cache_replace_line() to keep the quoted form.
+	 */
+	public function test_time_update_interval_path_writes_max_time_unquoted_and_interval_quoted() {
+		$config = $this->make_config_file(
+			array(
+				"\$cache_schedule_type = 'interval';",
+				"\$cache_scheduled_time = '00:00';",
+				'$cache_max_time = 1800;',
+				"\$cache_time_interval = '1800';",
+				'$cache_gc_email_me = 0;',
+				"\$cache_schedule_interval = 'daily';",
+			)
+		);
+
+		// Pre-populate all globals so none of the "unset → initialize" branches fire.
+		$GLOBALS['cache_schedule_type']     = 'interval';
+		$GLOBALS['cache_scheduled_time']    = '00:00';
+		$GLOBALS['cache_max_time']          = 1800;
+		$GLOBALS['cache_time_interval']     = 1800;
+		$GLOBALS['cache_gc_email_me']       = 0;
+		$GLOBALS['cache_schedule_interval'] = 'daily';
+
+		$_POST['action']              = 'expirytime';
+		$_POST['wp_max_time']         = '3600';      // updates cache_max_time
+		$_POST['cache_schedule_type'] = 'interval';
+		$_POST['cache_time_interval'] = '600';       // updates cache_time_interval
+
+		wp_cache_time_update();
+
+		$content = file_get_contents( $config );
+
+		// cache_max_time → numeric → UNQUOTED.
+		$this->assertStringContainsString( '$cache_max_time = 3600;', $content, 'cache_max_time must be unquoted integer' );
+		$this->assertStringNotContainsString( "\$cache_max_time = '3600';", $content, 'cache_max_time must NOT be quoted' );
+
+		// cache_time_interval → numeric but written QUOTED by original code.
+		$this->assertStringContainsString( "\$cache_time_interval = '600';", $content, 'cache_time_interval must be quoted' );
+		$this->assertStringNotContainsString( '$cache_time_interval = 600;', $content, 'cache_time_interval must NOT be unquoted' );
+
+		// Globals updated.
+		$this->assertSame( 3600, $GLOBALS['cache_max_time'] );
+		$this->assertSame( 600, $GLOBALS['cache_time_interval'] );
+		$this->assertSame( 'interval', $GLOBALS['cache_schedule_type'] );
+	}
+
+	/**
+	 * Characterizes wp_cache_time_update() initialization branch for cache_max_time.
+	 *
+	 * When cache_max_time is not set in globals the function sets it to 3600 and
+	 * writes it UNQUOTED. This is the L145 site migrated to Config::set().
+	 */
+	public function test_time_update_initializes_max_time_as_unquoted_integer() {
+		$config = $this->make_config_file(
+			array(
+				"\$cache_schedule_type = 'interval';",
+				"\$cache_scheduled_time = '00:00';",
+				'$cache_max_time = 1800;',
+				"\$cache_time_interval = '1800';",
+				'$cache_gc_email_me = 0;',
+			)
+		);
+
+		// Unset cache_max_time to trigger the initialization branch (L143–146).
+		unset( $GLOBALS['cache_max_time'] );
+		$GLOBALS['cache_schedule_type']  = 'interval';
+		$GLOBALS['cache_scheduled_time'] = '00:00';
+		$GLOBALS['cache_time_interval']  = 1800;
+		$GLOBALS['cache_gc_email_me']    = 0;
+
+		$_POST['action']              = 'expirytime';
+		$_POST['cache_schedule_type'] = 'interval';
+		$_POST['cache_time_interval'] = '1800';
+
+		wp_cache_time_update();
+
+		$content = file_get_contents( $config );
+
+		// Initialization default 3600 written UNQUOTED.
+		$this->assertStringContainsString( '$cache_max_time = 3600;', $content, 'init cache_max_time must be unquoted' );
+		$this->assertStringNotContainsString( "\$cache_max_time = '3600';", $content, 'init cache_max_time must NOT be quoted' );
+	}
+
+	/**
+	 * Characterizes wp_cache_time_update() clock-schedule path (L197–199).
+	 *
+	 * All three clock-path fields (cache_schedule_type, cache_schedule_interval,
+	 * cache_scheduled_time) are written as QUOTED strings — verified for the
+	 * L197/L198/L199 sites migrated to Config::set().
+	 */
+	public function test_time_update_clock_path_writes_schedule_fields_quoted() {
+		$config = $this->make_config_file(
+			array(
+				"\$cache_schedule_type = 'interval';",
+				"\$cache_scheduled_time = '00:00';",
+				'$cache_max_time = 1800;',
+				"\$cache_time_interval = '1800';",
+				'$cache_gc_email_me = 0;',
+				"\$cache_schedule_interval = 'daily';",
+			)
+		);
+
+		$GLOBALS['cache_schedule_type']     = 'interval';
+		$GLOBALS['cache_scheduled_time']    = '00:00';
+		$GLOBALS['cache_max_time']          = 1800;
+		$GLOBALS['cache_time_interval']     = 1800;
+		$GLOBALS['cache_gc_email_me']       = 0;
+		$GLOBALS['cache_schedule_interval'] = 'daily';
+
+		$_POST['action']                  = 'expirytime';
+		$_POST['cache_schedule_type']     = 'time'; // not 'interval' → clock branch
+		$_POST['cache_scheduled_time']    = '14:00';
+		$_POST['cache_schedule_interval'] = 'daily';
+
+		wp_cache_time_update();
+
+		$content = file_get_contents( $config );
+
+		$this->assertStringContainsString( "\$cache_schedule_type = 'time';", $content );
+		$this->assertStringContainsString( "\$cache_schedule_interval = 'daily';", $content );
+		$this->assertStringContainsString( "\$cache_scheduled_time = '14:00';", $content );
+	}
+
+	/**
 	 * Characterizes wpsc_update_debug_settings() without a valid nonce: it makes
 	 * no changes and returns a snapshot of the current debug-related settings.
 	 */

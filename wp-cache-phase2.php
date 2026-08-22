@@ -1632,123 +1632,25 @@ function is_writeable_ACLSafe( $path ) {
 function wp_cache_setting( $field, $value ) {
 	global $wp_cache_config_file;
 
-	$GLOBALS[ $field ] = $value;
-	if ( is_numeric( $value ) ) {
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $value;", $wp_cache_config_file );
-	} elseif ( is_bool( $value ) ) {
-		$output_value = $value === true ? 'true' : 'false';
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $output_value;", $wp_cache_config_file );
-	} elseif ( is_object( $value ) || is_array( $value ) ) {
-		$text = var_export( $value, true );
-		$text = preg_replace( '/[\s]+/', ' ', $text );
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
-	} else {
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
+	if ( ! class_exists( 'Automattic\WPSC\Config' ) ) {
+		if ( ! file_exists( WPCACHEHOME . 'src/config/class-config.php' ) ) {
+			return false;
+		}
+		require_once WPCACHEHOME . 'src/config/class-config.php';
 	}
+
+	return \Automattic\WPSC\Config::set( $field, $value, $wp_cache_config_file );
 }
 
 function wp_cache_replace_line( $old, $new, $my_file ) {
-	if ( ! is_string( $my_file ) || @is_file( $my_file ) === false ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		if ( function_exists( 'set_transient' ) ) {
-			set_transient( 'wpsc_config_error', 'config_file_missing', 10 );
+	if ( ! class_exists( 'Automattic\WPSC\Config' ) ) {
+		if ( ! file_exists( WPCACHEHOME . 'src/config/class-config.php' ) ) {
+			return false;
 		}
-		return false;
-	}
-	if ( ! is_writeable_ACLSafe( $my_file ) ) {
-		if ( function_exists( 'set_transient' ) ) {
-			set_transient( 'wpsc_config_error', 'config_file_ro', 10 );
-		}
-		trigger_error( "Error: file $my_file is not writable." );
-		return false;
+		require_once WPCACHEHOME . 'src/config/class-config.php';
 	}
 
-	$found  = false;
-	$loaded = false;
-	$c      = 0;
-	$lines  = array();
-	while ( ! $loaded ) {
-		$lines = file( $my_file );
-		if ( ! empty( $lines ) && is_array( $lines ) ) {
-			$loaded = true;
-		} else {
-			++$c;
-			if ( $c > 100 ) {
-				if ( function_exists( 'set_transient' ) ) {
-					set_transient( 'wpsc_config_error', 'config_file_not_loaded', 10 );
-				}
-				trigger_error( "wp_cache_replace_line: Error  - file $my_file could not be loaded." );
-				return false;
-			}
-		}
-	}
-	foreach ( (array) $lines as $line ) {
-		if (
-			trim( $new ) != '' &&
-			trim( $new ) == trim( $line )
-		) {
-			wp_cache_debug( "wp_cache_replace_line: setting not changed - $new" );
-			return true;
-		} elseif ( preg_match( "/$old/", $line ) ) {
-			wp_cache_debug( 'wp_cache_replace_line: changing line ' . trim( $line ) . " to *$new*" );
-			$found = true;
-		}
-	}
-
-	$tmp_config_filename = tempnam( $GLOBALS['cache_path'], md5( (string) wp_rand( 0, 9999 ) ) );
-	if ( file_exists( $tmp_config_filename . '.php' ) ) {
-		unlink( $tmp_config_filename . '.php' );
-		if ( file_exists( $tmp_config_filename . '.php' ) ) {
-			die( __( 'WARNING: attempt to intercept updating of config file.', 'wp-super-cache' ) );
-		}
-	}
-	rename( $tmp_config_filename, $tmp_config_filename . '.php' );
-	$tmp_config_filename .= '.php';
-	wp_cache_debug( 'wp_cache_replace_line: writing to ' . $tmp_config_filename );
-	$fd = fopen( $tmp_config_filename, 'w' );
-	if ( ! $fd ) {
-		if ( function_exists( 'set_transient' ) ) {
-			set_transient( 'wpsc_config_error', 'config_file_ro', 10 );
-		}
-		trigger_error( "wp_cache_replace_line: Error  - could not write to $my_file" );
-		return false;
-	}
-	if ( $found ) {
-		foreach ( (array) $lines as $line ) {
-			if ( ! preg_match( "/$old/", $line ) ) {
-				fwrite( $fd, $line );
-			} elseif ( $new != '' ) {
-				fwrite( $fd, "$new\n" );
-			}
-		}
-	} else {
-		$done = false;
-		foreach ( (array) $lines as $line ) {
-			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
-				fwrite( $fd, $line );
-			} else {
-				fwrite( $fd, "$new\n" );
-				fwrite( $fd, $line );
-				$done = true;
-			}
-		}
-	}
-	fclose( $fd );
-
-	$my_file_permissions = fileperms( $my_file );
-
-	rename( $tmp_config_filename, $my_file );
-
-	if ( false !== $my_file_permissions ) {
-		chmod( $my_file, $my_file_permissions );
-	}
-
-	wp_cache_debug( 'wp_cache_replace_line: moved ' . $tmp_config_filename . ' to ' . $my_file );
-
-	if ( function_exists( 'opcache_invalidate' ) ) {
-		@opcache_invalidate( $my_file );
-	}
-
-	return true;
+	return \Automattic\WPSC\Config::write_line( $old, $new, $my_file );
 }
 
 function wpsc_shutdown_message() {
