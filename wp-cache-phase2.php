@@ -613,26 +613,7 @@ function wp_cache_get_cookies_values() {
 		return $string;
 	}
 
-	if ( defined( 'COOKIEHASH' ) ) {
-		$cookiehash = preg_quote( constant( 'COOKIEHASH' ) );
-	} else {
-		$cookiehash = '';
-	}
-	$regex = "/^wp-postpass_$cookiehash|^comment_author_$cookiehash";
-	if ( defined( 'LOGGED_IN_COOKIE' ) ) {
-		$regex .= '|^' . preg_quote( constant( 'LOGGED_IN_COOKIE' ) );
-	} else {
-		$regex .= "|^wordpress_logged_in_$cookiehash";
-	}
-	$regex .= '/';
-	while ( $key = key( $_COOKIE ) ) {
-		if ( preg_match( $regex, $key ) ) {
-			wp_cache_debug( 'wp_cache_get_cookies_values: Login/postpass cookie detected' );
-			$string .= $_COOKIE[ $key ] . ',';
-		}
-		next( $_COOKIE );
-	}
-	reset( $_COOKIE );
+	$string = wpsc_get_auth_cookie_values( $_COOKIE );
 
 	// If you use this hook, make sure you update your .htaccess rules with the same conditions
 	$string = do_cacheaction( 'wp_cache_get_cookies_values', $string );
@@ -642,7 +623,10 @@ function wp_cache_get_cookies_values() {
 		is_array( $wpsc_cookies )
 	) {
 		foreach ( $wpsc_cookies as $name ) {
-			if ( isset( $_COOKIE[ $name ] ) ) {
+			// Same reason as wpsc_get_auth_cookie_values(): a cookie sent as name[]=value
+			// arrives as an array, and concatenating it yields the literal string "Array"
+			// for every sender, plus a PHP warning raised inside the output buffer.
+			if ( isset( $_COOKIE[ $name ] ) && is_scalar( $_COOKIE[ $name ] ) ) {
 				wp_cache_debug( "wp_cache_get_cookies_values - found extra cookie: $name" );
 				$string .= $name . '=' . $_COOKIE[ $name ] . ',';
 			}
@@ -654,6 +638,66 @@ function wp_cache_get_cookies_values() {
 	}
 
 	wp_cache_debug( "wp_cache_get_cookies_values: return: $string", 5 );
+	return $string;
+}
+
+/**
+ * Collect the values of the auth cookies that identify a non-anonymous visitor.
+ *
+ * The result is hashed into the cache key, so it decides whether a request is
+ * stored and served as anonymous. Returning an empty string for a visitor who
+ * is in fact logged in (or holds a post password or comment cookie) collapses
+ * their cache key onto the anonymous one, and the personalised page they were
+ * served is written to the supercache file every anonymous visitor then gets.
+ *
+ * Iteration is by foreach for that reason. The previous
+ * `while ( $key = key( $_COOKIE ) )` loop stopped on any falsy key, and PHP
+ * casts a cookie named "0" to integer key 0, which is falsy. A cookie named
+ * "0" sent ahead of the auth cookies ended the scan before it reached them.
+ *
+ * Not to be confused with wpsc_get_auth_cookies(), which answers a different
+ * question: it returns cookie *names*, covers wordpress_ and wordpress_sec_ as
+ * well, and anchors the hash suffix. This one returns the values that go into
+ * the cache key, and matches the same three prefixes the .htaccess rules do.
+ *
+ * The values are concatenated in the order the cookies arrive, so cache keys are
+ * order-sensitive. That is pre-existing behaviour and changing it would move
+ * every existing cache entry.
+ *
+ * @param array $cookies Cookie array, normally $_COOKIE.
+ * @return string Comma-terminated auth cookie values, empty when none match.
+ */
+function wpsc_get_auth_cookie_values( $cookies ) {
+	if ( defined( 'COOKIEHASH' ) ) {
+		$cookiehash = preg_quote( constant( 'COOKIEHASH' ), '/' );
+	} else {
+		$cookiehash = '';
+	}
+	$regex = "/^wp-postpass_$cookiehash|^comment_author_$cookiehash";
+	if ( defined( 'LOGGED_IN_COOKIE' ) ) {
+		// Escaped for the '/' delimiter: a site that redefines LOGGED_IN_COOKIE with
+		// a slash in it would otherwise break the pattern, and preg_match() returning
+		// false makes every logged-in visitor look anonymous.
+		$regex .= '|^' . preg_quote( constant( 'LOGGED_IN_COOKIE' ), '/' );
+	} else {
+		$regex .= "|^wordpress_logged_in_$cookiehash";
+	}
+	$regex .= '/';
+
+	$string = '';
+
+	foreach ( (array) $cookies as $key => $value ) {
+		// A cookie sent as name[]=value arrives as an array and is never a valid auth cookie.
+		if ( ! is_scalar( $value ) ) {
+			continue;
+		}
+
+		if ( preg_match( $regex, (string) $key ) ) {
+			wp_cache_debug( 'wp_cache_get_cookies_values: Login/postpass cookie detected' );
+			$string .= $value . ',';
+		}
+	}
+
 	return $string;
 }
 
