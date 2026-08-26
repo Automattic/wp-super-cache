@@ -1687,7 +1687,37 @@ function wp_cache_setting( $field, $value ) {
 		$text = preg_replace( '/[\s]+/', ' ', $text );
 		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
 	} else {
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
+		/*
+		 * var_export() rather than "'$value'". The config file is PHP source, so a
+		 * value carrying a quote closed the string early and a trailing backslash
+		 * escaped the closing quote, either way leaving a line the parser could not
+		 * read back.
+		 *
+		 * Escaping settings values is this function's job, not the caller's. The
+		 * metacharacter strips some callers still run before calling in are older
+		 * belt and braces, not the thing keeping the file readable; a new settings
+		 * field does not need one.
+		 */
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Generating PHP source for the config file, which is what var_export() is for.
+		$text = var_export( (string) $value, true );
+
+		/*
+		 * var_export() emits newlines literally, and wp_cache_replace_line() works a
+		 * line at a time: its '^ *\$field' match finds only the first physical line, so
+		 * the next write of the same field replaces that and orphans the tail. The
+		 * orphan stops the file parsing, and it is included before WordPress boots, so
+		 * that is a fatal error rather than a degraded cache. Keep entries to one line:
+		 * a value holding a newline is written as $field = 'one' . "\n" . 'two';
+		 */
+		$text = strtr(
+			$text,
+			array(
+				"\r" => '\' . "\r" . \'',
+				"\n" => '\' . "\n" . \'',
+			)
+		);
+
+		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
 	}
 }
 

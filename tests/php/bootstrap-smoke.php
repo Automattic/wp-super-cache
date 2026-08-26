@@ -85,6 +85,24 @@ if ( ! function_exists( 'apply_filters' ) ) {
 }
 
 /*
+ * wp-cache-phase2.php calls wp_rand() in several places, the first a smoke test
+ * reaches being the temporary file name in wp_cache_replace_line(). Nothing in the
+ * smoke tier depends on the randomness, only on the function existing.
+ */
+if ( ! function_exists( 'wp_rand' ) ) {
+	/**
+	 * Random integer (test double for WordPress wp_rand()).
+	 *
+	 * @param int $min Lower bound.
+	 * @param int $max Upper bound.
+	 * @return int
+	 */
+	function wp_rand( $min = 0, $max = 4294967295 ) {
+		return random_int( $min, $max );
+	}
+}
+
+/*
  * Load the procedural caching engine. Its functions become callable from tests.
  * require_once keeps test files that also require it (for self-documentation)
  * idempotent.
