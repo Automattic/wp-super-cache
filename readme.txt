@@ -255,6 +255,12 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 == Changelog ==
+### 3.1.3 - 2026-08-26
+* Fix: a direct page path ending in a backslash no longer breaks the cache config file.
+* Fix: sanitise the CDN URL and CNAME settings so a value containing a quote or an angle bracket can no longer break the asset URLs they are substituted into.
+* Fix: escape string settings written to the cache config file, so a value containing a quote or a backslash no longer corrupts it.
+* Fix: a cookie named "0" could make a logged-in visitor look anonymous to the cache, so their page was served to everyone.
+
 ### 3.1.2 - 2026-08-19
 * Fix: stop the error log filling with path length warnings when a request URL is too long to build a cache directory from.
 * Fix: clear the cache for category, tag and archive pages whose slug contains non-ASCII characters. The delete cache button could not clear those pages either, and now can.
