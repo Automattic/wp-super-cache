@@ -3,7 +3,7 @@ Contributors: donncha, automattic, adnan007, dilirity, mikemayhem3030, pyronaur,
 Tags: performance, caching, wp-cache, wp-super-cache, cache
 Requires at least: 6.8
 Requires PHP: 7.4
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 3.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
