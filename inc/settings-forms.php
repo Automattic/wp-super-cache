@@ -36,6 +36,15 @@ function wp_update_lock_down() {
 		return 0;
 }
 
+/*
+ * Note on the two var_export() calls below. Each page has already been through a
+ * metacharacter strip that removes $ ( ) ; [ ] ' " and #, but not the backslash.
+ * Wrapping the value as "'$page', " therefore let a trailing backslash escape the
+ * closing quote and break the $cached_direct_pages array literal in
+ * wp-cache-config.php, which is included as PHP before WordPress boots. Building
+ * the element with var_export() closes that, the way wp_cache_setting() does for
+ * scalar settings and wp_cache_sanitize_value() does for the list settings.
+ */
 function wpsc_update_direct_pages() {
 	global $cached_direct_pages, $valid_nonce, $cache_path, $wp_cache_config_file;
 
@@ -49,7 +58,8 @@ function wpsc_update_direct_pages() {
 			$page = str_replace( '..', '', preg_replace( '/[ <>\'\"\r\n\t\(\)\$\[\];#]/', '', $page ) );
 			if ( $page != '' ) {
 				$cached_direct_pages[] = $page;
-				$out .= "'$page', ";
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Generating PHP source for the config file.
+				$out .= var_export( (string) $page, true ) . ', ';
 			}
 		}
 	}
@@ -60,7 +70,8 @@ function wpsc_update_direct_pages() {
 			$page = '/' . $page;
 		if ( $page != '/' || false == is_array( $cached_direct_pages ) || in_array( $page, $cached_direct_pages ) == false ) {
 			$cached_direct_pages[] = $page;
-			$out .= "'$page', ";
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Generating PHP source for the config file.
+			$out .= var_export( (string) $page, true ) . ', ';
 
 			@unlink( trailingslashit( ABSPATH . $page ) . "index.html" );
 			// $page is typed by an admin, so its case is whatever they typed, while
