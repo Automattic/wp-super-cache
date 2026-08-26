@@ -37,11 +37,19 @@ function scossdl_off_get_options() {
 		$ossdl_off_blog_url = untrailingslashit( apply_filters( 'ossdl_off_blog_url', $ossdl_off_blog_url ) );
 	}
 
+	/*
+	 * esc_url_raw() on the way out of the option, not just on the way in. These
+	 * values are substituted into src/href attributes of every rewritten asset URL
+	 * by scossdl_off_rewriter(), so one carrying a quote or an angle bracket escapes
+	 * the attribute. Sanitising on read means a value stored before this was fixed
+	 * is neutralised without needing a migration.
+	 */
 	$ossdl_off_cdn_url = get_option( 'ossdl_off_cdn_url' );
 	if ( false === $ossdl_off_cdn_url ) {
 		$ossdl_off_cdn_url = untrailingslashit( get_site_url() );
 		add_option( 'ossdl_off_cdn_url', $ossdl_off_cdn_url );
 	}
+	$ossdl_off_cdn_url = esc_url_raw( $ossdl_off_cdn_url );
 
 	$include_dirs = get_option( 'ossdl_off_include_dirs' );
 	if ( false !== $include_dirs ) {
@@ -66,7 +74,10 @@ function scossdl_off_get_options() {
 		$ossdl_cname = '';
 		add_option( 'ossdl_cname', $ossdl_cname );
 	}
-	$ossdl_arr_of_cnames = array_filter( array_map( 'trim', explode( ',', $ossdl_cname ) ) );
+	// Same reason as $ossdl_off_cdn_url above: every entry here is a substitution
+	// target in scossdl_off_rewriter(), and sanitize_text_field() on save leaves
+	// quotes intact.
+	$ossdl_arr_of_cnames = array_filter( array_map( 'esc_url_raw', array_map( 'trim', explode( ',', $ossdl_cname ) ) ) );
 
 	$ossdl_https = intval( get_option( 'ossdl_https' ) );
 }
@@ -237,8 +248,15 @@ function scossdl_off_update() {
 		&& 'update_ossdl_off' === $_POST['action'] // WPCS: sanitization ok.
 		&& wp_verify_nonce( $_POST['_wpnonce'], 'wp-cache' )
 	) {
-		update_option( 'ossdl_off_cdn_url', untrailingslashit( wp_unslash( $_POST['ossdl_off_cdn_url'] ) ) ); // WPSC: sanitization ok.
-		update_option( 'ossdl_off_blog_url', untrailingslashit( wp_unslash( $_POST['ossdl_off_blog_url'] ) ) ); // WPSC: sanitization ok.
+		// esc_url_raw() wraps the unslashed value directly, with untrailingslashit()
+		// applied to the result: it never appends a slash, so the order is free, and
+		// this way the sanitiser is visible to both the reader and phpcs. The isset()
+		// guards are new — a POST without these fields used to raise a notice here.
+		$cdn_url  = isset( $_POST['ossdl_off_cdn_url'] ) ? esc_url_raw( wp_unslash( $_POST['ossdl_off_cdn_url'] ) ) : '';
+		$blog_url = isset( $_POST['ossdl_off_blog_url'] ) ? esc_url_raw( wp_unslash( $_POST['ossdl_off_blog_url'] ) ) : '';
+
+		update_option( 'ossdl_off_cdn_url', untrailingslashit( $cdn_url ) );
+		update_option( 'ossdl_off_blog_url', untrailingslashit( $blog_url ) );
 
 		if ( empty( $_POST['ossdl_off_include_dirs'] ) ) {
 			$include_dirs = implode( ',', scossdl_off_default_inc_dirs() );
