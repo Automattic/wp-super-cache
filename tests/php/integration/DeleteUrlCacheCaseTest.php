@@ -323,33 +323,37 @@ class DeleteUrlCacheCaseTest extends WP_UnitTestCase {
 		);
 	}
 
-	/**
-	 * A URL with a query string is a no-op, not a nonce failure.
-	 *
-	 * The admin bar renders the delete button on any URL, so on a site using plain
-	 * permalinks every path is '/?p=123' and on a search page it is '/?s=foo'.
-	 * Those have never had a supercache directory and the delete has always done
-	 * nothing, quietly. What must not happen is the path being emptied before the
-	 * nonce check, because then wpsc_admin_bar_delete_cache() dies with "Problem
-	 * with nonce" on a request whose nonce was perfectly good.
-	 */
-	public function test_query_string_path_is_a_no_op_rather_than_a_nonce_failure() {
+	/** A query-string request deletes every immediate cache file for its path. */
+	public function test_query_string_path_deletes_same_page_cache_files() {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 
-		foreach ( array( '/?p=123', '/?s=foo' ) as $path ) {
-			$_POST['path']  = $path;
-			$_POST['admin'] = 0;
-			$_POST['nonce'] = wp_create_nonce( 'delete-cache-' . $path . '_0' );
+		$dir   = trailingslashit( get_supercache_dir() . 'some-post' );
+		$child = $dir . 'child/';
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- test fixture.
+		mkdir( $child, 0777, true );
+		$this->created_dirs[] = $dir;
 
-			$result = wpsc_delete_cache_directory();
-
-			unset( $_POST['path'], $_POST['admin'], $_POST['nonce'] );
-
-			$this->assertNotFalse(
-				$result,
-				"Path {$path} was rejected before the nonce check, so the caller would report a nonce failure that did not happen."
-			);
+		$files = array( 'index.html', 'index.html.gz', 'wp-cache-query.php', 'meta-wp-cache-query.php' );
+		foreach ( $files as $file ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_put_contents -- test fixture.
+			file_put_contents( $dir . $file, 'cached' );
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_put_contents -- test fixture.
+		file_put_contents( $child . 'index.html', 'child cache' );
+
+		$path           = '/some-post/?utm_source=newsletter';
+		$_POST['path']  = $path;
+		$_POST['admin'] = 0;
+		$_POST['nonce'] = wp_create_nonce( 'delete-cache-' . $path . '_0' );
+		$result         = wpsc_delete_cache_directory();
+
+		unset( $_POST['path'], $_POST['admin'], $_POST['nonce'] );
+
+		$this->assertNotFalse( $result );
+		foreach ( $files as $file ) {
+			$this->assertFileDoesNotExist( $dir . $file );
+		}
+		$this->assertFileExists( $child . 'index.html', 'Child path cache was deleted.' );
 	}
 
 	/**
