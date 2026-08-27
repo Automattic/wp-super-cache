@@ -122,11 +122,8 @@ class WpscSanitizeCachePathTest extends TestCase {
 	 * The admin bar puts the delete button on any URL, so on a site using plain
 	 * permalinks every path is '/?p=123' and on a search page it is '/?s=foo'.
 	 * Rejecting those would empty $req_path and send wpsc_delete_cache_directory()
-	 * down the branch that reports a nonce failure that did not happen. Trimming
-	 * them would leave '/', the site root, which is a real directory and not the
-	 * one the nonce covered. Keeping them means the path simply does not resolve,
-	 * because supercache never names a directory after a query string, and the
-	 * delete is the no-op it has always been.
+	 * down the branch that reports a nonce failure that did not happen. The delete
+	 * handler trims the query only after that nonce has been verified.
 	 */
 	public function test_query_string_is_kept_whole(): void {
 		$this->assertSame( '/?p=123', wpsc_sanitize_cache_path( '/?p=123' ) );
