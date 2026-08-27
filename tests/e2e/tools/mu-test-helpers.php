@@ -18,6 +18,16 @@ add_action( 'wp_footer', 'wpsc_test_inject_footer' );
 add_action( 'admin_footer', 'wpsc_test_inject_footer' );
 
 /**
+ * Render a request-derived form action, matching the boundary used by Gravity Forms.
+ */
+function wpsc_test_request_uri_form() {
+	$action = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
+
+	echo '<form id="wpsc-request-uri-form" method="post" action="' . esc_url( $action ) . '"></form>';
+}
+add_action( 'wp_footer', 'wpsc_test_request_uri_form' );
+
+/**
  * Allow per-request login via HTTP header for a single request. Makes testing easier.
  */
 function wpsc_test_header_login() {
