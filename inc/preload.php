@@ -120,6 +120,28 @@ function wpsc_update_idle_preload( $finish_time = null ) {
 	}
 }
 
+/**
+ * Gets the URL used to preload a post.
+ *
+ * @since $$next-version$$
+ *
+ * @param int $post_id Post ID.
+ * @return string|false The filtered post permalink, or false when no permalink is available.
+ */
+function wpsc_get_preload_post_url( $post_id ) {
+	$url = get_permalink( $post_id );
+
+	/**
+	 * Filters the URL used to preload a post.
+	 *
+	 * @since $$next-version$$
+	 *
+	 * @param string|false $url     The post permalink, or false when unavailable.
+	 * @param int          $post_id Post ID.
+	 */
+	return apply_filters( 'wpsc_preload_post_url', $url, $post_id );
+}
+
 function wp_cron_preload_cache() {
 	global $wpdb, $wp_cache_preload_interval, $wp_cache_preload_posts, $wp_cache_preload_email_me, $wp_cache_preload_email_volume, $cache_path, $wp_cache_preload_taxonomies;
 
@@ -338,7 +360,7 @@ function wp_cron_preload_cache() {
 			set_time_limit( 60 );
 			if ( $page_on_front != 0 && ( $post_id == $page_on_front || $post_id == $page_for_posts ) )
 				continue;
-			$url = get_permalink( $post_id );
+			$url = wpsc_get_preload_post_url( $post_id );
 
 			if ( ! is_string( $url ) ) {
 					wp_cache_debug( "wp_cron_preload_cache: skipped $post_id. Expected a URL, received: " . gettype( $url ) );
