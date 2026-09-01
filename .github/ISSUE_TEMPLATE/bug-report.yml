@@ -1,0 +1,52 @@
+name: Bug Report
+description: Report a problem with WP Super Cache.
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to help us improve WP Super Cache!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Describe the problem
+      description: Tell us what happened and what you expected to happen instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the steps that consistently show the problem.
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: wordpress-version
+    attributes:
+      label: WordPress version
+      placeholder: e.g. 6.8.2
+    validations:
+      required: true
+  - type: input
+    id: wp-super-cache-version
+    attributes:
+      label: WP Super Cache version
+      placeholder: e.g. 2.0.0
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      description: If you know it, you can usually find this under Tools > Site Health > Info.
+      placeholder: e.g. 8.3
+  - type: input
+    id: hosting-provider
+    attributes:
+      label: Hosting provider
+      description: If known, tell us which company hosts your site.

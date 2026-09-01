@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Help and configuration questions
+    url: https://wordpress.org/support/plugin/wp-super-cache/
+    about: Ask for help with installing, configuring, or using WP Super Cache.
+  - name: Security reports
+    url: https://hackerone.com/automattic
+    about: Report security vulnerabilities privately through Automattic's HackerOne program.
