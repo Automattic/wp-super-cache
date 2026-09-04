@@ -151,6 +151,66 @@ class WpscCacheSettingTest extends TestCase {
 		$this->assertSame( $value, $this->read_back() );
 	}
 
+	/** Array values must preserve whitespace inside every string element. */
+	public function test_array_value_round_trips_internal_whitespace(): void {
+		$value = array(
+			'double space'       => 'Mozilla  Foo',
+			'tab'                => "a\tb",
+			'newlines'           => "one\ntwo\r\nthree",
+			'trailing backslash' => 'C:\\cache\\',
+			'escape sequence'    => '\' . "\n" . \'',
+			'nested'             => array( 'mixed' => "left\t  right" ),
+		);
+
+		wp_cache_setting( self::FIELD, $value );
+
+		$this->assertSame( $value, $this->read_back() );
+	}
+
+	/** Array values containing newlines must still occupy one physical line. */
+	public function test_array_value_with_newlines_is_written_on_one_line(): void {
+		$before = count( file( $GLOBALS['wp_cache_config_file'] ) );
+		$value  = array( 'line endings' => "one\ntwo\r\nthree" );
+
+		wp_cache_setting( self::FIELD, $value );
+
+		$this->assertCount(
+			$before,
+			file( $GLOBALS['wp_cache_config_file'] ),
+			'The array value was written across more than one physical line.'
+		);
+		$this->assertSame( $value, $this->read_back() );
+	}
+
+	/** Rewriting an array containing newlines must leave the file parseable. */
+	public function test_overwriting_array_with_newlines_leaves_the_file_parseable(): void {
+		wp_cache_setting( self::FIELD, array( 'multiline' => "one\ntwo" ) );
+		wp_cache_setting( self::FIELD, array( 'plain' => 'value' ) );
+
+		$this->assertSame( array( 'plain' => 'value' ), $this->read_back() );
+	}
+
+	/** Array elements cannot end their string literal and inject a statement. */
+	public function test_array_value_cannot_smuggle_a_statement(): void {
+		$value = array( "/var/www/cache/';\$GLOBALS['wpsc_config_side_effect'] = true;" );
+
+		wp_cache_setting( self::FIELD, $value );
+		$written = $this->read_back();
+
+		$this->assertArrayNotHasKey( 'wpsc_config_side_effect', $GLOBALS );
+		$this->assertSame( $value, $written );
+	}
+
+	/** Ordinary arrays keep their existing compact source representation. */
+	public function test_ordinary_array_value_is_written_unchanged(): void {
+		wp_cache_setting( self::FIELD, array( 'one', 'two' ) );
+
+		$this->assertStringContainsString(
+			'$' . self::FIELD . " = array ( 0 => 'one', 1 => 'two', );",
+			file_get_contents( $GLOBALS['wp_cache_config_file'] )
+		);
+	}
+
 	/**
 	 * The entry must occupy exactly one physical line whatever the value holds.
 	 *

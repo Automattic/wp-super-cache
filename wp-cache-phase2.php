@@ -1673,6 +1673,53 @@ function is_writeable_ACLSafe( $path ) {
 	return true;
 }
 
+/**
+ * Export a value as PHP source that occupies one physical line.
+ *
+ * @param mixed $value Value to export.
+ * @return string Exported PHP source.
+ */
+function wpsc_var_export_one_line( $value ) {
+	// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Generating PHP source for the config file, which is what var_export() is for.
+	$exported  = var_export( $value, true );
+	$one_line  = '';
+	$in_string = false;
+	$escaped   = false;
+	$length    = strlen( $exported );
+
+	for ( $i = 0; $i < $length; ++$i ) {
+		$character = $exported[ $i ];
+
+		if ( ! $in_string && ( ' ' === $character || "\t" === $character || "\r" === $character || "\n" === $character ) ) {
+			if ( '' !== $one_line && ' ' !== $one_line[ strlen( $one_line ) - 1 ] ) {
+				$one_line .= ' ';
+			}
+			continue;
+		}
+
+		if ( "\r" === $character || "\n" === $character ) {
+			$one_line .= "\r" === $character ? '\' . "\r" . \'' : '\' . "\n" . \'';
+			$escaped   = false;
+			continue;
+		}
+
+		$one_line .= $character;
+
+		if ( ! $in_string ) {
+			$in_string = "'" === $character;
+			continue;
+		}
+
+		if ( "'" === $character && ! $escaped ) {
+			$in_string = false;
+		}
+
+		$escaped = '\\' === $character ? ! $escaped : false;
+	}
+
+	return $one_line;
+}
+
 function wp_cache_setting( $field, $value ) {
 	global $wp_cache_config_file;
 
@@ -1683,8 +1730,7 @@ function wp_cache_setting( $field, $value ) {
 		$output_value = $value === true ? 'true' : 'false';
 		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $output_value;", $wp_cache_config_file );
 	} elseif ( is_object( $value ) || is_array( $value ) ) {
-		$text = var_export( $value, true );
-		$text = preg_replace( '/[\s]+/', ' ', $text );
+		$text = wpsc_var_export_one_line( $value );
 		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
 	} else {
 		/*
