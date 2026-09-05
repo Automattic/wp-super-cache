@@ -974,15 +974,10 @@ function wpsc_normalize_uri_case( $uri ) {
  * so stripping would turn a delete of /@donncha/ into a delete of /donncha/ and
  * point a nonce-checked operation at a directory the nonce never covered.
  *
- * '?' is on the list for that same reason, inverted. Supercache never names a
- * directory after a query string, so a value carrying one simply fails to
- * resolve and the delete is a no-op, which is what it has always been. Removing
- * the '?s=foo' off a search page instead would leave '/', the site root, which
- * is a real directory and very much not the one the nonce covered. Keeping the
- * query is what makes it harmless. Rejecting the whole value is not an option
- * here either: the admin bar renders this button on any URL, so on a site using
- * plain permalinks every path is '/?p=123', and a rejected path takes the caller
- * down a branch that reports a nonce failure that did not happen.
+ * '?' is on the list because the nonce covers the complete request URI. The
+ * delete handler extracts the path only after verifying that nonce, then clears
+ * every cache key for the path. Rejecting the query here would instead report a
+ * nonce failure when the nonce was valid.
  *
  * Rejecting means the truncation at ':' that wpsc_delete_cache_directory() does
  * afterwards has nothing left to find; it is kept because that function should
@@ -3965,4 +3960,95 @@ function wpsc_apache_request_headers() {
 	}
 
 	return $headers;
+}
+
+/**
+ * Delete wp-cache files whose metadata has the requested path.
+ *
+ * Query strings are deliberately ignored. A page invalidation must remove every
+ * cached representation of that page, including tracking and gzip cache keys.
+ * Only the current blog cache directory is scanned, so multisite neighbours and
+ * child paths are left alone.
+ *
+ * @param string $path Request path without a query string.
+ * @return int Number of cache pairs removed.
+ */
+function wpsc_delete_legacy_cache_files( $path ) {
+	global $blog_cache_dir, $cache_path, $file_prefix;
+
+	if ( ! is_string( $path ) || '' === $path || ! is_string( $file_prefix ) || '' === $file_prefix ) {
+		return 0;
+	}
+
+	$cache_dir = wpsc_get_realpath( $cache_path );
+	$blog_dir  = wpsc_get_realpath( $blog_cache_dir );
+	$meta_dir  = wpsc_get_realpath( $blog_cache_dir . 'meta/' );
+
+	if ( ! $cache_dir || ! $blog_dir || ! $meta_dir ) {
+		return 0;
+	}
+
+	$cache_prefix = $cache_dir . DIRECTORY_SEPARATOR;
+	$blog_prefix  = $blog_dir . DIRECTORY_SEPARATOR;
+	if (
+		( $blog_dir !== $cache_dir && ! str_starts_with( $blog_prefix, $cache_prefix ) ) ||
+		! str_starts_with( $meta_dir . DIRECTORY_SEPARATOR, $blog_prefix )
+	) {
+		return 0;
+	}
+
+	$handle = @opendir( $meta_dir ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Cache directories can disappear concurrently.
+	if ( false === $handle ) {
+		return 0;
+	}
+
+	$path    = wpsc_normalize_uri_case( $path );
+	$deleted = 0;
+	while ( false !== ( $file = readdir( $handle ) ) ) { // phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- Stream cache metadata instead of loading an unbounded directory into memory.
+		if ( ! str_starts_with( $file, $file_prefix ) ) {
+			continue;
+		}
+
+		$meta_file = $meta_dir . DIRECTORY_SEPARATOR . $file;
+		if ( ! is_file( $meta_file ) ) {
+			continue;
+		}
+
+		if ( str_ends_with( $file, '.php' ) ) {
+			$cache_file = $blog_prefix . $file;
+			$meta       = json_decode( wp_cache_get_legacy_cache( $meta_file ), true );
+		} elseif ( str_ends_with( $file, '.meta' ) ) {
+			$cache_file = $blog_prefix . substr( $file, 0, -5 ) . '.html';
+			// phpcs:disable WordPress.PHP.DiscouragedPHPFunctions.serialize_unserialize, WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions -- Pre-2015 cache metadata used PHP serialization; classes are disabled and files can disappear concurrently.
+			$meta = @unserialize( @file_get_contents( $meta_file ), array( 'allowed_classes' => false ) );
+			// phpcs:enable
+		} else {
+			continue;
+		}
+
+		if ( ! is_file( $cache_file ) ) {
+			continue;
+		}
+
+		if ( ! is_array( $meta ) || ! isset( $meta['uri'] ) || ! is_string( $meta['uri'] ) ) {
+			continue;
+		}
+
+		$uri       = str_starts_with( $meta['uri'], '/' ) ? $meta['uri'] : 'http://' . $meta['uri'];
+		$meta_path = parse_url( $uri, PHP_URL_PATH ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress is not loaded in phase 2 smoke tests.
+		if ( ! is_string( $meta_path ) || wpsc_normalize_uri_case( $meta_path ) !== $path ) {
+			continue;
+		}
+
+		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions -- Cache files can disappear between the scan and deletion.
+		$meta_deleted  = @unlink( $meta_file );
+		$cache_deleted = @unlink( $cache_file );
+		// phpcs:enable
+		if ( $cache_deleted || $meta_deleted ) {
+			++$deleted;
+		}
+	}
+	closedir( $handle );
+
+	return $deleted;
 }
