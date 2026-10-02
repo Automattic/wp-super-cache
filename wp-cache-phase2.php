@@ -1795,9 +1795,17 @@ function wp_cache_replace_line( $old, $new, $my_file ) {
 			}
 		}
 	} else {
+		/*
+		 * The new line goes above the first define, variable or closing tag. Other
+		 * plugins (Kadence Security, formerly Solid Security and iThemes Security,
+		 * for one) keep their wp-config.php settings between "// BEGIN" and "// END"
+		 * marker comments and rewrite everything in between, so a BEGIN marker
+		 * counts as an insertion point too. Otherwise the line lands inside that
+		 * block and is erased the next time its owner rewrites it.
+		 */
 		$done = false;
 		foreach ( (array) $lines as $line ) {
-			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>/', $line ) ) {
+			if ( $done || ! preg_match( '/^(if\ \(\ \!\ )?define|\$|\?>|^\s*(\/\/|#)\s*BEGIN\s/', $line ) ) {
 				fwrite( $fd, $line );
 			} else {
 				fwrite( $fd, "$new\n" );
