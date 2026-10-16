@@ -157,12 +157,22 @@ function wpsc_delete_cache_directory() {
 		return false;
 	}
 
+	$is_admin = isset( $_POST['admin'] ) && (int) $_POST['admin'] === 1;
+	if ( ! $is_admin ) {
+		$req_path = wp_parse_url( $req_path, PHP_URL_PATH );
+		if ( ! is_string( $req_path ) || '' === $req_path ) {
+			wp_cache_debug( 'wpsc_delete_cache_directory: request path was not valid' );
+			return false;
+		}
+		wpsc_delete_legacy_cache_files( $req_path );
+	}
+
 	// $req_path comes from the browser's REQUEST_URI, so its case is whatever the
 	// visitor's browser sent. Normalise it to the spelling on disk. See #1081.
 	$path = realpath( trailingslashit( get_supercache_dir() . wpsc_normalize_uri_case( str_replace( '..', '', preg_replace( '/:.*$/', '', $req_path ) ) ) ) );
 
 	if ( $path ) {
-		if ( isset( $_POST['admin'] ) && (int) $_POST['admin'] === 1 ) {
+		if ( $is_admin ) {
 			global $file_prefix;
 			wp_cache_debug( 'Cleaning cache for this site.' );
 			wp_cache_clean_cache( $file_prefix );
