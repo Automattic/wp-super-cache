@@ -22,22 +22,29 @@ function wp_super_cache_blogs_field( $name, $blog_id ) {
 
 	$blog_id = (int) $blog_id;
 
-	if ( isset( $_GET['id'], $_GET['action'], $_GET['_wpnonce'] )
-		&& $blog_id === filter_input( INPUT_GET, 'id', FILTER_VALIDATE_INT )
-		&& wp_verify_nonce( $_GET['_wpnonce'], 'wp-cache' . $blog_id )
+	$get_id     = filter_input( INPUT_GET, 'id', FILTER_VALIDATE_INT );
+	$get_action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+	$get_nonce  = filter_input( INPUT_GET, '_wpnonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+	if ( $get_id === $blog_id
+		&& $get_nonce
+		&& wp_verify_nonce( $get_nonce, 'wp-cache' . $blog_id )
 	) {
-		if ( 'disable_cache' === filter_input( INPUT_GET, 'action' ) ) {
+		if ( 'disable_cache' === $get_action ) {
 			add_blog_option( $blog_id, 'wp_super_cache_disabled', 1 );
-		} elseif ( 'enable_cache' === filter_input( INPUT_GET, 'action' ) ) {
+		} elseif ( 'enable_cache' === $get_action ) {
 			delete_blog_option( $blog_id, 'wp_super_cache_disabled' );
 		}
 	}
 
-	if ( 1 === (int) get_blog_option( $blog_id, 'wp_super_cache_disabled' ) ) {
-		echo '<a href="' . wp_nonce_url( add_query_arg( array( 'action' => 'enable_cache', 'id' => $blog_id ) ), 'wp-cache' . $blog_id ) . '">' . __( 'Enable', 'wp-super-cache' ) . '</a>';
-	} else {
-		echo '<a href="' . wp_nonce_url( add_query_arg( array( 'action' => 'disable_cache', 'id' => $blog_id ) ), 'wp-cache' . $blog_id ) . '">' . __( 'Disable', 'wp-super-cache' ) . '</a>';
-	}
+	$cache_disabled = 1 === (int) get_blog_option( $blog_id, 'wp_super_cache_disabled' );
+	$action_text    = $cache_disabled ? __( 'Enable', 'wp-super-cache' ) : __( 'Disable', 'wp-super-cache' );
+	$action_args    = array(
+		'action'   => $cache_disabled ? 'enable_cache' : 'disable_cache',
+		'id'       => $blog_id,
+		'_wpnonce' => wp_create_nonce( 'wp-cache' . $blog_id ),
+	);
+	printf( '<a href="%s">%s</a>', esc_url( add_query_arg( $action_args ) ), esc_html( $action_text ) );
 }
 
 function wp_super_cache_multisite_notice() {
