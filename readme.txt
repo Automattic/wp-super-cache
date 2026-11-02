@@ -255,6 +255,9 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 
 
 == Changelog ==
+### 3.1.5 - 2026-11-02
+* Fix: requests with a malformed Host header are no longer cached or served from the cache, so they can no longer overwrite another page's cached copy.
+
 ### 3.1.4 - 2026-09-30
 * Fix: the settings page no longer scrolls sideways in right-to-left languages.
 * Update the tested-up-to version to WordPress 7.1.
@@ -282,13 +285,3 @@ Your theme is probably responsive which means it resizes the page to suit whatev
 - Fix: cast the blog ID in wp_cache_clear_cache() so non-integer callers no longer trigger a multisite-only function on single-site installs.
 - Fix: no longer append HTML debug comments to REST API, Ajax, JSON, WooCommerce API, and XML-RPC responses.
 - Fix: avoid a PHP warning when a comment has already been deleted before the cache-clear routine runs.
-
-### 3.1.0 - 2026-04-14
-- Disable caching for wp_die() error pages
-- Harden the plugin in various ways.
-- Fix: use fileperms() instead of stat() and fix escaping
-- Add WordPress.org Live Preview Blueprint.
-- Minimum WordPress version bumped to 6.8.
-- Device Detection: use an embedded version instead of the Composer dependency.
-- Fix: str_starts_with() null deprecation on PHP 8.1+.
-- Fix: handle array type for supercache_last_cached option.
