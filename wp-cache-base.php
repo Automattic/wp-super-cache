@@ -4,6 +4,10 @@ global $WPSC_HTTP_HOST, $cache_enabled, $cache_path, $blogcacheid, $blog_cache_d
 // we need to backup HTTP_HOST early in the PHP process, and if running in command line set it to something useful.
 if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
 	$WPSC_HTTP_HOST = function_exists( 'mb_strtolower' ) ? mb_strtolower( $_SERVER['HTTP_HOST'] ) : strtolower( $_SERVER['HTTP_HOST'] );
+	// Don't serve or cache requests with a malformed Host.
+	if ( ! function_exists( 'wpsc_is_valid_http_host' ) || ! wpsc_is_valid_http_host( $WPSC_HTTP_HOST ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+		$cache_enabled = false;
+	}
 	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 	$WPSC_HTTP_HOST = htmlentities( $WPSC_HTTP_HOST, ENT_COMPAT );
 } elseif ( PHP_SAPI === 'cli' && function_exists( 'get_option' ) ) {
