@@ -77,7 +77,11 @@ function wpsc_remove_tracking_params_from_uri( $uri ) {
 	}
 
 	$parsed_url = wpsc_parse_partial_url( $uri );
-	$query      = array();
+	if ( false === $parsed_url ) {
+		wp_cache_debug( 'wpsc_remove_tracking_params_from_uri: could not parse URL. Leaving it unchanged.' );
+		return $uri;
+	}
+	$query = array();
 
 	if ( isset( $parsed_url['query'] ) ) {
 		parse_str( $parsed_url['query'], $query );
@@ -3937,11 +3941,53 @@ function wpsc_is_get_query() {
 	static $is_get_query = null;
 
 	if ( null === $is_get_query ) {
-		$request_uri  = wpsc_parse_partial_url( $_SERVER['REQUEST_URI'] );
-		$is_get_query = $request_uri && ! empty( $request_uri['query'] );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- only checked for a query string.
+		$is_get_query = wpsc_uri_has_query( isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '' );
 	}
 
 	return $is_get_query;
+}
+
+/**
+ * Does a request URI carry a non-empty query string?
+ *
+ * Matches what parse_url() reports for an origin-form request target: anything
+ * after a "#" is ignored, and a bare "?" is not a query.
+ *
+ * @param string $uri The path and query component of a URI.
+ * @return bool
+ */
+function wpsc_uri_has_query( $uri ) {
+	$uri      = (string) $uri;
+	$fragment = strpos( $uri, '#' );
+	if ( false !== $fragment ) {
+		$uri = substr( $uri, 0, $fragment );
+	}
+
+	$query = strpos( $uri, '?' );
+
+	return false !== $query && $query < strlen( $uri ) - 1;
+}
+
+/**
+ * Is a Host header safe to name a cache directory after?
+ *
+ * Accepts a hostname or a bracketed IPv6 literal, with an optional port from 1
+ * to 65535 written without leading zeros.
+ *
+ * @param string $host The Host header, lowercased.
+ * @return bool
+ */
+function wpsc_is_valid_http_host( $host ) {
+	if ( ! is_string( $host ) ) {
+		return false;
+	}
+
+	if ( ! preg_match( '/^(?:\[[0-9a-f:.]+\]|[a-z0-9._-]+)(?::([1-9][0-9]{0,4}))?$/iD', $host, $matches ) ) {
+		return false;
+	}
+
+	return ! isset( $matches[1] ) || (int) $matches[1] <= 65535;
 }
 
 /**
