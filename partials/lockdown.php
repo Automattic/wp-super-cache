@@ -46,7 +46,8 @@ if( is_array( $cached_direct_pages ) ) {
 	foreach( $cached_direct_pages as $page ) {
 		if( $page == '' )
 			continue;
-		$generated = '';
+		// phpcs:ignore Generic.WhiteSpace.ScopeIndent.Incorrect, Generic.Formatting.MultipleStatementAlignment.NotSameWarning
+		$generated = esc_html__( 'Not generated yet', 'wp-super-cache' );
 		if( is_file( ABSPATH . $page . '/index.html' ) )
 			$generated = '<input class="button-secondary" type="Submit" name="deletepage" value="' . $page . '">';
 		$out .= "<tr><td><input type='text' $readonly name='direct_pages[]' size='30' value='$page' /></td><td>$generated</td></tr>";
