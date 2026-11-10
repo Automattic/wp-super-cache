@@ -1,0 +1,4 @@
+Significance: patch
+Type: fixed
+
+Register the cache-invalidation hooks under WP-CLI so publishing a scheduled post from the command line clears the stale cache.
