@@ -111,6 +111,32 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Return get_current_url_supercache_dir() for a new post while home and siteurl are $url.
+	 *
+	 * Filtered at priority 20 because WP_HOME and WP_SITEURL are defined in the test
+	 * config, and core puts those back on the options at priority 10.
+	 *
+	 * @param string $url Value for both the home and siteurl options.
+	 * @return string Supercache directory for the post.
+	 */
+	private function dir_for_new_post_with_home( $url ) {
+		$filter = static function () use ( $url ) {
+			return $url;
+		};
+		add_filter( 'option_home', $filter, 20 );
+		add_filter( 'option_siteurl', $filter, 20 );
+
+		try {
+			list( $post_id ) = $this->publish( 'Hello There' );
+
+			return get_current_url_supercache_dir( $post_id );
+		} finally {
+			remove_filter( 'option_home', $filter, 20 );
+			remove_filter( 'option_siteurl', $filter, 20 );
+		}
+	}
+
+	/**
 	 * An overlong path switches caching off for the request, so nothing is ever
 	 * written to the placeholder directory and no two long URLs can share it.
 	 *
@@ -194,18 +220,15 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	 * the function returns a short absolute path inside the cache directory that
 	 * nothing writes to, having switched caching off for the request.
 	 *
-	 * Driven through $wp_cache_home_path rather than a long slug, because
+	 * Driven through a long home path rather than a long slug, because
 	 * post_name is capped well below the limit. Uses a fresh post ID, so it does
 	 * not compete for the memoised key 0.
 	 */
 	public function test_a_path_too_long_for_the_filesystem_is_not_returned() {
-		$GLOBALS['wp_cache_home_path']  = '/' . str_repeat( 'a', PHP_MAXPATHLEN ) . '/';
 		$GLOBALS['cache_enabled']       = true;
 		$GLOBALS['super_cache_enabled'] = true;
 
-		list( $post_id ) = $this->publish( 'Hello There' );
-
-		$dir = get_current_url_supercache_dir( $post_id );
+		$dir = $this->dir_for_new_post_with_home( 'http://' . WP_TESTS_DOMAIN . '/' . str_repeat( 'a', PHP_MAXPATHLEN ) );
 
 		$this->assertTrue( $GLOBALS['cache_enabled'], 'The deletion branch must not switch caching off for the admin request that is saving the post.' );
 		$this->assertTrue( $GLOBALS['super_cache_enabled'] );
@@ -229,9 +252,7 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	 * normally uses, so an install whose home option carries uppercase had those
 	 * requests name a different directory than its web requests did.
 	 *
-	 * Nothing here memoises: a home option that site_url() does not appear in
-	 * sends the function down its DONOTREMEMBER branch, so key 0 stays free for
-	 * the test above.
+	 * Uses a fresh post ID, so key 0 stays free for the test above.
 	 */
 	public function test_host_from_the_home_option_is_lowercased() {
 		$GLOBALS['WPSC_HTTP_HOST'] = '';
@@ -257,17 +278,12 @@ class SupercacheDirCaseTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The rest of the path is lowercased on the post ID branch too. An install in
-	 * a subdirectory with a capital in it used to produce /Blog/... here while the
-	 * directory on disk was /blog/..., because inc/htaccess.php lowercases the
-	 * home root for the same convention.
+	 * The home path is kept, and lowercased, on the post ID branch. A multisite
+	 * subsite at /Blog/ shares $wp_cache_home_path with the main site, so the path
+	 * has to come from the permalink, and inc/htaccess.php lowercases the home root.
 	 */
 	public function test_path_is_lowercased_on_the_post_id_branch() {
-		$GLOBALS['wp_cache_home_path'] = '/Blog/';
-
-		list( $post_id ) = $this->publish( 'Hello There' );
-
-		$dir = get_current_url_supercache_dir( $post_id );
+		$dir = $this->dir_for_new_post_with_home( 'http://' . WP_TESTS_DOMAIN . '/Blog' );
 
 		$this->assertStringContainsString( '/blog/hello-there/', $dir );
 		$this->assertStringNotContainsString( '/Blog/', $dir );
