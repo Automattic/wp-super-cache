@@ -25,7 +25,16 @@ class PreloadScheduleTest extends WP_UnitTestCase {
 	}
 
 	public function tear_down() {
-		unset( $GLOBALS['preload_scheduled_time'], $GLOBALS['preload_schedule_interval'] );
+		unset(
+			$GLOBALS['preload_schedule_type'],
+			$GLOBALS['preload_scheduled_time'],
+			$GLOBALS['preload_schedule_interval'],
+			$GLOBALS['wp_cache_preload_on'],
+			$GLOBALS['wp_cache_preload_interval'],
+			$GLOBALS['wp_cache_config_file'],
+			$GLOBALS['valid_nonce']
+		);
+		$_POST = array();
 		foreach ( glob( $this->cache_dir . '/*' ) as $file ) {
 			unlink( $file );
 		}
@@ -74,5 +83,83 @@ class PreloadScheduleTest extends WP_UnitTestCase {
 			'earlier today' => array( -5 ),
 			'later today'   => array( 90 ),
 		);
+	}
+
+	/**
+	 * Save the Preload tab form the way the settings page posts it.
+	 *
+	 * @param array $fields Posted fields overriding the defaults.
+	 */
+	private function save_preload_settings( array $fields ) {
+		$config = $GLOBALS['cache_path'] . 'wp-cache-config.php';
+		file_put_contents( $config, "<?php\n" );
+		$GLOBALS['wp_cache_config_file'] = $config;
+		$GLOBALS['valid_nonce']          = true;
+
+		$_POST = array_merge(
+			array(
+				'action'                    => 'preload',
+				'wp_cache_preload_interval' => '30',
+				'wp_cache_preload_posts'    => 'all',
+				'wp_cache_preload_on'       => '1',
+				'preload_schedule_type'     => 'interval',
+				'preload_scheduled_time'    => '00:00',
+				'preload_schedule_interval' => 'daily',
+			),
+			$fields
+		);
+		wpsc_preload_settings();
+	}
+
+	public function test_first_save_without_clock_settings_keeps_pending_timer_preload() {
+		$GLOBALS['wp_cache_preload_on']       = 1;
+		$GLOBALS['wp_cache_preload_interval'] = 30;
+		$pending                              = time() + 600;
+		wp_schedule_single_event( $pending, 'wp_cache_full_preload_hook' );
+
+		$this->save_preload_settings( array() );
+
+		$this->assertSame( $pending, wp_next_scheduled( 'wp_cache_full_preload_hook' ) );
+		$this->assertFileDoesNotExist( $GLOBALS['cache_path'] . 'stop_preload.txt' );
+	}
+
+	public function test_changing_clock_time_while_idle_does_not_skip_the_next_run() {
+		$GLOBALS['wp_cache_preload_on']       = 1;
+		$GLOBALS['wp_cache_preload_interval'] = 30;
+		$GLOBALS['preload_schedule_type']     = 'time';
+		$GLOBALS['preload_scheduled_time']    = '03:00';
+		$GLOBALS['preload_schedule_interval'] = 'daily';
+		wpsc_schedule_clock_preload();
+
+		$this->save_preload_settings(
+			array(
+				'preload_schedule_type'  => 'time',
+				'preload_scheduled_time' => '04:00',
+			)
+		);
+
+		$this->assertSame( wpsc_next_scheduled_preload_timestamp( '04:00' ), wp_next_scheduled( 'wp_cache_full_preload_hook' ) );
+		$this->assertFileDoesNotExist( $GLOBALS['cache_path'] . 'stop_preload.txt' );
+	}
+
+	public function test_clock_interval_below_minimum_falls_back_to_daily() {
+		$every_minute = static function ( $schedules ) {
+			$schedules['wpsc_every_minute'] = array(
+				'interval' => MINUTE_IN_SECONDS,
+				'display'  => 'Every minute',
+			);
+			return $schedules;
+		};
+		add_filter( 'cron_schedules', $every_minute ); // phpcs:ignore WordPress.WP.CronInterval -- Deliberately below the preload minimum.
+
+		$this->save_preload_settings(
+			array(
+				'preload_schedule_type'     => 'time',
+				'preload_schedule_interval' => 'wpsc_every_minute',
+			)
+		);
+
+		remove_filter( 'cron_schedules', $every_minute );
+		$this->assertSame( 'daily', wp_get_schedule( 'wp_cache_full_preload_hook' ) );
 	}
 }

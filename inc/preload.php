@@ -121,6 +121,7 @@ function wpsc_update_idle_preload( $finish_time = null ) {
 }
 
 function wp_cron_preload_cache() {
+	global $wp_cache_preload_on;
 	global $wpdb, $wp_cache_preload_interval, $wp_cache_preload_posts, $wp_cache_preload_email_me, $wp_cache_preload_email_volume, $cache_path, $wp_cache_preload_taxonomies;
 
 	// check if stop_preload.txt exists and preload should be stopped.
@@ -400,7 +401,7 @@ function wp_cron_preload_cache() {
 				}
 				wp_cache_debug( "wp_cron_preload_cache: no more posts. scheduling next preload in $wp_cache_preload_interval minutes.", 5 );
 				wp_schedule_single_event( time() + ( (int) $wp_cache_preload_interval * 60 ), 'wp_cache_full_preload_hook' );
-			} elseif ( $preload_schedule_type === 'time' ) {
+			} elseif ( $preload_schedule_type === 'time' && 1 === (int) $wp_cache_preload_on ) {
 				// The recurring event reschedules itself; recreate it after a one-off run such as "Preload Now".
 				if ( ! wp_next_scheduled( 'wp_cache_full_preload_hook' ) ) {
 					$clock_time       = isset( $preload_scheduled_time ) ? $preload_scheduled_time : '00:00';
@@ -681,14 +682,30 @@ function wpsc_next_scheduled_preload_timestamp( $hhmm ) {
 }
 
 /**
- * Get the saved Clock-mode cron schedule, or "daily" if it is no longer registered.
+ * Get the cron schedules Clock mode may use: those no shorter than the minimum preload interval.
+ *
+ * @return array Subset of wp_get_schedules().
+ */
+function wpsc_get_preload_schedules() {
+	$min_seconds = wpsc_get_minimum_preload_interval() * 60;
+
+	return array_filter(
+		wp_get_schedules(),
+		function ( $schedule ) use ( $min_seconds ) {
+			return isset( $schedule['interval'] ) && $schedule['interval'] >= $min_seconds;
+		}
+	);
+}
+
+/**
+ * Get the saved Clock-mode cron schedule, or "daily" if it is no longer available.
  *
  * @return string A key of wp_get_schedules().
  */
 function wpsc_get_preload_schedule_interval() {
 	global $preload_schedule_interval;
 
-	$schedules = wp_get_schedules();
+	$schedules = wpsc_get_preload_schedules();
 	if ( isset( $preload_schedule_interval ) && isset( $schedules[ $preload_schedule_interval ] ) ) {
 		return $preload_schedule_interval;
 	}
@@ -711,7 +728,7 @@ function wpsc_schedule_clock_preload() {
 
 function wpsc_preload_settings() {
 	global $wp_cache_preload_interval, $wp_cache_preload_on, $wp_cache_preload_taxonomies, $wp_cache_preload_email_volume, $wp_cache_preload_posts, $valid_nonce;
-	global $preload_schedule_type, $preload_scheduled_time, $preload_schedule_interval;
+	global $preload_schedule_type, $preload_scheduled_time, $preload_schedule_interval, $cache_path;
 
 	if ( isset( $_POST[ 'action' ] ) == false || $_POST[ 'action' ] != 'preload' )
 		return;
@@ -739,45 +756,41 @@ function wpsc_preload_settings() {
 	// Set to true if the preload interval is changed, and a reschedule is required.
 	$force_preload_reschedule = false;
 
-	// Handle preload schedule type (interval vs time)
+	// Compare against effective values: configs saved before Clock mode existed lack these globals.
+	$old_schedule_type     = isset( $preload_schedule_type ) ? $preload_schedule_type : 'interval';
+	$old_scheduled_time    = isset( $preload_scheduled_time ) ? $preload_scheduled_time : '00:00';
+	$old_schedule_interval = wpsc_get_preload_schedule_interval();
+
 	// Nonce is verified in wp_cache_manager() before this function is called.
 	if ( isset( $_POST['preload_schedule_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$new_schedule_type = sanitize_text_field( wp_unslash( $_POST['preload_schedule_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$new_schedule_type = in_array( $new_schedule_type, array( 'interval', 'time' ), true ) ? $new_schedule_type : 'interval';
-		if ( ! isset( $preload_schedule_type ) || $preload_schedule_type !== $new_schedule_type ) {
-			$force_preload_reschedule = true;
-		}
-		$preload_schedule_type = $new_schedule_type;
+		$new_schedule_type     = sanitize_text_field( wp_unslash( $_POST['preload_schedule_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$preload_schedule_type = in_array( $new_schedule_type, array( 'interval', 'time' ), true ) ? $new_schedule_type : 'interval';
 		wp_cache_setting( 'preload_schedule_type', $preload_schedule_type );
 	}
 
 	if ( isset( $_POST['preload_scheduled_time'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$new_scheduled_time = sanitize_text_field( wp_unslash( $_POST['preload_scheduled_time'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( ! preg_match( '/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $new_scheduled_time ) ) {
-			$new_scheduled_time = '00:00';
-		}
-		if ( ! isset( $preload_scheduled_time ) || $preload_scheduled_time !== $new_scheduled_time ) {
-			$force_preload_reschedule = true;
-		}
-		$preload_scheduled_time = $new_scheduled_time;
+		$new_scheduled_time     = sanitize_text_field( wp_unslash( $_POST['preload_scheduled_time'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$preload_scheduled_time = preg_match( '/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $new_scheduled_time ) ? $new_scheduled_time : '00:00';
 		wp_cache_setting( 'preload_scheduled_time', $preload_scheduled_time );
 	}
 
-	// Handle preload schedule interval (hourly, twicedaily, daily, etc.)
 	if ( isset( $_POST['preload_schedule_interval'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$schedules             = wp_get_schedules();
-		$new_schedule_interval = sanitize_text_field( wp_unslash( $_POST['preload_schedule_interval'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$new_schedule_interval = isset( $schedules[ $new_schedule_interval ] ) ? $new_schedule_interval : 'daily';
-		if ( ! isset( $preload_schedule_interval ) || $preload_schedule_interval !== $new_schedule_interval ) {
-			$force_preload_reschedule = true;
-		}
-		$preload_schedule_interval = $new_schedule_interval;
+		$new_schedule_interval     = sanitize_text_field( wp_unslash( $_POST['preload_schedule_interval'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$preload_schedule_interval = array_key_exists( $new_schedule_interval, wpsc_get_preload_schedules() ) ? $new_schedule_interval : 'daily';
 		wp_cache_setting( 'preload_schedule_interval', $preload_schedule_interval );
+	}
+
+	$new_schedule_type  = isset( $preload_schedule_type ) ? $preload_schedule_type : 'interval';
+	$new_scheduled_time = isset( $preload_scheduled_time ) ? $preload_scheduled_time : '00:00';
+	if ( $new_schedule_type !== $old_schedule_type ) {
+		$force_preload_reschedule = true;
+	} elseif ( 'time' === $new_schedule_type && ( $new_scheduled_time !== $old_scheduled_time || wpsc_get_preload_schedule_interval() !== $old_schedule_interval ) ) {
+		$force_preload_reschedule = true;
 	}
 
 	if ( isset( $_POST[ 'wp_cache_preload_interval' ] ) && ( $_POST[ 'wp_cache_preload_interval' ] == 0 || $_POST[ 'wp_cache_preload_interval' ] >= $min_refresh_interval ) ) {
 		$_POST[ 'wp_cache_preload_interval' ] = (int)$_POST[ 'wp_cache_preload_interval' ];
-		if ( $wp_cache_preload_interval != $_POST[ 'wp_cache_preload_interval' ] ) {
+		if ( 'interval' === $new_schedule_type && $wp_cache_preload_interval != $_POST[ 'wp_cache_preload_interval' ] ) {
 			$force_preload_reschedule = true;
 		}
 
@@ -839,7 +852,12 @@ function wpsc_preload_settings() {
 	if ( $next_preload && ( ! $should_schedule || $force_preload_reschedule ) ) {
 		wp_cache_debug( 'Clearing old preload event' );
 		wpsc_reset_preload_counter();
-		wpsc_create_stop_preload_flag();
+		// An idle stop flag would abort the next scheduled run instead of a current one.
+		if ( wp_next_scheduled( 'wp_cache_preload_hook' ) || file_exists( $cache_path . 'preload_mutex.tmp' ) ) {
+			wpsc_create_stop_preload_flag();
+		} else {
+			wp_delete_file( $cache_path . 'stop_preload.txt' );
+		}
 		wp_clear_scheduled_hook( 'wp_cache_full_preload_hook' );
 
 		$next_preload = 0;

@@ -104,7 +104,7 @@ echo '<td><input type=\'text\' size=5 id=\'preload_scheduled_time\' name=\'prelo
 		'<code>' . esc_html( $wpsc_tz_label ) . '</code>'
 	)
 	. '</td></tr>';
-$schedules              = wp_get_schedules();
+$schedules              = wpsc_get_preload_schedules();
 $wpsc_selected_interval = wpsc_get_preload_schedule_interval();
 echo '<tr><td><br /></td><td><label for=\'preload_scheduled_select\'>' . esc_html__( 'Interval:', 'wp-super-cache' ) . '</label></td><td><select id=\'preload_scheduled_select\' name=\'preload_schedule_interval\' size=1>';
 foreach ( $schedules as $desc => $details ) {
