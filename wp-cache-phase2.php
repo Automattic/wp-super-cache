@@ -77,7 +77,11 @@ function wpsc_remove_tracking_params_from_uri( $uri ) {
 	}
 
 	$parsed_url = wpsc_parse_partial_url( $uri );
-	$query      = array();
+	if ( false === $parsed_url ) {
+		wp_cache_debug( 'wpsc_remove_tracking_params_from_uri: could not parse URL. Leaving it unchanged.' );
+		return $uri;
+	}
+	$query = array();
 
 	if ( isset( $parsed_url['query'] ) ) {
 		parse_str( $parsed_url['query'], $query );
@@ -537,23 +541,71 @@ function wpsc_get_accept_header() {
 		$accept_headers = apply_filters( 'wpsc_accept_headers', array( 'application/json', 'application/activity+json', 'application/ld+json' ) );
 		$accept_headers = array_map( 'strtolower', $accept_headers );
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- $accept is checked and set below.
-		$accept = isset( $_SERVER['HTTP_ACCEPT'] ) ? strtolower( filter_var( $_SERVER['HTTP_ACCEPT'] ) ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- $raw is checked and set below.
+		$raw = isset( $_SERVER['HTTP_ACCEPT'] ) ? strtolower( filter_var( $_SERVER['HTTP_ACCEPT'] ) ) : '';
 
-		foreach ( $accept_headers as $header ) {
-			if ( str_contains( $accept, $header ) ) {
-				$accept = 'application/json';
-			}
-		}
-
-		if ( $accept !== 'application/json' ) {
-			$accept = 'text/html';
-		}
+		$accept = empty( $raw ) ? 'text/html' : wpsc_parse_accept_header( $raw, $accept_headers );
 
 		wp_cache_debug( 'ACCEPT: ' . $accept );
 	}
 
 	return $accept;
+}
+
+/**
+ * Classify an Accept header as 'text/html' or 'application/json'.
+ *
+ * Parses RFC 7231 §5.3.2 quality values (q=) so that a request where
+ * text/html has a higher or equal q-value than any known JSON type is
+ * correctly served from cache. The previous str_contains() approach treated
+ * any mention of a JSON media type as a JSON request, regardless of priority.
+ *
+ * Classification rules:
+ * - Classify as 'application/json' only when a known JSON type has a
+ *   strictly higher q-value than text/html.
+ * - Ties, or text/html strictly higher, resolve to 'text/html'.
+ * - If text/html is absent, its effective q-value is 0.0. The *\/* wildcard
+ *   is intentionally not applied to text/html: a JSON client sending
+ *   "application/json, *\/*" would otherwise receive cached HTML.
+ * - Malformed q-values (non-numeric, out-of-range) are treated as q=1.0.
+ *
+ * @param string   $raw_accept Lowercased, non-empty Accept header value.
+ * @param string[] $json_types Media types to treat as JSON (from wpsc_accept_headers filter).
+ * @return string 'text/html' or 'application/json'.
+ */
+function wpsc_parse_accept_header( $raw_accept, $json_types ) {
+	$html_q = null; // null = not explicitly present in Accept header.
+	$json_q = 0.0;
+
+	foreach ( explode( ',', $raw_accept ) as $part ) {
+		$segments   = explode( ';', trim( $part ) );
+		$media_type = trim( $segments[0] );
+		$q          = 1.0; // Default q-value per RFC 7231 §5.3.1.
+
+		for ( $i = 1, $len = count( $segments ); $i < $len; $i++ ) {
+			$param = ltrim( $segments[ $i ] );
+			if ( strncmp( $param, 'q=', 2 ) === 0 ) {
+				$q_str = substr( $param, 2 );
+				$q     = is_numeric( $q_str ) ? max( 0.0, min( 1.0, (float) $q_str ) ) : 1.0;
+				break;
+			}
+		}
+
+		if ( 'text/html' === $media_type ) {
+			$html_q = null === $html_q ? $q : max( $html_q, $q );
+		}
+
+		if ( in_array( $media_type, $json_types, true ) ) {
+			$json_q = max( $json_q, $q );
+		}
+	}
+
+	// Effective html q: explicit text/html only. A */* wildcard must not lift
+	// text/html above an explicitly requested JSON type, or JSON/Fediverse
+	// clients sending e.g. "application/json, */*" get served cached HTML.
+	$effective_html_q = ( null !== $html_q ) ? $html_q : 0.0;
+
+	return $json_q > $effective_html_q ? 'application/json' : 'text/html';
 }
 
 function wp_cache_get_cookies_values() {
@@ -565,26 +617,7 @@ function wp_cache_get_cookies_values() {
 		return $string;
 	}
 
-	if ( defined( 'COOKIEHASH' ) ) {
-		$cookiehash = preg_quote( constant( 'COOKIEHASH' ) );
-	} else {
-		$cookiehash = '';
-	}
-	$regex = "/^wp-postpass_$cookiehash|^comment_author_$cookiehash";
-	if ( defined( 'LOGGED_IN_COOKIE' ) ) {
-		$regex .= '|^' . preg_quote( constant( 'LOGGED_IN_COOKIE' ) );
-	} else {
-		$regex .= "|^wordpress_logged_in_$cookiehash";
-	}
-	$regex .= '/';
-	while ( $key = key( $_COOKIE ) ) {
-		if ( preg_match( $regex, $key ) ) {
-			wp_cache_debug( 'wp_cache_get_cookies_values: Login/postpass cookie detected' );
-			$string .= $_COOKIE[ $key ] . ',';
-		}
-		next( $_COOKIE );
-	}
-	reset( $_COOKIE );
+	$string = wpsc_get_auth_cookie_values( $_COOKIE );
 
 	// If you use this hook, make sure you update your .htaccess rules with the same conditions
 	$string = do_cacheaction( 'wp_cache_get_cookies_values', $string );
@@ -594,7 +627,10 @@ function wp_cache_get_cookies_values() {
 		is_array( $wpsc_cookies )
 	) {
 		foreach ( $wpsc_cookies as $name ) {
-			if ( isset( $_COOKIE[ $name ] ) ) {
+			// Same reason as wpsc_get_auth_cookie_values(): a cookie sent as name[]=value
+			// arrives as an array, and concatenating it yields the literal string "Array"
+			// for every sender, plus a PHP warning raised inside the output buffer.
+			if ( isset( $_COOKIE[ $name ] ) && is_scalar( $_COOKIE[ $name ] ) ) {
 				wp_cache_debug( "wp_cache_get_cookies_values - found extra cookie: $name" );
 				$string .= $name . '=' . $_COOKIE[ $name ] . ',';
 			}
@@ -606,6 +642,66 @@ function wp_cache_get_cookies_values() {
 	}
 
 	wp_cache_debug( "wp_cache_get_cookies_values: return: $string", 5 );
+	return $string;
+}
+
+/**
+ * Collect the values of the auth cookies that identify a non-anonymous visitor.
+ *
+ * The result is hashed into the cache key, so it decides whether a request is
+ * stored and served as anonymous. Returning an empty string for a visitor who
+ * is in fact logged in (or holds a post password or comment cookie) collapses
+ * their cache key onto the anonymous one, and the personalised page they were
+ * served is written to the supercache file every anonymous visitor then gets.
+ *
+ * Iteration is by foreach for that reason. The previous
+ * `while ( $key = key( $_COOKIE ) )` loop stopped on any falsy key, and PHP
+ * casts a cookie named "0" to integer key 0, which is falsy. A cookie named
+ * "0" sent ahead of the auth cookies ended the scan before it reached them.
+ *
+ * Not to be confused with wpsc_get_auth_cookies(), which answers a different
+ * question: it returns cookie *names*, covers wordpress_ and wordpress_sec_ as
+ * well, and anchors the hash suffix. This one returns the values that go into
+ * the cache key, and matches the same three prefixes the .htaccess rules do.
+ *
+ * The values are concatenated in the order the cookies arrive, so cache keys are
+ * order-sensitive. That is pre-existing behaviour and changing it would move
+ * every existing cache entry.
+ *
+ * @param array $cookies Cookie array, normally $_COOKIE.
+ * @return string Comma-terminated auth cookie values, empty when none match.
+ */
+function wpsc_get_auth_cookie_values( $cookies ) {
+	if ( defined( 'COOKIEHASH' ) ) {
+		$cookiehash = preg_quote( constant( 'COOKIEHASH' ), '/' );
+	} else {
+		$cookiehash = '';
+	}
+	$regex = "/^wp-postpass_$cookiehash|^comment_author_$cookiehash";
+	if ( defined( 'LOGGED_IN_COOKIE' ) ) {
+		// Escaped for the '/' delimiter: a site that redefines LOGGED_IN_COOKIE with
+		// a slash in it would otherwise break the pattern, and preg_match() returning
+		// false makes every logged-in visitor look anonymous.
+		$regex .= '|^' . preg_quote( constant( 'LOGGED_IN_COOKIE' ), '/' );
+	} else {
+		$regex .= "|^wordpress_logged_in_$cookiehash";
+	}
+	$regex .= '/';
+
+	$string = '';
+
+	foreach ( (array) $cookies as $key => $value ) {
+		// A cookie sent as name[]=value arrives as an array and is never a valid auth cookie.
+		if ( ! is_scalar( $value ) ) {
+			continue;
+		}
+
+		if ( preg_match( $regex, (string) $key ) ) {
+			wp_cache_debug( 'wp_cache_get_cookies_values: Login/postpass cookie detected' );
+			$string .= $value . ',';
+		}
+	}
+
 	return $string;
 }
 
@@ -821,9 +917,172 @@ function get_supercache_dir( $blog_id = 0 ) {
 	}
 	return trailingslashit( apply_filters( 'wp_super_cache_supercachedir', $cache_path . 'supercache/' . trailingslashit( strtolower( preg_replace( '/:.*$/', '', str_replace( 'http://', '', str_replace( 'https://', '', $home ) ) ) ) ) ) );
 }
+/**
+ * Normalise a URI to the spelling used by supercache directory names.
+ *
+ * Supercache directories are lowercase, with any percent escapes uppercased.
+ * The same path reaches us spelled two ways: sanitize_title_with_dashes()
+ * lowercases the escapes it stores in post_name, while a URL encoder emits them
+ * uppercase, so a visitor following a permalink and one pasting the unicode URL
+ * send different strings for one page. Uppercase is the target because RFC 3986
+ * section 2.1 recommends it and because it is the shape already on disk.
+ *
+ * Escapes and unencoded ASCII are matched in one pass so neither can undo the
+ * other: lowercasing the whole string first and then uppercasing the escapes
+ * works too, but only in that order, and the alternation removes the trap.
+ *
+ * Only ASCII is touched. strtolower() on the whole string would be simpler, but
+ * it is locale-dependent before PHP 8.2 and this plugin supports 7.4, where a
+ * single-byte LC_CTYPE would lowercase bytes 0xC0-0xDE and corrupt a path that
+ * carries raw UTF-8. Matching [A-Z] keeps that out of reach on every version.
+ *
+ * @since 3.1.2
+ *
+ * @param string $uri URI or path fragment.
+ * @return string Normalised URI, or '' if $uri is not a string.
+ */
+function wpsc_normalize_uri_case( $uri ) {
+	// Not a cast: the REST endpoint feeds this straight from get_json_params(),
+	// where 'url' can be an array, and "Array" is a plausible directory name.
+	if ( ! is_string( $uri ) ) {
+		return '';
+	}
+
+	return preg_replace_callback(
+		'/%[0-9A-Fa-f]{2}|[A-Z]+/',
+		function ( $matches ) {
+			return '%' === $matches[0][0] ? strtoupper( $matches[0] ) : strtolower( $matches[0] );
+		},
+		$uri
+	);
+}
+
+/**
+ * Sanitise a cache path taken from the request.
+ *
+ * Deliberately not sanitize_text_field(): _sanitize_text_fields() strips every
+ * percent escape it finds, and a supercache directory for a non-ASCII slug is
+ * largely made of percent escapes, so that call quietly turned
+ * /category/%d2%b1lytau/ into /category/lytau/ and the deletion never found
+ * anything. See #1081.
+ *
+ * The allow-list is the pchar set of RFC 3986 section 3.3, less the characters
+ * that never reach a directory name anyway: ':' because no permalink uses it,
+ * and ' ( ) because wpsc_admin_bar_render() strips them from REQUEST_URI before
+ * building the link. Raw bytes above \x7F are allowed because
+ * get_current_url_supercache_dir() does not strip them either, so a directory on
+ * disk really can be named with them.
+ *
+ * Anything else means the whole value is rejected rather than cleaned up. A path
+ * with the offending characters removed is still a path, and it still resolves,
+ * so stripping would turn a delete of /@donncha/ into a delete of /donncha/ and
+ * point a nonce-checked operation at a directory the nonce never covered.
+ *
+ * '?' is on the list for that same reason, inverted. Supercache never names a
+ * directory after a query string, so a value carrying one simply fails to
+ * resolve and the delete is a no-op, which is what it has always been. Removing
+ * the '?s=foo' off a search page instead would leave '/', the site root, which
+ * is a real directory and very much not the one the nonce covered. Keeping the
+ * query is what makes it harmless. Rejecting the whole value is not an option
+ * here either: the admin bar renders this button on any URL, so on a site using
+ * plain permalinks every path is '/?p=123', and a rejected path takes the caller
+ * down a branch that reports a nonce failure that did not happen.
+ *
+ * Rejecting means the truncation at ':' that wpsc_delete_cache_directory() does
+ * afterwards has nothing left to find; it is kept because that function should
+ * not depend on the exact shape of this allow-list. The guards that do still
+ * matter run later: the '..' strip, wp_cache_confirm_delete(), and the check that
+ * the resolved path sits inside the supercache directory.
+ *
+ * @since 3.1.2
+ *
+ * @param string $path Path from the request.
+ * @return string The path unchanged, or '' if it is not one.
+ */
+function wpsc_sanitize_cache_path( $path ) {
+	if ( ! is_string( $path ) ) {
+		return '';
+	}
+
+	// \z rather than $ so a trailing newline cannot slip past the anchor.
+	if ( ! preg_match( '#^[A-Za-z0-9%_.~!$&*+,;=@/?\x80-\xFF-]*\z#', $path ) ) {
+		return '';
+	}
+
+	return $path;
+}
+
+/**
+ * Directory name returned in place of a supercache path that will not fit.
+ *
+ * Nothing is ever written here: get_current_url_supercache_dir() switches caching
+ * off for the request at the same time it returns this. It exists so callers get
+ * an absolute path inside the cache directory rather than a truncated one or an
+ * empty string, both of which are worse. See wpsc_path_is_too_long().
+ *
+ * It sits directly under $cache_path, not under supercache/, because the first
+ * segment there is named after the request hostname and $WPSC_HTTP_HOST is
+ * whatever Host header arrived. A request carrying this name as its host would
+ * otherwise cache a real page into the directory, and the serving path reads the
+ * placeholder even though the writing path does not, so that page would then be
+ * served for every URL too long to build a path from.
+ */
+define( 'WPSC_PATH_TOO_LONG_DIR', '.wpsc-path-too-long' );
+
+/**
+ * Whether a path is too long for the filesystem to accept.
+ *
+ * PHP emits "File name is longer than the maximum allowed path length on this
+ * platform" from every filesystem call made with such a path, so an error log can
+ * fill up with them. Two ways to get there: a malformed srcset makes a browser
+ * request the whole attribute as one URL, and a genuinely long URL on a site
+ * whose cache_path is already deep spends the budget before the URI is added.
+ * See #1085.
+ *
+ * The headroom is because callers append a filename to the directory this
+ * measures, 'index.html' or 'meta-<32 hex chars>.meta' being the long ones.
+ *
+ * @since 3.1.2
+ *
+ * @param string $path Path to measure.
+ * @return bool True if the path cannot be used.
+ */
+function wpsc_path_is_too_long( $path ) {
+	$max = defined( 'PHP_MAXPATHLEN' ) ? PHP_MAXPATHLEN : 1024;
+
+	return ( strlen( (string) $path ) + 64 ) > $max;
+}
+
+/**
+ * Supercache directory for an absolute URL.
+ *
+ * Pulled out of wp_cron_preload_cache() so the rule it applies can be tested.
+ * That caller deletes a directory and immediately refetches the page, so a delete
+ * that misses is served the stale file it was meant to replace, which made it the
+ * most damaging of the sites #1081 covers and the only one with no seam to test.
+ *
+ * wp_parse_url() omits 'path' entirely for a URL like 'https://example.com', so
+ * the fallback is not decoration; the old inline version emitted a notice there.
+ *
+ * @since 3.1.2
+ *
+ * @param string $url Absolute URL.
+ * @return string Supercache directory for $url, without a trailing slash.
+ */
+function wpsc_supercache_dir_for_url( $url ) {
+	$url_info = wp_parse_url( (string) $url );
+	$path     = isset( $url_info['path'] ) ? $url_info['path'] : '/';
+
+	return get_supercache_dir() . wpsc_normalize_uri_case( $path );
+}
+
 function get_current_url_supercache_dir( $post_id = 0 ) {
 	global $cached_direct_pages, $cache_path, $wp_cache_request_uri, $WPSC_HTTP_HOST; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	global $cache_enabled, $super_cache_enabled;
 	static $saved_supercache_dir = array();
+
+	// Normalised once so the branch test below and the too-long guard agree on what zero is.
+	$post_id = (int) $post_id;
 
 	if ( isset( $saved_supercache_dir[ $post_id ] ) ) {
 		return $saved_supercache_dir[ $post_id ];
@@ -863,20 +1122,18 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 			}
 		}
 	} else {
-		$uri = strtolower( $wp_cache_request_uri );
-		$uri = preg_replace_callback(
-			'/%[a-f0-9]{2}/',
-			function ( $matches ) {
-				return strtoupper( $matches[0] );
-			},
-			$uri
-		);
+		$uri = $wp_cache_request_uri;
 	}
+
+	$uri      = wpsc_normalize_uri_case( $uri );
 	$uri      = wpsc_deep_replace( array( '..', '\\', 'index.php' ), preg_replace( '/[ <>\'\"\r\n\t\(\)]/', '', preg_replace( '/(\?.*)?(#.*)?$/', '', $uri ) ) );
 	$hostname = $WPSC_HTTP_HOST;
 	// Get hostname from wp options for wp-cron, wp-cli and similar requests.
+	// Lowercased because $WPSC_HTTP_HOST already is, and the two have to name the
+	// same directory. See #1081.
 	if ( empty( $hostname ) && function_exists( 'get_option' ) ) {
 		$hostname = (string) parse_url( get_option( 'home' ), PHP_URL_HOST );
+		$hostname = function_exists( 'mb_strtolower' ) ? mb_strtolower( $hostname ) : strtolower( $hostname );
 	}
 	$dir = preg_replace( '/:.*$/', '', $hostname ) . $uri; // To avoid XSS attacks
 	if ( function_exists( 'apply_filters' ) ) {
@@ -889,6 +1146,30 @@ function get_current_url_supercache_dir( $post_id = 0 ) {
 		$dir = ABSPATH . $uri . '/';
 	}
 	$dir = str_replace( '..', '', str_replace( '//', '/', $dir ) );
+
+	if ( wpsc_path_is_too_long( $dir ) ) {
+		wp_cache_debug( 'get_current_url_supercache_dir: path is ' . strlen( $dir ) . ' bytes, too long for this platform. Not caching this request.' );
+
+		/*
+		 * Only the $post_id = 0 branch describes the request being served. The
+		 * other branch is used by the deletion paths, and switching caching off
+		 * there would disable it for whatever admin request happened to be
+		 * saving a post.
+		 *
+		 * Both flags have to go. wp_cache_shutdown_callback() writes the legacy
+		 * meta file into this same directory and gates that on $cache_enabled
+		 * alone, so clearing only $super_cache_enabled would leave the
+		 * placeholder being written to, which is the one thing it relies on not
+		 * happening.
+		 */
+		if ( 0 === $post_id ) {
+			$cache_enabled       = false;
+			$super_cache_enabled = false;
+		}
+
+		return $cache_path . WPSC_PATH_TOO_LONG_DIR . '/';
+	}
+
 	wp_cache_debug( "supercache dir: $dir", 5 );
 	if ( $DONOTREMEMBER == 0 ) {
 		$saved_supercache_dir[ $post_id ] = $dir;
@@ -1092,6 +1373,11 @@ function supercache_filename() {
 	if ( is_array( $cached_direct_pages ) && in_array( $_SERVER['REQUEST_URI'], $cached_direct_pages ) ) {
 		$extra_str = '';
 	}
+
+	// The filename must always be a single path segment. Filters above may
+	// return arbitrary data, so restrict it to a safe set of characters.
+	$extra_str = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $extra_str );
+
 	$filename = 'index' . $extra_str . '.html';
 
 	return $filename;
@@ -1345,7 +1631,9 @@ function wpsc_delete_url_cache( $url ) {
 		wp_cache_debug( 'wpsc_delete_url_cache: URL contains the character "?". Not deleting URL: ' . $url );
 		return false;
 	}
-	$dir = str_replace( get_option( 'home' ), '', $url );
+	// $url is a WordPress-generated permalink, so its percent escapes are
+	// lowercase while the directory on disk has them uppercased. See #1081.
+	$dir = wpsc_normalize_uri_case( str_replace( get_option( 'home' ), '', $url ) );
 	if ( $dir != '' ) {
 		$supercachedir = get_supercache_dir();
 		wpsc_rebuild_files( $supercachedir . $dir );
@@ -1406,7 +1694,37 @@ function wp_cache_setting( $field, $value ) {
 		$text = preg_replace( '/[\s]+/', ' ', $text );
 		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
 	} else {
-		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = '$value';", $wp_cache_config_file );
+		/*
+		 * var_export() rather than "'$value'". The config file is PHP source, so a
+		 * value carrying a quote closed the string early and a trailing backslash
+		 * escaped the closing quote, either way leaving a line the parser could not
+		 * read back.
+		 *
+		 * Escaping settings values is this function's job, not the caller's. The
+		 * metacharacter strips some callers still run before calling in are older
+		 * belt and braces, not the thing keeping the file readable; a new settings
+		 * field does not need one.
+		 */
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- Generating PHP source for the config file, which is what var_export() is for.
+		$text = var_export( (string) $value, true );
+
+		/*
+		 * var_export() emits newlines literally, and wp_cache_replace_line() works a
+		 * line at a time: its '^ *\$field' match finds only the first physical line, so
+		 * the next write of the same field replaces that and orphans the tail. The
+		 * orphan stops the file parsing, and it is included before WordPress boots, so
+		 * that is a fatal error rather than a degraded cache. Keep entries to one line:
+		 * a value holding a newline is written as $field = 'one' . "\n" . 'two';
+		 */
+		$text = strtr(
+			$text,
+			array(
+				"\r" => '\' . "\r" . \'',
+				"\n" => '\' . "\n" . \'',
+			)
+		);
+
+		return wp_cache_replace_line( '^ *\$' . $field, "\$$field = $text;", $wp_cache_config_file );
 	}
 }
 
@@ -1773,6 +2091,8 @@ function wp_cache_user_agent_is_rejected() {
 function wp_cache_get_response_headers() {
 	static $known_headers = array(
 		'Access-Control-Allow-Origin',
+		'Access-Control-Allow-Methods',
+		'Access-Control-Allow-Headers',
 		'Accept-Ranges',
 		'Age',
 		'Allow',
@@ -1786,6 +2106,11 @@ function wp_cache_get_response_headers() {
 		'Content-Disposition',
 		'Content-Range',
 		'Content-Type',
+		'Cross-Origin-Embedder-Policy',
+		'Cross-Origin-Embedder-Policy-Report-Only',
+		'Cross-Origin-Opener-Policy',
+		'Cross-Origin-Opener-Policy-Report-Only',
+		'Cross-Origin-Resource-Policy',
 		'Date',
 		'ETag',
 		'Expires',
@@ -1793,6 +2118,7 @@ function wp_cache_get_response_headers() {
 		'Link',
 		'Location',
 		'P3P',
+		'Permissions-Policy',
 		'Pragma',
 		'Proxy-Authenticate',
 		'Referrer-Policy',
@@ -1816,6 +2142,7 @@ function wp_cache_get_response_headers() {
 		'X-Content-Security-Policy',
 		'X-WebKit-CSP',
 		'X-Content-Type-Options',
+		'X-Permitted-Cross-Domain-Policies',
 		'X-Powered-By',
 		'X-UA-Compatible',
 		'X-Robots-Tag',
@@ -2194,6 +2521,15 @@ function wp_cache_ob_callback( $buffer ) {
 	}
 }
 
+function wpsc_skip_debug_output( $buffer ) {
+	return strpos( $buffer, '<html' ) === false ||
+		( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
+		( defined( 'JSON_REQUEST' ) && JSON_REQUEST ) ||
+		( defined( 'WC_API_REQUEST' ) && WC_API_REQUEST ) ||
+		( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) ||
+		( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() );
+}
+
 function wp_cache_append_tag( &$buffer ) {
 	global $wp_cache_gmt_offset, $wp_super_cache_comments;
 	global $cache_enabled, $super_cache_enabled;
@@ -2213,7 +2549,7 @@ function wp_cache_append_tag( &$buffer ) {
 		$msg = "Live page served on $timestamp";
 	}
 
-	if ( strpos( $buffer, '<html' ) === false ) {
+	if ( wpsc_skip_debug_output( $buffer ) ) {
 		wp_cache_debug( site_url( $_SERVER['REQUEST_URI'] ) . ' - ' . $msg );
 		return false;
 	}
@@ -2232,7 +2568,7 @@ function wp_cache_add_to_buffer( &$buffer, $text ) {
 		return false;
 	}
 
-	if ( strpos( $buffer, '<html' ) === false ) {
+	if ( wpsc_skip_debug_output( $buffer ) ) {
 		wp_cache_debug( site_url( $_SERVER['REQUEST_URI'] ) . ' - ' . $text );
 		return false;
 	}
@@ -2407,7 +2743,9 @@ function wp_cache_get_ob( &$buffer ) {
 			if ( ! $fr2 ) {
 				wp_cache_debug( 'Error. Supercache could not write to ' . str_replace( ABSPATH, '', $tmp_cache_filename ), 1 );
 				wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) );
-				@fclose( $fr );
+				if ( $fr ) {
+					fclose( $fr ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+				}
 				@unlink( $tmp_wpcache_filename );
 				wp_cache_writers_exit();
 				return wp_cache_maybe_dynamic( $buffer );
@@ -2419,7 +2757,9 @@ function wp_cache_get_ob( &$buffer ) {
 				if ( ! $gz ) {
 					wp_cache_debug( 'Error. Supercache could not write to ' . str_replace( ABSPATH, '', $tmp_cache_filename ) . '.gz', 1 );
 					wp_cache_add_to_buffer( $buffer, "File not cached! Super Cache Couldn't write to: " . str_replace( ABSPATH, '', $tmp_cache_filename ) . '.gz' );
-					@fclose( $fr );
+					if ( $fr ) {
+						fclose( $fr ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+					}
 					@unlink( $tmp_wpcache_filename );
 					@fclose( $fr2 );
 					@unlink( $tmp_cache_filename );
@@ -3017,6 +3357,10 @@ function wp_cache_get_postid_from_comment( $comment_id, $status = 'NA' ) {
 	}
 
 	$comment = get_comment( $comment_id, ARRAY_A );
+	if ( ! $comment ) {
+		wp_cache_debug( 'Comment not found; skipping cache update.' );
+		return;
+	}
 	if ( $status != 'NA' ) {
 		$comment['old_comment_approved'] = $comment['comment_approved'];
 		$comment['comment_approved']     = $status;
@@ -3073,6 +3417,10 @@ function wp_cache_clear_cache_on_menu() {
 /* Clear out the cache directory. */
 function wp_cache_clear_cache( $blog_id = 0 ) {
 	global $cache_path;
+
+	// Normalize non-integer callers (e.g. 'all', false) to 0 so they take the
+	// single-site path instead of reaching get_blog_option() via the blog branch.
+	$blog_id = (int) $blog_id;
 
 	if ( $blog_id == 0 ) {
 		wp_cache_debug( 'Clearing all cached files in wp_cache_clear_cache()', 4 );
@@ -3153,8 +3501,11 @@ function wpsc_delete_cats_tags( $post ) {
 		}
 		$category_base = trailingslashit( $category_base ); // paranoid much?
 		foreach ( $categories as $cat ) {
-			prune_super_cache( get_supercache_dir() . $category_base . $cat->slug . '/', true );
-			wp_cache_debug( 'wpsc_post_transition: deleting category: ' . get_supercache_dir() . $category_base . $cat->slug . '/' );
+			// Term slugs are stored with lowercase percent escapes; the directory
+			// on disk has them uppercased. See #1081.
+			$cat_dir = get_supercache_dir() . wpsc_normalize_uri_case( $category_base . $cat->slug ) . '/';
+			prune_super_cache( $cat_dir, true );
+			wp_cache_debug( 'wpsc_post_transition: deleting category: ' . $cat_dir );
 		}
 	}
 	$posttags = get_the_tags( $post->ID );
@@ -3165,8 +3516,9 @@ function wpsc_delete_cats_tags( $post ) {
 		}
 		$tag_base = trailingslashit( str_replace( '..', '', $tag_base ) ); // maybe!
 		foreach ( $posttags as $tag ) {
-			prune_super_cache( get_supercache_dir() . $tag_base . $tag->slug . '/', true );
-			wp_cache_debug( 'wpsc_post_transition: deleting tag: ' . get_supercache_dir() . $tag_base . $tag->slug . '/' );
+			$tag_dir = get_supercache_dir() . wpsc_normalize_uri_case( $tag_base . $tag->slug ) . '/';
+			prune_super_cache( $tag_dir, true );
+			wp_cache_debug( 'wpsc_post_transition: deleting tag: ' . $tag_dir );
 		}
 	}
 }
@@ -3206,6 +3558,16 @@ function wpsc_post_transition( $new_status, $old_status, $post ) {
 function wp_cache_post_edit( $post_id ) {
 	global $wp_cache_clear_on_post_edit, $cache_path, $blog_cache_dir;
 	static $last_post_edited = -1;
+
+	// Normalize $post_id to always be an integer (handles both int and WP_Post object)
+	if ( is_object( $post_id ) && isset( $post_id->ID ) ) {
+		$post_id = $post_id->ID;
+	}
+	$post_id = (int) $post_id;
+
+	if ( $post_id === 0 ) {
+		return $post_id;
+	}
 
 	if ( $post_id == $last_post_edited ) {
 		$action = current_filter();
@@ -3253,7 +3615,10 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 		return true;
 	}
 
-	$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
+	// Normalised so the gc_cache payload below is spelled the same way
+	// wp_cache_post_change() spells it. Consumers build a supercache path out of
+	// it, so the two firing sites disagreeing is a bug of its own. See #1081.
+	$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) ) );
 	if ( str_contains( $permalink, '?' ) ) {
 		wp_cache_debug( 'wp_cache_post_id_gc: NOT CLEARING CACHE. Permalink has a "?". ' . $permalink );
 		return false;
@@ -3279,6 +3644,16 @@ function wp_cache_post_id_gc( $post_id, $all = 'all' ) {
 function wp_cache_post_change( $post_id ) {
 	global $file_prefix, $cache_path, $blog_id, $super_cache_enabled, $blog_cache_dir, $wp_cache_refresh_single_only;
 	static $last_processed = -1;
+
+	// Normalize $post_id to always be an integer (handles both int and WP_Post object)
+	if ( is_object( $post_id ) && isset( $post_id->ID ) ) {
+		$post_id = $post_id->ID;
+	}
+	$post_id = (int) $post_id;
+
+	if ( $post_id === 0 ) {
+		return $post_id;
+	}
 
 	if ( $post_id == $last_processed ) {
 		$action = current_filter();
@@ -3356,7 +3731,7 @@ function wp_cache_post_change( $post_id ) {
 			 */
 			wp_cache_debug( 'Post change: page_for_posts ' . get_option( 'page_for_posts' ), 4 );
 			if ( get_option( 'page_for_posts' ) ) {
-				$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( get_option( 'page_for_posts' ) ) ) );
+				$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( get_option( 'page_for_posts' ) ) ) ) );
 				wp_cache_debug( 'Post change: Deleting files in: ' . str_replace( '//', '/', $dir . $permalink ) );
 				wpsc_rebuild_files( $dir . $permalink );
 				do_action( 'gc_cache', 'prune', $permalink );
@@ -3386,7 +3761,7 @@ function wp_cache_post_change( $post_id ) {
 						continue;
 					}
 					if ( $post_id > 0 && $meta ) {
-						$permalink = trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) );
+						$permalink = wpsc_normalize_uri_case( trailingslashit( str_replace( get_option( 'home' ), '', get_permalink( $post_id ) ) ) );
 						if ( $meta['blog_id'] == $blog_id && ( ( $all == true && ! $meta['post'] ) || $meta['post'] == $post_id ) ) {
 							wp_cache_debug( "Post change: deleting post wp-cache files for {$meta[ 'uri' ]}: $file", 4 );
 							@unlink( $blog_cache_dir . 'meta/' . $file );
@@ -3569,11 +3944,53 @@ function wpsc_is_get_query() {
 	static $is_get_query = null;
 
 	if ( null === $is_get_query ) {
-		$request_uri  = wpsc_parse_partial_url( $_SERVER['REQUEST_URI'] );
-		$is_get_query = $request_uri && ! empty( $request_uri['query'] );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- only checked for a query string.
+		$is_get_query = wpsc_uri_has_query( isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '' );
 	}
 
 	return $is_get_query;
+}
+
+/**
+ * Does a request URI carry a non-empty query string?
+ *
+ * Matches what parse_url() reports for an origin-form request target: anything
+ * after a "#" is ignored, and a bare "?" is not a query.
+ *
+ * @param string $uri The path and query component of a URI.
+ * @return bool
+ */
+function wpsc_uri_has_query( $uri ) {
+	$uri      = (string) $uri;
+	$fragment = strpos( $uri, '#' );
+	if ( false !== $fragment ) {
+		$uri = substr( $uri, 0, $fragment );
+	}
+
+	$query = strpos( $uri, '?' );
+
+	return false !== $query && $query < strlen( $uri ) - 1;
+}
+
+/**
+ * Is a Host header safe to name a cache directory after?
+ *
+ * Accepts a hostname or a bracketed IPv6 literal, with an optional port from 1
+ * to 65535 written without leading zeros.
+ *
+ * @param string $host The Host header, lowercased.
+ * @return bool
+ */
+function wpsc_is_valid_http_host( $host ) {
+	if ( ! is_string( $host ) ) {
+		return false;
+	}
+
+	if ( ! preg_match( '/^(?:\[[0-9a-f:.]+\]|[a-z0-9._-]+)(?::([1-9][0-9]{0,4}))?$/iD', $host, $matches ) ) {
+		return false;
+	}
+
+	return ! isset( $matches[1] ) || (int) $matches[1] <= 65535;
 }
 
 /**
