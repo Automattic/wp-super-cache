@@ -80,13 +80,13 @@ if ( $count > 100 ) {
 echo "<script type='text/javascript'>";
 echo "jQuery(function () {
 	jQuery('#preload_interval_time').on('click',function () {
-		jQuery('#preload_schedule_interval_radio').attr('checked', true);
+		jQuery('#preload_schedule_interval_radio').prop('checked', true);
 	});
 	jQuery('#preload_scheduled_time').on('click',function () {
-		jQuery('#preload_schedule_time_radio').attr('checked', true);
+		jQuery('#preload_schedule_time_radio').prop('checked', true);
 	});
 	jQuery('#preload_scheduled_select').on('click',function () {
-		jQuery('#preload_schedule_time_radio').attr('checked', true);
+		jQuery('#preload_schedule_time_radio').prop('checked', true);
 	});
 	});";
 echo '</script>';
@@ -104,10 +104,11 @@ echo '<td><input type=\'text\' size=5 id=\'preload_scheduled_time\' name=\'prelo
 		'<code>' . esc_html( $wpsc_tz_label ) . '</code>'
 	)
 	. '</td></tr>';
-$schedules = wp_get_schedules();
+$schedules              = wp_get_schedules();
+$wpsc_selected_interval = wpsc_get_preload_schedule_interval();
 echo '<tr><td><br /></td><td><label for=\'preload_scheduled_select\'>' . esc_html__( 'Interval:', 'wp-super-cache' ) . '</label></td><td><select id=\'preload_scheduled_select\' name=\'preload_schedule_interval\' size=1>';
 foreach ( $schedules as $desc => $details ) {
-	echo '<option value=\'' . esc_attr( $desc ) . '\' ' . selected( $desc, $preload_schedule_interval, false ) . '>' . esc_html( $details['display'] ) . '</option>';
+	echo '<option value=\'' . esc_attr( $desc ) . '\' ' . selected( $desc, $wpsc_selected_interval, false ) . '>' . esc_html( $details['display'] ) . '</option>';
 }
 echo '</select></td></tr>';
 echo '</table></td></tr>';
