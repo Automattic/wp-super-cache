@@ -250,11 +250,9 @@ function wpsc_edit_rejected_ua() {
 }
 
 function wp_cache_update_rejected_pages() {
-	global $wp_cache_config_file, $wp_cache_pages, $valid_nonce;
+	global $wp_cache_config_file, $valid_nonce, $wp_cache_pages;
 
-	$nonce_ok = $valid_nonce || ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wp-cache' ) );
-
-	if ( isset( $_POST['wp_edit_rejected_pages'] ) && $nonce_ok ) {
+	if ( isset( $_POST['wp_edit_rejected_pages'] ) && $valid_nonce ) {
 		$pages = array( 'single', 'pages', 'archives', 'tag', 'frontpage', 'home', 'category', 'feed', 'author', 'search' );
 		foreach ( $pages as $page ) {
 			$value = empty( $_POST['wp_cache_pages'][ $page ] ) ? 0 : 1;
