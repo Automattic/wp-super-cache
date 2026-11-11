@@ -51,9 +51,48 @@
 		<exclude name="Squiz.Commenting.VariableComment.Missing"/>
 	</rule>
 
+	<!-- wpsc_sanitize_cache_path() is the sanitiser for request paths that name a
+	     supercache directory. sanitize_text_field() cannot be used there: it
+	     strips percent escapes, which is most of what such a path consists of
+	     (#1081). Teach PHPCS to recognise the replacement. -->
+	<rule ref="WordPress.Security.ValidatedSanitizedInput">
+		<properties>
+			<property name="customSanitizingFunctions" type="array">
+				<element value="wpsc_sanitize_cache_path"/>
+			</property>
+		</properties>
+	</rule>
+
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
 		<properties>
 			<property name="ignoreUnusedRegexp" value="/^_/"/>
 		</properties>
 	</rule>
+
+	<!-- PHP test fixtures legitimately use direct filesystem calls (creating and
+	     tearing down temporary cache trees); WP_Filesystem is not available or
+	     appropriate in that context. -->
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>/tests/php/*</exclude-pattern>
+	</rule>
+
+	<!--
+	  Relocated procedural includes (#1061): these inc/ files are verbatim,
+	  byte-for-byte moves of legacy function clusters out of wp-cache.php. The
+	  pure relocation intentionally makes no behaviour change, so the pre-existing
+	  WPCS debt in wp-cache.php travels with the code unchanged. wp-cache.php
+	  itself carries the same debt and is only ever lint-checked on changed lines;
+	  excluding these relocations keeps that de-facto treatment. WPCS
+	  modernization of the relocated files is a tracked follow-up, out of scope
+	  for the move. Newly authored inc/ files (e.g. inc/boost.php) are NOT listed
+	  here and remain fully linted.
+	-->
+	<exclude-pattern>/inc/plugins-cookies\.php</exclude-pattern>
+	<exclude-pattern>/inc/cache-files\.php</exclude-pattern>
+	<exclude-pattern>/inc/htaccess\.php</exclude-pattern>
+	<exclude-pattern>/inc/settings-forms\.php</exclude-pattern>
+	<exclude-pattern>/inc/preload\.php</exclude-pattern>
+	<exclude-pattern>/inc/lifecycle\.php</exclude-pattern>
+	<exclude-pattern>/inc/admin-notices\.php</exclude-pattern>
+	<exclude-pattern>/inc/admin-ui\.php</exclude-pattern>
 </ruleset>

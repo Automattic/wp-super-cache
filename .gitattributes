@@ -10,4 +10,4 @@ phpunit.*.xml.dist export-ignore
 .eslintignore      export-ignore
 eslint.config.mjs  export-ignore
 changelog/         export-ignore
-.w.org-assets/     export-ignore
+w.org-assets/      export-ignore
