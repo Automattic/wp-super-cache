@@ -29,7 +29,7 @@ partials/                 Admin settings page tab templates
 tests/php/                PHPUnit tests
 tests/e2e/                End-to-end tests (Docker + Jest)
 
-changelog/                Individual changelog entries (Jetpack Changelogger format)
+scripts/                  Release tooling (prepare-release, create-release, build, exclude list)
 .phan/                    Phan static analysis configuration and stubs
 ```
 
@@ -39,8 +39,35 @@ changelog/                Individual changelog entries (Jetpack Changelogger for
 
 - PHP 7.4+
 - [Composer](https://getcomposer.org/)
+- Node.js 20+ and Docker (only needed for the Makefile / wp-env workflow)
 
-### Installation
+### Quick start with the Makefile
+
+A `Makefile` is provided to spin up a disposable WordPress site in Docker (via [`@wordpress/env`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/)) with the plugin pre-mounted. Run `make help` to see every target.
+
+```bash
+make install     # composer install + npm install
+make up          # start WordPress at http://localhost:8888 (admin / password)
+make seed        # create 100 random posts + 100 random pages for cache testing
+# ... hack on the plugin; files are live-mounted into the container ...
+make unseed      # delete only the content created by `make seed`
+make down        # stop containers
+make destroy     # stop and wipe the database
+```
+
+Other useful targets:
+
+| Target | Purpose |
+|--------|---------|
+| `make cli` | Open a shell inside the `wp-cli` container |
+| `make wp CMD="super-cache status"` | Run an arbitrary `wp-cli` command |
+| `make logs` | Tail the WordPress container logs |
+| `make lint` / `make lint-fix` | Run / auto-fix PHPCS on changed PHP files |
+| `make lint-all` | Run PHPCS on the full codebase |
+
+The seed script tags every item it creates with `_wpsc_seed=1` post meta, so `make unseed` only removes content it generated — it will not touch posts or pages you created by hand.
+
+### Manual installation
 
 ```bash
 composer install
@@ -59,8 +86,11 @@ composer test-coverage
 ### Linting
 
 ```bash
-# PHPCS (WordPress/Jetpack coding standards)
-vendor/bin/phpcs
+# Changed PHP files only (matches CI)
+make lint
+
+# Full-tree PHPCS (WordPress/Jetpack coding standards)
+make lint-all
 ```
 
 ### Static analysis
@@ -81,20 +111,50 @@ docker compose up -d
 pnpm test
 ```
 
+## Releases
+
+Releases use a two-phase flow: you prepare a PR locally, edit the changelog in the PR, and merging it deploys automatically. The shipped plugin is built from an allow-list: `ship_paths` in `scripts/build-plugin.sh` is the single source of truth for which files are packaged, so a newly-added dev file can never leak into the release unless it is explicitly added there.
+
+### 1. Prepare the release PR
+
+```bash
+make release VERSION=x.y.z
+```
+
+Run from `trunk`. This target (`scripts/prepare-release.mjs`):
+
+1. Creates a `release/wp-super-cache-x.y.z` branch.
+2. Bumps `Version:` in `wp-cache.php` and `Stable tag:` in `readme.txt`.
+3. Assembles the changelog from the GitHub milestone `x.y.z` — every merged PR assigned to it, pulling each PR's `### Release Notes` section (falling back to the PR title).
+4. Pushes the branch and opens a PR whose body holds the changelog, **editable between the two `---` lines**.
+
+Create a GitHub milestone named exactly `x.y.z` and assign the release's PRs to it beforehand.
+
+### 2. Edit and merge
+
+Edit the changelog in the PR body, review, and merge into `trunk`. On merge, `.github/workflows/create-release.yml` runs `scripts/create-release.mjs`, which:
+
+1. Writes the edited release notes into `readme.txt`'s `== Changelog ==` (newest 5 entries).
+2. Tags the release and creates a GitHub release with `build/wp-super-cache.zip` attached.
+3. Deploys to the WordPress.org SVN repository via the 10up deploy action, using the `WORDPRESSORG_SVN_USERNAME` / `WORDPRESSORG_SVN_PASSWORD` repository secrets.
+
+`make build` builds `build/wp-super-cache/` and `build/wp-super-cache.zip` from the working tree; it runs in CI but is also useful locally to inspect the packaged plugin.
+
 ## Contributing
 
 1. Branch from `trunk`.
 2. Make your changes.
-3. Add a changelog entry:
-   ```bash
-   vendor/bin/changelogger add
-   ```
-4. Push and open a pull request against `trunk`.
+3. Push and open a pull request against `trunk`.
 
 CI will automatically run:
 - **PHP tests** across PHP 8.2, 8.3, 8.4, and 8.5
 - **PHPCS linting** on changed lines
-- **Changelog validation** (warns if no entry is included)
+
+### Versioning new code
+
+When you add a `@since`, `@deprecated`, or a WordPress `_deprecated_*()` call for code that will ship in the **next** release, tag it with the next-version placeholder token instead of guessing the version number. Run `bash scripts/replace-next-version-tag.sh -h` for the exact token and the recognized patterns.
+
+At release time, `make release` replaces the placeholder with the version being shipped and **fails** if any malformed token is left behind — so you never need to know the next version number while writing a PR. (The token is deliberately not written literally here; the release step rewrites it wherever it appears in a tracked file.)
 
 ### Translations
 

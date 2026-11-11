@@ -1,2 +1,5 @@
 vendor/
 node_modules/
+build/
+/package-lock.json
+.phpunit.cache/

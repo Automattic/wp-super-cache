@@ -40,7 +40,7 @@
 #wpsc-dashboard {
 
 	/* Remove default wp-admin spacing */
-	margin-left: -20px;
+	margin-inline-start: -20px;
 	padding-top: 20px;
 }
 

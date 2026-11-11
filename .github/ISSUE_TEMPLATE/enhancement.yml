@@ -1,0 +1,22 @@
+name: Enhancement
+description: Suggest an improvement to an existing feature.
+title: "Enhancement: "
+labels:
+  - enhancement
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping us improve WP Super Cache!
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the improvement
+      description: Tell us what you would like to improve and how you would expect it to work.
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any examples, screenshots, or other details that might help us understand your suggestion.
