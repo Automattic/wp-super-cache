@@ -1,0 +1,4 @@
+Significance: minor
+Type: added
+
+Preload: Add a Clock scheduler that runs the full preload at a set time of day.
