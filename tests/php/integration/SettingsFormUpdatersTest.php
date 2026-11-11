@@ -146,6 +146,30 @@ class SettingsFormUpdatersTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A config line written with single quotes or other spacing is replaced in
+	 * place, not left behind a new line where it still overrides the setting.
+	 */
+	public function test_update_rejected_pages_replaces_lines_in_any_quote_style() {
+		$config = $this->make_config_file(
+			array(
+				"\$wp_cache_pages['single'] = 0;",
+				'$wp_cache_pages["feed"] = 1;',
+			)
+		);
+
+		$_POST['wp_edit_rejected_pages'] = '1';
+		$_POST['wp_cache_pages']         = array( 'single' => '1' );
+
+		wp_cache_update_rejected_pages();
+
+		$contents = file_get_contents( $config );
+		$this->assertSame( 1, substr_count( $contents, "'single'" ) + substr_count( $contents, '"single"' ) );
+		$this->assertStringContainsString( '$wp_cache_pages[ "single" ] = 1;', $contents );
+		$this->assertSame( 1, substr_count( $contents, "'feed'" ) + substr_count( $contents, '"feed"' ) );
+		$this->assertStringContainsString( '$wp_cache_pages[ "feed" ] = 0;', $contents );
+	}
+
+	/**
 	 * Characterizes wpsc_update_tracking_parameters(): posted parameters are
 	 * parsed into $wpsc_tracking_parameters and the ignore flag is stored.
 	 */
