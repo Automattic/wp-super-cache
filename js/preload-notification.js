@@ -28,6 +28,7 @@ jQuery( document ).ready( function () {
 				window.wpsc_preload_ajax.ajax_url,
 				{
 					action: 'wpsc_get_preload_status',
+					_ajax_nonce: window.wpsc_preload_ajax.nonce,
 				},
 				json => {
 					if ( ! json || ! json.success ) {

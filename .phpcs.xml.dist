@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<ruleset name="WP Super Cache">
+	<description>PHPCS ruleset for WP Super Cache</description>
+
+	<file>.</file>
+
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/tests/e2e/*</exclude-pattern>
+	<exclude-pattern>/jetpack_vendor/*</exclude-pattern>
+
+	<rule ref="Jetpack">
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="wp-super-cache" />
+			</property>
+		</properties>
+	</rule>
+	<rule ref="Jetpack.Functions.I18n">
+		<properties>
+			<property name="text_domain" value="wp-super-cache" />
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.Utils.I18nTextDomainFixer">
+		<properties>
+			<property name="old_text_domain" type="array" />
+			<property name="new_text_domain" value="wp-super-cache" />
+		</properties>
+	</rule>
+
+	<rule ref="Squiz.Commenting.FileComment">
+		<exclude name="Squiz.Commenting.FileComment.Missing"/>
+	</rule>
+	<rule ref="Squiz.Commenting.ClassComment">
+		<exclude name="Squiz.Commenting.ClassComment.Missing"/>
+	</rule>
+	<rule ref="Squiz.Commenting.FunctionComment">
+		<exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+		<exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
+	</rule>
+	<rule ref="Generic.Commenting.DocComment">
+		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
+	</rule>
+	<rule ref="Squiz.Commenting.VariableComment">
+		<exclude name="Squiz.Commenting.VariableComment.Missing"/>
+	</rule>
+
+	<!-- wpsc_sanitize_cache_path() is the sanitiser for request paths that name a
+	     supercache directory. sanitize_text_field() cannot be used there: it
+	     strips percent escapes, which is most of what such a path consists of
+	     (#1081). Teach PHPCS to recognise the replacement. -->
+	<rule ref="WordPress.Security.ValidatedSanitizedInput">
+		<properties>
+			<property name="customSanitizingFunctions" type="array">
+				<element value="wpsc_sanitize_cache_path"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
+		<properties>
+			<property name="ignoreUnusedRegexp" value="/^_/"/>
+		</properties>
+	</rule>
+
+	<!-- PHP test fixtures legitimately use direct filesystem calls (creating and
+	     tearing down temporary cache trees); WP_Filesystem is not available or
+	     appropriate in that context. -->
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>/tests/php/*</exclude-pattern>
+	</rule>
+
+	<!--
+	  Relocated procedural includes (#1061): these inc/ files are verbatim,
+	  byte-for-byte moves of legacy function clusters out of wp-cache.php. The
+	  pure relocation intentionally makes no behaviour change, so the pre-existing
+	  WPCS debt in wp-cache.php travels with the code unchanged. wp-cache.php
+	  itself carries the same debt and is only ever lint-checked on changed lines;
+	  excluding these relocations keeps that de-facto treatment. WPCS
+	  modernization of the relocated files is a tracked follow-up, out of scope
+	  for the move. Newly authored inc/ files (e.g. inc/boost.php) are NOT listed
+	  here and remain fully linted.
+	-->
+	<exclude-pattern>/inc/plugins-cookies\.php</exclude-pattern>
+	<exclude-pattern>/inc/cache-files\.php</exclude-pattern>
+	<exclude-pattern>/inc/htaccess\.php</exclude-pattern>
+	<exclude-pattern>/inc/settings-forms\.php</exclude-pattern>
+	<exclude-pattern>/inc/preload\.php</exclude-pattern>
+	<exclude-pattern>/inc/lifecycle\.php</exclude-pattern>
+	<exclude-pattern>/inc/admin-notices\.php</exclude-pattern>
+	<exclude-pattern>/inc/admin-ui\.php</exclude-pattern>
+</ruleset>

@@ -1,0 +1,22 @@
+name: Feature Request
+description: Suggest a new feature.
+title: "Feature Request: "
+labels:
+  - enhancement
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping us make WP Super Cache better!
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the feature
+      description: Tell us what you would like WP Super Cache to do and how it would help you.
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any examples, screenshots, or other details that might help us understand your request.
